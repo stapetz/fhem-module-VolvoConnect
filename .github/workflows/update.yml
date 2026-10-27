@@ -22,7 +22,7 @@ jobs:
         with:
           filename: controls_volvo.txt
           directory: FHEM
-          extension: .pm|.md
+          extension: .pm|.md|.txt
 
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
