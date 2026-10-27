@@ -16,6 +16,67 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate CHANGED from Git commits
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import subprocess
+          import textwrap
+          import unicodedata
+          from pathlib import Path
+
+          log = subprocess.check_output(
+              [
+                  "git",
+                  "log",
+                  "--all",
+                  "--no-merges",
+                  "--date=short",
+                  "--pretty=format:%ad%x09%h%x09%s",
+              ],
+              text=True,
+          )
+
+          output = [
+              "# VolvoConnect change history",
+              "# Generated from Git commits by the GitHub Actions workflow.",
+              "# Keep this file ASCII-only and use lines no longer than 80 characters.",
+              "",
+          ]
+
+          for entry in log.splitlines():
+              date, commit, subject = entry.split("\t", 2)
+              if "[skip ci]" in subject or subject.startswith(
+                  "Automated update of controls_volvo.txt"
+              ):
+                  continue
+
+              subject_lower = subject.lower()
+              if subject_lower.startswith(("fix", "bugfix")):
+                  category = "bugfix"
+              elif subject_lower.startswith(("feat", "feature")):
+                  category = "feature"
+              elif subject_lower.startswith(("doc", "documentation")):
+                  category = "documentation"
+              else:
+                  category = "change"
+
+              line = f"- {category}: {date} {commit} {subject}"
+              line = unicodedata.normalize("NFKD", line)
+              line = line.encode("ascii", "ignore").decode("ascii")
+              output.extend(textwrap.wrap(
+                  line,
+                  width=79,
+                  subsequent_indent="  ",
+                  break_long_words=False,
+                  break_on_hyphens=False,
+              ))
+
+          Path("CHANGED").write_text("\n".join(output) + "\n", encoding="ascii")
+          PY
 
       - name: Generate Controls File
         uses: fhem/fhem-controls-actions@v4.0.1
@@ -24,8 +85,15 @@ jobs:
           directory: FHEM
           extension: .pm|.md|.txt
 
+      - name: Add CHANGED to Controls File
+        shell: bash
+        run: |
+          printf 'UPD %s %s CHANGED\n' \
+            "$(date -u +'%Y-%m-%d_%H:%M:%S')" \
+            "$(wc -c < CHANGED | tr -d ' ')" >> controls_volvo.txt
+
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Automated update of controls_volvo.txt [skip ci]"
-          file_pattern: controls_volvo.txt
+          file_pattern: "controls_volvo.txt CHANGED"

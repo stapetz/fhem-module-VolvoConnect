@@ -1,0 +1,8 @@
+# VolvoConnect change history
+# Entries are generated from Git commits by the GitHub Actions workflow.
+# Keep this file ASCII-only and use lines no longer than 80 characters.
+
+- change: 2026-10-27 initial FHEM-compatible change history file
+- documentation: 2026-10-27 Installation, operation and GitHub update workflow
+- feature: 2026-10-09 persistent endpoint fetch times and separate intervals
+- feature: 2026-10-09 dashboard layout, scopes and vehicle data improvements
