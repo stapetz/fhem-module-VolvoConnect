@@ -8,7 +8,7 @@ use JSON;
 use MIME::Base64 qw(encode_base64 decode_base64);
 use Digest::SHA qw(sha256);
 
-# PKCE-Verifier
+# PKCE-Verifier zum testen
 my $GLOBAL_VERIFIER = "fhem_volvo_connect_secure_code_verifier_long_string_77_characters";
 
 # Dummy-Werte nur als Platzhalter
