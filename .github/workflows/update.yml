@@ -3,24 +3,29 @@ name: Generate FHEM Controls
 on:
   push:
     branches:
-      - main  # Oder 'master', je nachdem wie dein Hauptbranch heißt
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Generate Controls File
-        uses: fhem/fhem-controls-actions@master
+        uses: fhem/fhem-controls-actions@v4.0.1
         with:
-          filename: 'controls_volvo.txt'
-          directory: 'fhem-modules' # Der Ordner, in dem deine FHEM-Struktur liegt
-          extension: '.pm|.md'       # Welche Dateien getrackt werden sollen
+          filename: controls_volvo.txt
+          directory: FHEM
+          extension: .pm|.md
 
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Automated update of controls_volvo.txt [skip ci]"
-          file_pattern: 'controls_volvo.txt'
+          file_pattern: controls_volvo.txt
