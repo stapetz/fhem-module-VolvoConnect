@@ -727,8 +727,9 @@ __DATA__
 .sx-live{display:grid;grid-template-columns:12px auto;gap:2px 8px;align-items:center;font-size:12px}
 .sx-live small{grid-column:2;font-size:10px;color:#a9b7ac}
 .sx-led{grid-row:1/3;width:10px;height:10px;border:1px solid #17231f;border-radius:50%;background:#879088}
-.sx-led[data-state="online"]{background:var(--mint);box-shadow:0 0 0 3px #52bd8b40}
+.sx-led[data-state="online"]{background:var(--mint);box-shadow:0 0 0 3px #52bd8b40;animation:sx-live-pulse 4s ease-in-out infinite}
 .sx-led[data-state="error"]{background:var(--red);box-shadow:0 0 0 3px #d45b4540}
+@keyframes sx-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #52bd8b}50%{opacity:1;box-shadow:0 0 10px #52bd8b}}
 .sx-main{padding:22px 24px 16px;background:linear-gradient(155deg,#26352e,#1b2823 62%,#202c27)}
 .sx-hero{display:grid;grid-template-columns:minmax(230px,.85fr) minmax(300px,1.15fr);gap:24px;align-items:center;padding:20px 22px;background:#303d35;border:1px solid #536054;box-shadow:inset 0 0 0 4px #0d161231,0 8px 20px #0002}
 .sx-hero-primary>small,.sx-section-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}

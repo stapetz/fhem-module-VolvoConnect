@@ -902,7 +902,7 @@ sub VolvoConnect_CGI($) {
     return ("text/plain; charset=utf-8", "Unknown VolvoConnect device: $name")
         if (!$hash || $hash->{TYPE} ne "VolvoConnect");
 
-    my $html = eval { VolvoConnect_BuildDashboard($hash) };
+    my $html = eval { VolvoConnect_BuildDashboard({hash => $hash, editable => 0}) };
     if ($@ || !defined($html)) {
         Log3 $name, 2, "VolvoConnect ($name) - Dashboard rendering failed: $@";
         return ("text/plain; charset=utf-8", "Dashboard-Fehler: $@");
@@ -910,8 +910,12 @@ sub VolvoConnect_CGI($) {
     return ("text/html; charset=utf-8", $html);
 }
 
-sub VolvoConnect_BuildDashboard($) {
-    my ($hash) = @_;
+sub VolvoConnect_BuildDashboard {
+    my ($context) = @_;
+    my $hash = ref($context) eq "HASH" && ref($context->{hash}) eq "HASH"
+        ? $context->{hash} : $context;
+    my $options = ref($context) eq "HASH" && ref($context->{hash}) eq "HASH"
+        ? $context : {};
     my $name = $hash->{NAME};
     my $dashboardRefresh = int(AttrVal($name, "interval", 300));
     $dashboardRefresh = 300 if ($dashboardRefresh < 10);
@@ -1007,7 +1011,8 @@ sub VolvoConnect_BuildDashboard($) {
         . "text-align:center;font-size:11px;font-weight:bold;color:#fff;}"
         . ".auth-indicator{display:inline-flex;width:16px;height:16px;flex:0 0 16px;align-items:center;justify-content:center;}"
         . ".auth-dot{display:block;width:12px;height:12px;border-radius:50%;}"
-        . ".auth-dot-valid{background:#52bd8b;} .auth-dot-invalid{background:#d45b45;}"
+        . ".auth-dot-valid{background:#52bd8b;animation:volvo-live-pulse 4s ease-in-out infinite;} .auth-dot-invalid{background:#d45b45;}"
+        . "\@keyframes volvo-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #52bd8b;}50%{opacity:1;box-shadow:0 0 10px #52bd8b;}}"
         . ".dot-neg{background:#d45b45;}"
         . ".dot-pos{background:#52bd8b;font-size:12px;}"
         . ".dot-warn{background:#e3b953;color:#1d2825;}"
@@ -1048,7 +1053,9 @@ sub VolvoConnect_BuildDashboard($) {
         . "<span class='auth-indicator' role='img' aria-label='" . VolvoConnect_HtmlEscape($authStatusTitle)
         . "' title='" . VolvoConnect_HtmlEscape($authStatusTitle) . "'><span class='auth-dot "
         . ($tokenValid ? "auth-dot-valid" : "auth-dot-invalid") . "'></span></span><div class='toolbar-controls'>"
-        . "<button type='button' class='btn icon-btn' title='Bearbeiten' aria-label='Bearbeiten' onclick='toggleEdit()'>&#9998;</button>"
+        . ($options->{editable}
+            ? "<button type='button' class='btn icon-btn' title='Bearbeiten' aria-label='Bearbeiten' onclick='toggleEdit()'>&#9998;</button>"
+            : "")
         . "<button type='button' class='btn save-btn' onclick='saveDashboardConfig()'>&#128190; Speichern</button>"
         . "</div></div>";
 
@@ -1452,7 +1459,7 @@ sub VolvoConnect_Get($$@) {
     }
 
     if ($cmd eq "_showDashboard") {
-        return VolvoConnect_BuildDashboard($hash);
+        return VolvoConnect_BuildDashboard({hash => $hash, editable => 1});
     }
 
     if ($cmd eq "_showEntityConfig") {
@@ -2657,10 +2664,12 @@ set Volvo1 authCode AUTH_CODE_BEISPIEL</pre>
         <li><code>tokenInfo</code> - Vorhandensein von Access-/Refresh-Token und verbleibende Gültigkeit anzeigen</li>
         <li><code>scopes</code> - aktivierte/deaktivierte scope_*-Attribute anzeigen</li>
         <li><code>_showEntityConfig</code> - gruppierte Volvo-API-Scopes bearbeiten und speichern</li>
-        <li><code>_showDashboard</code> - eigenständiges HTML-Dashboard mit einer Kachel je aktivem
+        <li><code>_showDashboard</code> - HTML-Dashboard mit einer Kachel je aktivem
             Scope, OpenStreetMap-Karte beim Fahrzeugstandort und Außenbild anzeigen. Im Edit Mode
-            lassen sich ganze Kacheln oder einzelne Readings ein-/ausblenden; auch direkt als Lesezeichen-URL nutzbar:
-            <code>&lt;fhemurl&gt;/VolvoConnect/&lt;name&gt;</code></li>
+            lassen sich ganze Kacheln oder einzelne Readings ein-/ausblenden; der Editierstift
+            wird nur bei diesem Aufruf angezeigt. Die isolierte Ansicht über
+            <code>&lt;fhemurl&gt;/VolvoConnect/&lt;name&gt;</code> beziehungsweise
+            <code>_dashboardURL</code> ist nicht editierbar.</li>
     </ul>
     <br>
     <a name="VolvoConnectattr"></a>

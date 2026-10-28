@@ -6,10 +6,11 @@ VolvoConnect verbindet ein FHEM-Gerät mit den offiziellen Volvo Cars APIs. Das 
 [Projektübersicht](../../README.md) · [Änderungsprotokoll](../../CHANGED)
 
 `CHANGED` ist das FHEM-kompatible Änderungsprotokoll. Es wird beim GitHub-Actions-Lauf
-automatisch aus den Git-Commits erzeugt und zusammen mit den drei Controls-Dateien
+automatisch aus den Git-Commits erzeugt und zusammen mit den vier Controls-Dateien
 veröffentlicht:
 
 - [Volvo Controls](../../controls_volvo.txt)
+- [TemperatureCollector Controls](../../controls_temperaturecollector.txt)
 - [Gavazzi Controls](../../controls_gavazzi.txt)
 - [SolaX Controls](../../controls_solax.txt)
 
@@ -26,6 +27,8 @@ Für eine neue Installation sollte sie vollständig gelesen werden.
 - Fahrzeugbefehle für Verriegelung, Klimatisierung, Laden, Ladelimit, Hupe und Vorkonditionierung
 - Eigenständiges Dashboard mit Messwerten, Fahrzeugstatus und optionaler Standortkarte
 - Dashboard-Bearbeitung mit gespeicherter Tile-Reihenfolge, Sichtbarkeit und Labels
+  beim Aufruf über `get <name> _showDashboard`; die isolierte Dashboard-URL ist
+  nicht editierbar
 
 ## Schnellstart
 
@@ -84,4 +87,4 @@ Zusätzliche Datenbereiche sind über `scope_*` Attribute aktivierbar. Sie sind 
 - Das Fahrzeug-Detail-API dokumentiert eine Außen- und eine Innenbild-URL. Volvo weist darauf hin, dass diese URLs befristet sind und nicht dauerhaft zwischengespeichert werden sollen.
 - Access- und Refresh-Tokens sowie API-Zugangsdaten nicht veröffentlichen oder in Support-Ausgaben einfügen.
 
-Stand der Dokumentation: 27.10.2026
+Stand der Dokumentation: 28.10.2026

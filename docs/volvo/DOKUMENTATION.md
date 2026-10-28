@@ -1,6 +1,6 @@
 # VolvoConnect für FHEM: Installations- und Betriebsdokumentation
 
-Stand: 27.10.2026
+Stand: 28.10.2026
 
 ## Überblick
 
@@ -118,12 +118,13 @@ bei Netzwerk-, TLS- oder Berechtigungsfehlern den FHEM-Log prüfen.
 
 Für die anderen Module stehen eigene Controls-Dateien zur Verfügung:
 
+- `https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_temperaturecollector.txt`
 - `https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_gavazzi.txt`
 - `https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt`
 
 Das FHEM-Änderungsprotokoll heißt `CHANGED` und hat keine Dateiendung. Der GitHub-Actions-
 Workflow erzeugt diese Datei bei jedem Lauf automatisch aus den Git-Commits, ergänzt sie in
-alle drei Controls-Dateien und veröffentlicht sie zusammen. Dadurch können Änderungen nach
+alle vier Controls-Dateien und veröffentlicht sie zusammen. Dadurch können Änderungen nach
 einem FHEM-Update über das übliche FHEM-Änderungsprotokoll nachvollzogen werden.
 
 ### 3.2 Manuelle Installation
@@ -305,7 +306,12 @@ Vor sicherheitsrelevanten Befehlen wie `lock`, `unlock`, `horn` oder Klimatisier
 - `get <name> _dashboardURL` liefert die vollständige Dashboard-URL; alternativ ist es unter `<FHEM-URL>/VolvoConnect/<name>` erreichbar.
 - `get <name> _showDashboard` gibt die Dashboard-Seite direkt in FHEM aus.
 - Das Dashboard gruppiert verfügbare Readings in Kacheln und bietet Fahrzeugaktionen, Statusanzeigen sowie bei aktivem Standort-Scope eine Karte.
-- Das Bearbeiten-Symbol schaltet den Edit-Modus ein. Dort lassen sich Kacheln und Readings ein-/ausblenden sowie Labels und Reihenfolgen speichern.
+- Das Bearbeiten-Symbol wird nur beim Aufruf mit `get <name> _showDashboard`
+  angezeigt. Dort lassen sich Kacheln und Readings ein-/ausblenden sowie
+  Labels und Reihenfolgen speichern.
+- Die isolierte Ansicht über `_dashboardURL` beziehungsweise
+  `<FHEM-URL>/VolvoConnect/<name>` ist nicht editierbar und zeigt keinen
+  Bearbeitungsstift.
 - Die Vier-Wege-Pfeile schalten den kompakten Verschiebemodus. Dabei bleiben Kachelüberschriften sichtbar; Kacheln lassen sich an ihrer Fläche verschieben. Ein erneuter Klick öffnet alle Kacheln wieder.
 - Das Dashboard nutzt ein responsives Mehrspaltenlayout. Die gespeicherte DOM-Reihenfolge wird spaltenweise dargestellt; sie ist keine starre zeilenweise Links-nach-rechts-Anordnung.
 - Die Standortkachel zeigt standardmäßig Straße mit Hausnummer, Postleitzahl mit Ort, Bundesland, Land, Breitengrad, Längengrad und Positionszeitpunkt in fester Reihenfolge. Die Karte steht darunter.
@@ -313,7 +319,9 @@ Vor sicherheitsrelevanten Befehlen wie `lock`, `unlock`, `horn` oder Klimatisier
 - Das Fahrzeug-Detail-API liefert laut Volvo-Dokumentation eine generische Außen- und Innenbild-URL. Die URLs sind befristet und sollen nicht dauerhaft zwischengespeichert werden.
 - Der Fahrzeug-Detail-Endpoint wird aus Gründen der API-Ersparnis nur einmal je VIN geladen. Wenn die Bild-URLs abgelaufen sind, `set <name> update` ausführen, um sie neu abzurufen.
 
-Die Dashboard-Konfiguration wird je Gerät im FHEM-Key-Value-Store abgelegt. Für `Volvo1` lautet der Schlüssel `VolvoConnect_dashboard_Volvo1`. Um die komplette Layout-Konfiguration dieses Geräts auf Standard zurückzusetzen:
+Die Dashboard-Konfiguration wird je Gerät im FHEM-Key-Value-Store abgelegt. Für
+`Volvo1` lautet der Schlüssel `VolvoConnect_dashboard_Volvo1`. Um die komplette
+Layout-Konfiguration dieses Geräts auf Standard zurückzusetzen:
 
 ```fhem
 { setKeyValue("VolvoConnect_dashboard_Volvo1", undef) }

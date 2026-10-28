@@ -88,6 +88,7 @@ jobs:
 
           modules = {
               "controls_volvo.txt": "FHEM/50_VolvoConnect.pm",
+              "controls_temperaturecollector.txt": "FHEM/50_TemperatureCollector.pm",
               "controls_gavazzi.txt": "FHEM/70_GavazziEM24.pm",
               "controls_solax.txt": "FHEM/98_ModbusSolax.pm",
           }

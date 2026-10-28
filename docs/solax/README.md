@@ -14,6 +14,7 @@ liest Wechselrichter-, Batterie-, Netz- und PV-Werte.
 - Schreibbefehle für Betriebsart, Ladegrenzen, Einspeisebegrenzung und
   Zeitfenster
 - Integriertes Live-Dashboard
+- Langsam pulsierender grüner Statuspunkt bei bestehender Modbus-Verbindung
 
 ## Installation
 

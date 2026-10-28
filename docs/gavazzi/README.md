@@ -15,6 +15,8 @@ verwendet werden.
 - Modbus TCP über ein natives TCP-Gerät oder ein RTU-zu-TCP-Gateway wie `mbusd`
 - Schreibzugriffe auf vom Zähler unterstützte Holding-Register
 - Konfigurierbare Registerauswahl und integriertes Dashboard
+- Langsam pulsierender grüner Verbindungs-/Statuspunkt bei einem aktiven
+  beziehungsweise ordnungsgemäßen Zustand
 
 ## Installation
 

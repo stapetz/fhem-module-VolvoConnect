@@ -167,13 +167,17 @@ Konfiguration und einem unkritischen Testwert geprüft werden.
 
 ```fhem
 get GavazziEM24_1 _showDashboard
+get GavazziEM24_1 _dashboardURL
 get GavazziEM24_1 _showEntityConfig
 help GavazziEM24
 ```
 
 Das Entity-Config-Dialogfenster unterstützt bei der Auswahl der zu
 überwachenden Register. Das Dashboard zeigt die verfügbaren Messwerte und
-den Verbindungsstatus.
+den Verbindungsstatus. Der grüne Statuspunkt für einen aktiven beziehungsweise
+ordnungsgemäßen Zustand pulsiert langsam; Fehler-, Offline- und unbekannte
+Zustände bleiben rot beziehungsweise neutral. `_dashboardURL` liefert eine
+eigenständige Ansicht des Dashboards.
 
 ## Fehlerbehebung und Sicherheit
 

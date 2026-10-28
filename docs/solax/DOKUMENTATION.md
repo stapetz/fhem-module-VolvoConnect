@@ -95,7 +95,11 @@ help SolaxModbus
 ```
 
 Das Dashboard zeigt unter anderem PV-Leistung, Batteriefluss, Netzfluss und
-den Verbindungsstatus.
+den Verbindungsstatus. Bei einer aktiven Modbus-Verbindung pulsiert der grüne
+Statuspunkt langsam. Fehler- und unbekannte Zustände werden nicht als
+verbundener Status dargestellt. Die eigenständige URL-Ansicht ist über
+`get SolaxWR _dashboardURL` verfügbar und dient der Anzeige ohne
+Bearbeitungsfunktion.
 
 ## Hinweise
 
