@@ -773,11 +773,13 @@ sub GetFn {
 <a id="GavazziEM24"></a>
 <h3>GavazziEM24</h3>
 
-This read-only logical Modbus device reads Carlo Gavazzi EM24-DIN PFA, PFB and
-X meters. Its register map follows the manufacturer's EM24-DIN Communication
-Protocol, Version 4 Revision 0. Signed and unsigned 32-bit readings use the
-meter's low-word-first register order; values are scaled to the documented
-engineering units.
+This logical Modbus device reads Carlo Gavazzi EM24-DIN PFA, PFB and X meters.
+Its register map follows the manufacturer's EM24-DIN Communication Protocol,
+Version 4 Revision 0. Signed and unsigned 32-bit readings use the meter's
+low-word-first register order; values are scaled to the documented engineering
+units. Input registers are read via function 04 and corresponding holding
+registers are available via function 03. Writable holding registers can be
+changed with the generic Modbus set commands where the meter permits it.
 <br><br>
 
 <b>Define</b>
@@ -788,6 +790,12 @@ engineering units.
     <code>attr &lt;name&gt; IODev GavazziRS485</code>.<br>
     To select another meter ID explicitly, use
     <code>define &lt;name&gt; GavazziEM24 &lt;id&gt; passive RTU</code>.
+    A physical Modbus IO device can also use Modbus TCP, for example
+    <code>define GavazziTCP Modbus 192.168.1.50:502</code>, when a native TCP
+    meter or an RTU-to-TCP gateway such as <code>mbusd</code> is available.
+    Assign it with <code>attr &lt;name&gt; IODev GavazziTCP</code>; the meter's
+    Modbus slave ID remains unchanged. TCP connections use active polling;
+    passive mode is intended for a serial RTU bus.
 </ul>
 
 <b>Attributes</b>
@@ -804,8 +812,18 @@ engineering units.
     In passive mode, readings are updated only for registers requested by the
     external Modbus master. Both function 03 (holding registers) and function
     04 (input registers) are mapped. Registers the external master never reads
-    cannot produce readings in passive mode. Reset commands and other write
-    operations are not exposed.
+    cannot produce readings in passive mode.
+</ul>
+
+<b>Writing registers</b>
+<ul>
+    Corresponding holding-register entries can be written through the inherited
+    Modbus set handling, for example
+    <code>set &lt;name&gt; demandIntegrationTime 15</code> or
+    <code>set &lt;name&gt; modbusAddress 2</code>, if the meter model and register
+    support the operation. The manufacturer's register permissions and any
+    required parameter password or save sequence must be followed. Input
+    registers and read-only meter values cannot be written.
 </ul>
 
 <b>Dashboard</b>
@@ -1019,4 +1037,3 @@ __ROWS__
     refreshToggleButton();
 })();
 </script>
-

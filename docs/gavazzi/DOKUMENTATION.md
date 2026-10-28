@@ -1,14 +1,17 @@
 # GavazziEM24 – Dokumentation
 
-Diese Anleitung beschreibt die Installation und den Betrieb des logischen,
-read-only FHEM-Moduls `GavazziEM24` für Carlo-Gavazzi-EM24-DIN-Zähler.
+Diese Anleitung beschreibt die Installation und den Betrieb des logischen
+FHEM-Moduls `GavazziEM24` für Carlo-Gavazzi-EM24-DIN-Zähler. Das Modul kann
+über Modbus RTU oder Modbus TCP kommunizieren und unterstützt neben dem Lesen
+auch Schreibzugriffe auf geeignete Holding-Register.
 
 ## Voraussetzungen
 
 - FHEM mit dem Modbus-Toolkit
-- Ein Gavazzi EM24 mit erreichbarer Modbus-RTU-Verbindung
+- Ein Gavazzi EM24 mit erreichbarer Modbus-RTU- oder Modbus-TCP-Verbindung
 - Ein FHEM-Modbus-IO-Device und die Geräte-ID des Zählers
-- Eine passende serielle Schnittstelle und Baudrate
+- Bei RTU: eine passende serielle Schnittstelle und Baudrate
+- Bei TCP: IP-Adresse und Port des nativen TCP-Geräts oder des Gateways
 
 Die Registerkarte folgt dem EM24-DIN Communication Protocol, Version 4,
 Revision 0. Unterstützt werden die EM24-DIN-Varianten PFA, PFB und X, soweit
@@ -26,6 +29,8 @@ Alternativ kann [`70_GavazziEM24.pm`](../../FHEM/70_GavazziEM24.pm) in das
 FHEM-Modulverzeichnis kopiert werden.
 
 ## IO-Device und Gerät anlegen
+
+### Modbus RTU
 
 Ein passives RTU-Gerät wird typischerweise zusammen mit einem Modbus-IO-Device
 angelegt:
@@ -47,6 +52,63 @@ attr GavazziEM24_2 IODev GavazziRS485
 Die verwendete Schnittstelle, Baudrate, Geräte-ID und der Polling-Modus müssen
 zur konkreten Installation passen.
 
+### Modbus TCP
+
+Bei einem Gavazzi-Zähler mit nativer Modbus-TCP-Schnittstelle oder einem
+RTU-zu-TCP-Gateway wird ein TCP-Modbus-IO-Device verwendet:
+
+```fhem
+define GavazziTCP Modbus 192.168.1.50:502
+define GavazziEM24_TCP GavazziEM24 1 active TCP
+attr GavazziEM24_TCP IODev GavazziTCP
+```
+
+`192.168.1.50` ist durch die IP-Adresse des Geräts oder Gateways zu ersetzen.
+Der TCP-Port ist üblicherweise `502`. Die Slave-ID `1` muss der am EM24
+eingestellten Modbus-ID entsprechen. Bei einem RTU-zu-TCP-Gateway bleibt die
+Slave-ID des Zählers unverändert; das Gateway übersetzt nur den Transportweg.
+Bei einer TCP-Verbindung wird aktives Polling verwendet, da der passive Modus
+des Moduls einen seriellen RTU-Bus voraussetzt.
+
+#### RTU-zu-TCP mit `mbusd`
+
+Ein Raspberry Pi kann einen USB-RS485-Adapter mit `mbusd` als Modbus-TCP-
+Gateway bereitstellen. Die grundlegenden Schritte sind:
+
+```bash
+ls /dev/ttyUSB*
+sudo apt update
+sudo apt install mbusd -y
+sudo nano /etc/mbusd/mbusd.conf
+```
+
+Eine typische Konfiguration für einen Adapter unter `/dev/ttyUSB0` und einen
+9600-8N1-Bus enthält:
+
+```ini
+device = /dev/ttyUSB0
+speed = 9600
+mode = 8n1
+address = 0.0.0.0
+port = 502
+maxconn = 32
+timeout = 60
+retries = 3
+pause = 100
+```
+
+Danach den Dienst neu starten, aktivieren und prüfen:
+
+```bash
+sudo systemctl restart mbusd
+sudo systemctl enable mbusd
+sudo systemctl status mbusd
+```
+
+In FHEM wird anschließend die IP-Adresse des Raspberry Pi als Modbus-TCP-
+IO-Device verwendet. Das Gateway muss aus dem FHEM-Netz erreichbar sein;
+Port `502` darf nicht ungeschützt aus dem Internet erreichbar sein.
+
 ## Betriebsarten
 
 Passiv ist der Standardmodus. In diesem Modus aktualisiert das Modul Readings,
@@ -67,7 +129,7 @@ attr GavazziEM24_1 pollIntervalPower 5
 separaten Abruf der aktuellen Phasenleistung. Die Intervalle sollten zur
 Buslast und zur Anzahl der Modbus-Geräte passen.
 
-## Readings und Registerauswahl
+## Readings, Registerauswahl und Schreibzugriffe
 
 Typische Readings sind Spannungen (`voltageL1N`, `voltageL2N`,
 `voltageL3N`), Ströme (`currentL1`, `currentL2`, `currentL3`) und
@@ -83,6 +145,23 @@ attr GavazziEM24_1 pollRegisters i0=1,i2=0,i4=1
 
 Die verfügbaren Register und die Standardauswahl sind in der Modulhilfe
 dokumentiert.
+
+Die Moduldefinition erzeugt für die Registerkarte entsprechende Holding-
+Register-Einträge. Soweit der EM24 das jeweilige Register als schreibbar
+definiert, kann der Wert über die generische Modbus-Set-Funktion geändert
+werden, beispielsweise:
+
+```fhem
+set GavazziEM24_1 demandIntegrationTime 15
+set GavazziEM24_1 modbusAddress 2
+```
+
+Welche Register tatsächlich geschrieben werden dürfen, hängt vom EM24-Modell
+und der Herstellerdokumentation ab. Input-Register (`i...`) und reine
+Messwertregister sind nicht schreibbar. Bei Konfigurationsregistern können
+zusätzliche Freigaben, ein Parameter-Passwort oder ein Speichervorgang
+erforderlich sein. Schreibzugriffe sollten zuerst mit einer gesicherten
+Konfiguration und einem unkritischen Testwert geprüft werden.
 
 ## Dashboard und Hilfe
 

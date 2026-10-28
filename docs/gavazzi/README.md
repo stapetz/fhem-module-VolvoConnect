@@ -1,8 +1,9 @@
 # GavazziEM24 für FHEM
 
 GavazziEM24 bindet einen Gavazzi-EM24-Energiezähler über Modbus in FHEM ein.
-Das read-only-Modul unterstützt passive RTU-Konfigurationen, aktives Polling
-und ein Web-Dashboard.
+Das Modul unterstützt passive RTU-Konfigurationen, aktives Polling, Modbus TCP
+und ein Web-Dashboard. Für passende Holding-Register können auch Schreibzugriffe
+verwendet werden.
 
 ## Funktionen
 
@@ -11,6 +12,8 @@ und ein Web-Dashboard.
 - Modbus-Funktionen 03 (Holding Register) und 04 (Input Register)
 - Passives Mithören eines externen Modbus-Masters
 - Optionales aktives Polling mit getrenntem Intervall für Phasenleistung
+- Modbus TCP über ein natives TCP-Gerät oder ein RTU-zu-TCP-Gateway wie `mbusd`
+- Schreibzugriffe auf vom Zähler unterstützte Holding-Register
 - Konfigurierbare Registerauswahl und integriertes Dashboard
 
 ## Installation
