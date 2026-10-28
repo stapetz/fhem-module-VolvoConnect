@@ -2,6 +2,7 @@
 # Generated from Git commits by the GitHub Actions workflow.
 # Keep this file ASCII-only and use lines no longer than 80 characters.
 
+- change: 2026-10-28 e0e88ab initiales commit fur Gavazzi Modul und SolaxModul
 - change: 2026-10-28 01ee194 Kurze Textanpassung Readme
 - change: 2026-10-27 9fa5274 automatisierte change Eintrage, Anpassung
   Dokumentation und Readme.
