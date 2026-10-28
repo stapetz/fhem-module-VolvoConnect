@@ -96,7 +96,7 @@ Das Modul kann ohne manuellen Download direkt aus dem GitHub-Repository installi
 Dazu im oberen Eingabefeld des FHEM-Browserfensters folgenden Befehl eingeben:
 
 ```fhem
-update add https://raw.github.com/stapetz/fhem-module-VolvoConnect.git/controls_volvo.txt
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_volvo.txt
 ```
 
 Anschließend innerhalb von FHEM ein Update ausführen. FHEM liest dabei die Controls-Datei
@@ -116,10 +116,15 @@ Bei späteren Modulversionen kann derselbe FHEM-Updateweg erneut verwendet werde
 Update sollte die FHEM-Konfiguration gesichert werden. Die GitHub-Adresse muss erreichbar sein;
 bei Netzwerk-, TLS- oder Berechtigungsfehlern den FHEM-Log prüfen.
 
+Für die anderen Module stehen eigene Controls-Dateien zur Verfügung:
+
+- `https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_gavazzi.txt`
+- `https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt`
+
 Das FHEM-Änderungsprotokoll heißt `CHANGED` und hat keine Dateiendung. Der GitHub-Actions-
 Workflow erzeugt diese Datei bei jedem Lauf automatisch aus den Git-Commits, ergänzt sie in
-`controls_volvo.txt` und veröffentlicht beide Dateien zusammen. Dadurch können Änderungen
-nach einem FHEM-Update über das übliche FHEM-Änderungsprotokoll nachvollzogen werden.
+alle drei Controls-Dateien und veröffentlicht sie zusammen. Dadurch können Änderungen nach
+einem FHEM-Update über das übliche FHEM-Änderungsprotokoll nachvollzogen werden.
 
 ### 3.2 Manuelle Installation
 

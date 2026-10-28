@@ -1,5 +1,5 @@
 ##############################################################################
-# $Id: 70_SolaxModbus.pm $
+# $Id: 98_ModbusSolax.pm $
 #
 # FHEM-Modul für den SolaX X-Hybrid Wechselrichter SK-SU5000
 # (getestet mit Firmware Solax_SI_CH_2nd_20160912_DE02, "Generation 2"
