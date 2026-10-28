@@ -1,4 +1,4 @@
-# VolvoConnect für FHEM
+# VolvoConnect für FHEM mittels Volvo api
 
 VolvoConnect verbindet ein FHEM-Gerät mit den offiziellen Volvo Cars APIs. Das Modul liest Energie-, Fahrzeug-, Diagnose- und Standortdaten und stellt ausgewählte Fahrzeugbefehle bereit. Es handelt sich um ein Community-Modul, nicht um ein von Volvo Cars herausgegebenes Produkt.
 
