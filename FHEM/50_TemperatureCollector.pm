@@ -502,26 +502,28 @@ sub TemperatureCollector_BuildDashboard {
     $step = 30 if (!defined($step) || $step !~ /^\d+$/ || $step < 5 || $step > 240);
     my $html = <<'HTML';
 <style>
-.tc-dashboard{font:14px sans-serif;color:#e8f0ea;background:#151f1b;max-width:980px;padding:14px;border-radius:8px}
-.tc-header{position:relative;display:flex;justify-content:space-between;align-items:center;gap:16px;margin:0 0 16px;padding:4px 2px 14px;border-bottom:1px solid #3a4b43}
-.tc-header-actions{display:flex;align-items:center;gap:8px}.tc-edit{border:1px solid #587066;border-radius:4px;background:#26382f;color:#e8f0ea;cursor:pointer;font-size:18px;width:30px;height:30px}
-.tc-clock{position:absolute;left:56%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;color:#c9d8cd}.tc-clock-face{width:44px;height:44px}.tc-clock-face circle{fill:#1d2a24;stroke:#75c5a0;stroke-width:1.5}.tc-clock-face line{stroke:#9db0a4;stroke-width:1}.tc-clock-face .tc-tick-major{stroke:#e8f0ea;stroke-width:1.8}.tc-clock-face .tc-hand-hour{stroke:#e8f0ea;stroke-width:2}.tc-clock-face .tc-hand-minute{stroke:#75c5a0;stroke-width:1.5}.tc-clock-face .tc-hand-second{stroke:#e07b65;stroke-width:1}.tc-clock-date{font-size:11px;white-space:nowrap;color:#9db0a4}
+.tc-dashboard{font:14px 'Avenir Next','Helvetica Neue',sans-serif;color:#f4f4e9;background:#1d2825;width:100%;max-width:1120px;margin:0 auto;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a;overflow:hidden}
+.tc-header{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:76px;margin:0;padding:15px 24px;background:#202e29;border-bottom:1px solid #405149}
+.tc-header-actions{display:flex;align-items:center;gap:8px}.tc-edit{width:38px;height:38px;padding:0;border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 18px 'Helvetica Neue',sans-serif;line-height:1}
+.tc-clock{position:absolute;left:56%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;color:#c9d8cd}.tc-clock-face{width:44px;height:44px}.tc-clock-face circle{fill:#1d2825;stroke:#52bd8b;stroke-width:1.5}.tc-clock-face line{stroke:#a9b7ac;stroke-width:1}.tc-clock-face .tc-tick-major{stroke:#f4f4e9;stroke-width:1.8}.tc-clock-face .tc-hand-hour{stroke:#f4f4e9;stroke-width:2}.tc-clock-face .tc-hand-minute{stroke:#52bd8b;stroke-width:1.5}.tc-clock-face .tc-hand-second{stroke:#e07b65;stroke-width:1}.tc-clock-date{font-size:11px;white-space:nowrap;color:#a9b7ac}
+@media(max-width:760px){.tc-header{padding:13px 15px}.tc-grid{padding:16px 15px 18px}}
 @media(max-width:640px){.tc-clock{display:none}}
-.tc-brand{display:flex;align-items:center;gap:10px}.tc-brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#75c5a0;color:#102019;font-size:20px;font-weight:700}
-.tc-brand small{display:block;color:#9db0a4;font-size:10px;letter-spacing:.08em}.tc-brand h1{margin:2px 0 0;font-size:22px;line-height:1.1}
-.tc-live{display:flex;align-items:center;gap:8px;color:#9db0a4}.tc-led{width:9px;height:9px;border-radius:50%;background:#75c5a0;box-shadow:0 0 8px #75c5a0;animation:tc-live-pulse 4s ease-in-out infinite}@keyframes tc-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #75c5a0}50%{opacity:1;box-shadow:0 0 10px #75c5a0}}
-.tc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
-.tc-card{border:1px solid #3a4b43;border-radius:8px;background:#1d2a24;overflow:hidden;box-shadow:0 2px 8px #0b100d}
-.tc-card summary{cursor:pointer;list-style:none;padding:14px;display:flex;justify-content:space-between;gap:12px}
+.tc-brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}.tc-brand-mark{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;background:transparent;color:#52bd8b;font:700 22px Georgia,serif}
+.tc-brand small{display:block;color:#a9b7ac;font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px}.tc-brand h1{margin:3px 0;font:500 22px Georgia,serif;letter-spacing:0;line-height:1.1}
+.tc-live{display:flex;align-items:center;gap:8px;color:#a9b7ac}.tc-led{width:9px;height:9px;border-radius:50%;background:#52bd8b;box-shadow:0 0 8px #52bd8b;animation:tc-live-pulse 4s ease-in-out infinite}@keyframes tc-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #52bd8b}50%{opacity:1;box-shadow:0 0 10px #52bd8b}}
+.tc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:22px 24px 24px;background:linear-gradient(155deg,#26352e,#1b2823 62%,#202c27)}
+.tc-card{border:0;border-top:2px solid #52bd8b;border-radius:0;background:#26342d;overflow:hidden;box-shadow:none;padding:0 15px 0}
+.tc-card:nth-child(3n){border-top-color:#e3b953}.tc-card:nth-child(3n+2){border-top-color:#8ab6d1}
+.tc-card summary{cursor:pointer;list-style:none;padding:14px 0;display:flex;justify-content:space-between;gap:12px}
 .tc-card summary::-webkit-details-marker{display:none}
-.tc-name{font-weight:600}.tc-type,.tc-meta,.tc-muted{color:#9db0a4;font-size:12px}
-.tc-value{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:22px;font-weight:600;white-space:nowrap;color:#f0f7f1}.tc-temperature{font-size:22px}.tc-humidity{font-size:13px;color:#8ec4d3}
-.tc-detail{border-top:1px solid #3a4b43;padding:12px}.tc-chart-wrap{overflow-x:auto}.tc-chart-title{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#9db0a4;font-size:12px;margin-bottom:4px}.tc-chart-controls{display:flex;gap:3px}.tc-chart-controls button{border:1px solid #587066;border-radius:4px;background:#26382f;color:#e8f0ea;cursor:pointer;min-width:24px;height:24px}.tc-chart{display:block;width:100%;min-width:560px;height:190px;background:#17231f}
-.tc-axis{stroke:#587066;stroke-width:1}.tc-axis-label,.tc-axis-value{fill:#9db0a4;font-size:10px}.tc-history-toggle{border:1px solid #587066;border-radius:50%;background:#26382f;color:#e8f0ea;cursor:pointer;font-size:18px;height:28px;width:28px;line-height:20px;margin-top:12px}.tc-history-panel[hidden]{display:none}
-.tc-chart polyline{fill:none;stroke:#75c5a0;stroke-width:3;vector-effect:non-scaling-stroke}.tc-chart .tc-series-humidity polyline{stroke:#79aeca}.tc-series-hidden{display:none}.tc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.tc-legend-item{border:0;background:transparent;color:#9db0a4;cursor:pointer;padding:0;font:inherit;font-size:12px}.tc-legend-item.tc-legend-hidden{opacity:.45;text-decoration:line-through}.tc-legend-item i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#75c5a0;margin-right:5px}.tc-legend-item .tc-legend-humidity{background:#79aeca}
-.tc-history{border-collapse:collapse;width:100%;margin-top:12px;font-size:12px}.tc-history th,.tc-history td{padding:4px 6px;border-bottom:1px solid #3a4b43;text-align:left}
+.tc-name{font-weight:600}.tc-type,.tc-meta,.tc-muted{color:#a9b7ac;font-size:12px}
+.tc-value{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:22px;font-weight:600;white-space:nowrap;color:#edf0e6}.tc-temperature{font-size:22px}.tc-humidity{font-size:13px;color:#8ab6d1}
+.tc-detail{border-top:1px solid #46534a;padding:12px 0}.tc-chart-wrap{overflow-x:auto}.tc-chart-title{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#a9b7ac;font-size:12px;margin-bottom:4px}.tc-chart-controls{display:flex;gap:3px}.tc-chart-controls button{border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;min-width:24px;height:24px;font:600 12px 'Helvetica Neue',sans-serif}.tc-chart{display:block;width:100%;min-width:560px;height:190px;background:#202e29}
+.tc-axis{stroke:#69796f;stroke-width:1}.tc-axis-label,.tc-axis-value{fill:#a9b7ac;font-size:10px}.tc-history-toggle{border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font-size:18px;height:28px;width:28px;line-height:20px;margin-top:12px}.tc-history-panel[hidden]{display:none}
+.tc-chart polyline{fill:none;stroke:#52bd8b;stroke-width:3;vector-effect:non-scaling-stroke}.tc-chart .tc-series-humidity polyline{stroke:#8ab6d1}.tc-series-hidden{display:none}.tc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.tc-legend-item{border:0;background:transparent;color:#a9b7ac;cursor:pointer;padding:0;font:inherit;font-size:12px}.tc-legend-item.tc-legend-hidden{opacity:.45;text-decoration:line-through}.tc-legend-item i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#52bd8b;margin-right:5px}.tc-legend-item .tc-legend-humidity{background:#8ab6d1}
+.tc-history{border-collapse:collapse;width:100%;margin-top:12px;font-size:12px}.tc-history th,.tc-history td{padding:4px 6px;border-bottom:1px solid #46534a;text-align:left}
 .tc-error{padding:12px;border:1px solid #a45b5b;background:#321f1f;color:#ffd9d9}
-.tc-reorder-mode .tc-card{cursor:move;outline:1px dashed #75c5a0;outline-offset:3px}.tc-reorder-mode .tc-card summary{pointer-events:none}.tc-card.tc-dragging{opacity:.45}
+.tc-reorder-mode .tc-card{cursor:move;outline:1px dashed #52bd8b;outline-offset:3px}.tc-reorder-mode .tc-card summary{pointer-events:none}.tc-card.tc-dragging{opacity:.45}
 .tc-list-view .tc-grid{grid-template-columns:1fr}.tc-list-view .tc-card summary{align-items:center}
 </style>
 <div class="tc-dashboard">
@@ -701,7 +703,7 @@ sub main::TemperatureCollector_CGI {
     return ('text/html; charset=utf-8', '<!doctype html><html lang="de"><head><meta charset="utf-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>TemperatureCollector - ' . TemperatureCollector_Escape($name)
-        . '</title></head><body style="margin:0;padding:16px;background:#151f1b">'
+        . '</title></head><body style="margin:0;padding:12px;background:#151f1b">'
         . $html . '</body></html>');
 }
 
