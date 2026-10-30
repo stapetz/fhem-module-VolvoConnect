@@ -2,6 +2,8 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 f0240b7 Release GavazziEM24 1.0.2
+  Optische Anpassungen und kleine Optimierungen.
 - change: 2026-10-30 3b14e7d Initialer Hauptstand: alle Module in Version 1.0.0
   DashboardHub 1.0.0
   TemperatureCollector 1.0.0

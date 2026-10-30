@@ -1,0 +1,7 @@
+# ThermostatDashboard change history
+# Generated from Git commits by scripts/generate_changed.py.
+# Keep this file ASCII-only and use lines no longer than 79 characters.
+
+- change: 2026-10-30 b5fb7ab Release ThermostatDashboard 1.3.0
+  Neues Modul Thermostate Dashboard.
+  Angelehnt an VolvoConnect und GavazziEM24.

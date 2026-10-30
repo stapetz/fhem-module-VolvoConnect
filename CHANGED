@@ -2,6 +2,24 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 8224daf Release SolaxModbus 1.0.2 [SolaxModbus]
+  Optische Anpassungen und kleine Optimierungen.
+- change: 2026-10-30 f0240b7 Release GavazziEM24 1.0.2 [GavazziEM24]
+  Optische Anpassungen und kleine Optimierungen.
+- change: 2026-10-30 1a99290 Release VolvoConnect 1.0.2 [VolvoConnect]
+  Optische Anpassungen und kleine Optimierungen.
+- change: 2026-10-30 8105e07 Release TemperatureCollector 1.0.3
+  [TemperatureCollector]
+  Statuspunkt im Dashboard-Kopfbereich entfernt.
+- change: 2026-10-30 72adff9 Release DashboardHub 1.0.1 [DashboardHub]
+  ThermostatDashboard wird automatisch erkannt.
+  Optische Abstaende und Darstellung vereinheitlicht.
+- documentation: 2026-10-30 0f7a61e docs: add ThermostatDashboard to main
+  installation
+- change: 2026-10-30 b5fb7ab Release ThermostatDashboard 1.3.0
+  [ThermostatDashboard]
+  Neues Modul Thermostate Dashboard.
+  Angelehnt an VolvoConnect und GavazziEM24.
 - change: 2026-10-30 3b14e7d Initialer Hauptstand: alle Module in Version 1.0.0
   [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus, DashboardHub]
   DashboardHub 1.0.0
