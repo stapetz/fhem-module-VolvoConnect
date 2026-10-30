@@ -134,6 +134,15 @@ speichert. Vor einer Umstellung eine repositorybezogene Namenskonvention festleg
 `controls_stapetz_fhem_modules_<modul>.txt`. Dann Workflow, Dokumentation und
 `update add`-Befehle gemeinsam anpassen. Bis dahin die bestehenden Dateinamen beibehalten.
 
+### TODO: Sicherer Zugriff auf die FHEM-Umgebung
+
+Klären und dokumentieren, wie der Entwicklungsrechner bzw. ein KI-Agent bei Bedarf sicher auf
+FHEM im lokalen Netzwerk zugreifen kann. Eine Lösung soll den Zugang auf das private Netz
+begrenzen, möglichst mit VPN oder einem abgesicherten Tunnel und einem separaten, minimal
+berechtigten Konto arbeiten. Zugangsdaten oder Tokens niemals in dieses Repository oder in
+Chatnachrichten aufnehmen. Zunächst nur Erreichbarkeit bzw. lesende Prüfungen erlauben;
+Änderungen und ausführbare FHEM-Befehle nur nach konkreter Freigabe durch den Betreiber.
+
 ## Aktualisieren und Testen in FHEM
 
 - Nach `update` ist `shutdown restart` nötig, ein `reload` genügt bei den Modbus-Modulen nicht
