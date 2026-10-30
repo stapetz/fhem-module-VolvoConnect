@@ -125,6 +125,15 @@ FHEM leitet den Typ aus dem Dateinamen ab: `70_SolaxModbus.pm` registriert den T
 `98_ModbusSolax.pm` und wurde deshalb nie benutzt (Typ `ModbusSolax`). Beim Umbenennen eines
 Moduls bleibt die alte Datei bei Nutzern liegen, da `update` nichts löscht.
 
+### TODO: Controls-Dateien eindeutig benennen
+
+Die aktuellen Namen `controls_all.txt` und `controls_<modul>.txt` sind generisch und können
+mit Controls-Dateien anderer Update-Quellen kollidieren, da FHEM sie lokal im FHEM-Verzeichnis
+speichert. Vor einer Umstellung eine repositorybezogene Namenskonvention festlegen, z. B.
+`controls_stapetz_fhem_modules_all.txt` und
+`controls_stapetz_fhem_modules_<modul>.txt`. Dann Workflow, Dokumentation und
+`update add`-Befehle gemeinsam anpassen. Bis dahin die bestehenden Dateinamen beibehalten.
+
 ## Aktualisieren und Testen in FHEM
 
 - Nach `update` ist `shutdown restart` nötig, ein `reload` genügt bei den Modbus-Modulen nicht
