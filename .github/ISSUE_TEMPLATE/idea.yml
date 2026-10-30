@@ -1,0 +1,16 @@
+name: Idee oder Frage
+description: Wunsch, Verbesserungsvorschlag oder Frage zu einem Modul
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Modul
+      options: [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus, Sonstiges]
+    validations: {required: true}
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung
+      description: Issues sind öffentlich, bitte keine Passwörter, Tokens oder Adressen posten.
+    validations: {required: true}

@@ -1,0 +1,130 @@
+# FHEM modules change history
+# Generated from Git commits by scripts/generate_changed.py.
+# Keep this file ASCII-only and use lines no longer than 79 characters.
+
+- change: 2026-10-30 e052282 Doku: Versionen und Release einzelner Module
+- change: 2026-10-30 a156270 Versionsnummern je Modul und Release-Skript
+  [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus, DashboardHub]
+- change: 2026-10-30 e1836a3 DashboardHub: Navigation als eigener Kasten mit
+  dunklem Abstand [DashboardHub]
+- change: 2026-10-30 5f0404f DashboardHub: oberer Abstand von Inhalt und
+  Navigation auf 6px [DashboardHub]
+- change: 2026-10-30 f9e1345 dev-docs: Update-Befehle fuer dev und main
+  aufgenommen
+- change: 2026-10-30 dfdc338 Entwicklungsablauf mit dev-Branch und interne
+  Dokumentation
+  Workflow erzeugt controls/CHANGED auch fuer den Branch dev
+  dev-docs/ENTWICKLUNG.md: Ablauf, Design-Regeln, Hub-Architektur, Fallstricke
+  AGENTS.md verweist darauf
+- change: 2026-10-30 f4e8148 Dashboards: Kopfzeile einheitlich 76px,
+  Volvo-Embed ohne doppelten Rand [VolvoConnect, GavazziEM24, SolaxModbus,
+  DashboardHub]
+  Kopfzeilen von Gavazzi, Solax und Volvo ohne vertikales Padding (waren 80px)
+  Hub: Padding des Volvo-Embed-Wurzelelements entfernt (24px statt 12px Rand)
+- change: 2026-10-30 5a61a13 Dashboards: einheitliche Zeilenhoehe und
+  Ueberschriften-Stile [VolvoConnect, TemperatureCollector, GavazziEM24,
+  SolaxModbus, DashboardHub]
+  line-height 1.4 im Wurzelelement aller Dashboards und im Hub, h1 mit 1.1,
+  damit FHEMWEB-Werte die Kopfzeilen nicht mehr unterschiedlich hoch machen
+  Gavazzi/Solax: Kicker-Stil gilt jetzt auch fuer small in Abschnittskoepfen
+- change: 2026-10-30 027280a SolaxModbus: Moduldatei in 70_SolaxModbus.pm
+  umbenannt [SolaxModbus]
+  FHEM leitet den Typ aus dem Dateinamen ab. 98_ModbusSolax.pm registrierte
+  den Typ ModbusSolax, Geraete nutzen aber SolaxModbus, daher wurde die Datei
+  nie verwendet.
+- change: 2026-10-30 334e087 DashboardHub: get diagnose zeigt Erkennungsstatus
+  pro Geraet [DashboardHub]
+- change: 2026-10-30 d8c805c Volvo: Standortkarte ohne iframe,
+  TemperatureCollector: Kopfzeile 76px [VolvoConnect, TemperatureCollector]
+  OSM-Kacheln statt eingebettetem iframe
+  TC-Kopfzeile feste Hoehe wie bei den anderen Dashboards
+- change: 2026-10-30 ab2c0bc DashboardHub: Dashboards ohne iframe direkt
+  einbinden [DashboardHub]
+  Fragment (_dashboardEmbedURL) wird per fetch in die Seite geladen
+  Skripte der Dashboards werden ausgefuehrt, Timer des vorherigen Dashboards
+  beim Wechsel beendet
+  Einheitlicher Rand und volle Breite per CSS im Hub
+  Dokumentation angepasst
+- change: 2026-10-30 3cb0bfa DashboardHub: Umlaute in Namen korrigiert,
+  einheitliche Raender [DashboardHub]
+  Gespeicherte Namen und Titel beim Laden in UTF-8-Bytes wandeln
+  (decode_json lieferte Zeichen, Alias der Geraete Bytes)
+  Eingebettete Dashboards erhalten einheitlich 12 px Rand und volle Breite
+  Dokumentation angepasst
+- change: 2026-10-30 30b747e Einheitliche Abstaende in den Dashboards,
+  Statusmeldung blendet aus [TemperatureCollector, DashboardHub]
+  TemperatureCollector: @media-Regeln nach die Basisregeln verschoben, damit
+  die schmalen Innenabstaende wie bei Volvo, Gavazzi und Solax greifen
+  DashboardHub: Statusmeldung "Gespeichert" verschwindet nach 4 Sekunden
+- change: 2026-10-30 3cbafe5 DashboardHub: Speichern ueber den Stift, Pfeile
+  und Buttons entfernt [DashboardHub]
+  Erneuter Klick auf den Stift speichert (nur bei Aenderungen)
+  Buttons Speichern/Abbrechen und Auf/Ab-Pfeile entfernt, Sortieren per Ziehen
+  Statuszeile unter der Ueberschrift der Navigation
+  Dokumentation angepasst
+- change: 2026-10-30 8aed2bc DashboardHub: Speichern ueber set-Befehl wie in
+  den anderen Dashboards [DashboardHub]
+  Speichern per /fhem?cmd=set <name> saveConfig mit CSRF-Token (wie Volvo)
+  Fehler werden per Alert und Statuszeile angezeigt
+  SetFn quittiert mit "Dashboard-Konfiguration gespeichert."
+  Log-Level der Speichermeldungen auf 2
+- change: 2026-10-30 d59d21f DashboardHub: Logging beim Speichern der
+  Konfiguration [DashboardHub]
+- change: 2026-10-30 666ae89 DashboardHub: Speichern von Namen und Reihenfolge
+  korrigiert [DashboardHub]
+  Speichern wertet Antwort "gespeichert" aus (wie TemperatureCollector)
+  Fallback ueber set saveConfig sendet CSRF-Token
+  Ueberschrift der Navigation im Editiermodus umbenennbar
+  Dokumentation angepasst
+- change: 2026-10-30 13d47bf Neues Modul Dashboard HUB zur Verwaltung und
+  Integration aller Module, die ein Dashboard innehaben [DashboardHub]
+- change: 2026-10-30 07a5d69 embedded Dashboard view TemperatureCollector
+  angepasst [TemperatureCollector]
+- change: 2026-10-30 c8be507 Dokumentation und Layoutanpassungen fur die
+  embedded URL fur ftui [VolvoConnect, TemperatureCollector, GavazziEM24,
+  SolaxModbus]
+- change: 2026-10-30 5ef24ee Hilfen und Kontaktinformationen angepasst.
+  [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus]
+- change: 2026-10-30 0739b5e - grafische Anpassungen in den Dashboards -
+  Aufteilung der readme fur einzelene bereiche und eine fur alle Module -
+  verandertes Verhalten fur Editieren / Speichern in den Dashboards
+  [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus]
+- change: 2026-10-28 f3f93a7 Farben und schriften angepasst
+  [TemperatureCollector]
+- change: 2026-10-28 a8d5083 Erweitere Dashboards und Dokumentation
+  [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus]
+- change: 2026-10-28 629cbe6 dokumentation gavazzi angepasst [GavazziEM24]
+- change: 2026-10-28 2fa0b0e ordnerstruktur und dokumentation angepasst
+  [VolvoConnect, GavazziEM24, SolaxModbus]
+- change: 2026-10-28 e0e88ab initiales commit fur Gavazzi Modul und SolaxModul
+  [GavazziEM24, SolaxModbus]
+- change: 2026-10-28 01ee194 Kurze Textanpassung Readme
+- change: 2026-10-27 9fa5274 automatisierte change Eintrage, Anpassung
+  Dokumentation und Readme.
+- change: 2026-10-27 a45f7fb dokumentationsfile hinzugefugt
+- change: 2026-10-27 0521ad0 workflow angepasst
+- change: 2026-10-27 3ba03df Corrected Readme
+- change: 2026-10-27 8a25f11 Struktur sauber gemacht
+- change: 2026-10-27 2db6889 Update README to remove module references
+  Removed SolaxModbus and Gavazzi Stromzahler from README.
+- change: 2026-10-27 f713b3b Nur noch VolvoModul [GavazziEM24]
+- change: 2026-10-27 b6fa30c Gavazzi aus projekt geloscht
+- change: 2026-10-27 0a26e7c workflow korrigiert
+- change: 2026-10-27 e4df637 Workflow korrigiert
+- change: 2026-10-27 555d619 Workflow korrigiert
+- change: 2026-10-27 57ebcdb Workflow verschoben
+- change: 2026-10-27 e6b991f Workflow erstellt
+- change: 2026-10-27 e7ac680 Remove FHEM Modules header from README
+- change: 2026-10-27 14f7e5f Revise FHEM Modules section in README
+  Updated module list and removed versioning.
+- change: 2026-10-27 6b78def originalstruktur von initialem Zustand hergestellt
+  [VolvoConnect]
+- change: 2026-10-27 d9e2780 restore last changes in VolvoConnect
+  [VolvoConnect]
+- change: 2026-10-27 4fd00f7 Readme angepasst
+- change: 2026-10-27 84883ac Aktualiserungen an Readme und Volvo Connect
+  [VolvoConnect]
+- change: 2026-10-27 82f2ae8 erster Entwurf [VolvoConnect]
+- change: 2026-10-27 5f4ee0b Initiales Modul und Controls-Datei hinzugefugt
+  [VolvoConnect, GavazziEM24]
+- change: 2026-10-27 74507f3 Initial commit

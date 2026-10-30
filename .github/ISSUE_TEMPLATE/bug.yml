@@ -1,0 +1,20 @@
+name: Fehler melden
+description: Ein Modul verhält sich nicht wie erwartet
+labels: [bug]
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Modul
+      options: [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus, Sonstiges]
+    validations: {required: true}
+  - type: input
+    id: versions
+    attributes:
+      label: FHEM-Version und Modulstand
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung und Logzeilen
+      description: Bitte keine Passwörter, Tokens oder Adressen posten. Issues sind öffentlich.
+    validations: {required: true}

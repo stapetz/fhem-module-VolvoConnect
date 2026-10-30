@@ -1,0 +1,29 @@
+# TemperatureCollector change history
+# Generated from Git commits by scripts/generate_changed.py.
+# Keep this file ASCII-only and use lines no longer than 79 characters.
+
+- change: 2026-10-30 a156270 Versionsnummern je Modul und Release-Skript
+- change: 2026-10-30 5a61a13 Dashboards: einheitliche Zeilenhoehe und
+  Ueberschriften-Stile
+  line-height 1.4 im Wurzelelement aller Dashboards und im Hub, h1 mit 1.1,
+  damit FHEMWEB-Werte die Kopfzeilen nicht mehr unterschiedlich hoch machen
+  Gavazzi/Solax: Kicker-Stil gilt jetzt auch fuer small in Abschnittskoepfen
+- change: 2026-10-30 d8c805c Volvo: Standortkarte ohne iframe,
+  TemperatureCollector: Kopfzeile 76px
+  OSM-Kacheln statt eingebettetem iframe
+  TC-Kopfzeile feste Hoehe wie bei den anderen Dashboards
+- change: 2026-10-30 30b747e Einheitliche Abstaende in den Dashboards,
+  Statusmeldung blendet aus
+  TemperatureCollector: @media-Regeln nach die Basisregeln verschoben, damit
+  die schmalen Innenabstaende wie bei Volvo, Gavazzi und Solax greifen
+  DashboardHub: Statusmeldung "Gespeichert" verschwindet nach 4 Sekunden
+- change: 2026-10-30 07a5d69 embedded Dashboard view TemperatureCollector
+  angepasst
+- change: 2026-10-30 c8be507 Dokumentation und Layoutanpassungen fur die
+  embedded URL fur ftui
+- change: 2026-10-30 5ef24ee Hilfen und Kontaktinformationen angepasst.
+- change: 2026-10-30 0739b5e - grafische Anpassungen in den Dashboards -
+  Aufteilung der readme fur einzelene bereiche und eine fur alle Module -
+  verandertes Verhalten fur Editieren / Speichern in den Dashboards
+- change: 2026-10-28 f3f93a7 Farben und schriften angepasst
+- change: 2026-10-28 a8d5083 Erweitere Dashboards und Dokumentation

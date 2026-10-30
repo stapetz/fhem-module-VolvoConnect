@@ -1,0 +1,60 @@
+# DashboardHub change history
+# Generated from Git commits by scripts/generate_changed.py.
+# Keep this file ASCII-only and use lines no longer than 79 characters.
+
+- change: 2026-10-30 a156270 Versionsnummern je Modul und Release-Skript
+- change: 2026-10-30 e1836a3 DashboardHub: Navigation als eigener Kasten mit
+  dunklem Abstand
+- change: 2026-10-30 5f0404f DashboardHub: oberer Abstand von Inhalt und
+  Navigation auf 6px
+- change: 2026-10-30 f4e8148 Dashboards: Kopfzeile einheitlich 76px,
+  Volvo-Embed ohne doppelten Rand
+  Kopfzeilen von Gavazzi, Solax und Volvo ohne vertikales Padding (waren 80px)
+  Hub: Padding des Volvo-Embed-Wurzelelements entfernt (24px statt 12px Rand)
+- change: 2026-10-30 5a61a13 Dashboards: einheitliche Zeilenhoehe und
+  Ueberschriften-Stile
+  line-height 1.4 im Wurzelelement aller Dashboards und im Hub, h1 mit 1.1,
+  damit FHEMWEB-Werte die Kopfzeilen nicht mehr unterschiedlich hoch machen
+  Gavazzi/Solax: Kicker-Stil gilt jetzt auch fuer small in Abschnittskoepfen
+- change: 2026-10-30 334e087 DashboardHub: get diagnose zeigt Erkennungsstatus
+  pro Geraet
+- change: 2026-10-30 ab2c0bc DashboardHub: Dashboards ohne iframe direkt
+  einbinden
+  Fragment (_dashboardEmbedURL) wird per fetch in die Seite geladen
+  Skripte der Dashboards werden ausgefuehrt, Timer des vorherigen Dashboards
+  beim Wechsel beendet
+  Einheitlicher Rand und volle Breite per CSS im Hub
+  Dokumentation angepasst
+- change: 2026-10-30 3cb0bfa DashboardHub: Umlaute in Namen korrigiert,
+  einheitliche Raender
+  Gespeicherte Namen und Titel beim Laden in UTF-8-Bytes wandeln
+  (decode_json lieferte Zeichen, Alias der Geraete Bytes)
+  Eingebettete Dashboards erhalten einheitlich 12 px Rand und volle Breite
+  Dokumentation angepasst
+- change: 2026-10-30 30b747e Einheitliche Abstaende in den Dashboards,
+  Statusmeldung blendet aus
+  TemperatureCollector: @media-Regeln nach die Basisregeln verschoben, damit
+  die schmalen Innenabstaende wie bei Volvo, Gavazzi und Solax greifen
+  DashboardHub: Statusmeldung "Gespeichert" verschwindet nach 4 Sekunden
+- change: 2026-10-30 3cbafe5 DashboardHub: Speichern ueber den Stift, Pfeile
+  und Buttons entfernt
+  Erneuter Klick auf den Stift speichert (nur bei Aenderungen)
+  Buttons Speichern/Abbrechen und Auf/Ab-Pfeile entfernt, Sortieren per Ziehen
+  Statuszeile unter der Ueberschrift der Navigation
+  Dokumentation angepasst
+- change: 2026-10-30 8aed2bc DashboardHub: Speichern ueber set-Befehl wie in
+  den anderen Dashboards
+  Speichern per /fhem?cmd=set <name> saveConfig mit CSRF-Token (wie Volvo)
+  Fehler werden per Alert und Statuszeile angezeigt
+  SetFn quittiert mit "Dashboard-Konfiguration gespeichert."
+  Log-Level der Speichermeldungen auf 2
+- change: 2026-10-30 d59d21f DashboardHub: Logging beim Speichern der
+  Konfiguration
+- change: 2026-10-30 666ae89 DashboardHub: Speichern von Namen und Reihenfolge
+  korrigiert
+  Speichern wertet Antwort "gespeichert" aus (wie TemperatureCollector)
+  Fallback ueber set saveConfig sendet CSRF-Token
+  Ueberschrift der Navigation im Editiermodus umbenennbar
+  Dokumentation angepasst
+- change: 2026-10-30 13d47bf Neues Modul Dashboard HUB zur Verwaltung und
+  Integration aller Module, die ein Dashboard innehaben
