@@ -2,30 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
-- change: 2026-10-30 a156270 Versionsnummern je Modul und Release-Skript
-- change: 2026-10-30 f4e8148 Dashboards: Kopfzeile einheitlich 76px,
-  Volvo-Embed ohne doppelten Rand
-  Kopfzeilen von Gavazzi, Solax und Volvo ohne vertikales Padding (waren 80px)
-  Hub: Padding des Volvo-Embed-Wurzelelements entfernt (24px statt 12px Rand)
-- change: 2026-10-30 5a61a13 Dashboards: einheitliche Zeilenhoehe und
-  Ueberschriften-Stile
-  line-height 1.4 im Wurzelelement aller Dashboards und im Hub, h1 mit 1.1,
-  damit FHEMWEB-Werte die Kopfzeilen nicht mehr unterschiedlich hoch machen
-  Gavazzi/Solax: Kicker-Stil gilt jetzt auch fuer small in Abschnittskoepfen
-- change: 2026-10-30 d8c805c Volvo: Standortkarte ohne iframe,
-  TemperatureCollector: Kopfzeile 76px
-  OSM-Kacheln statt eingebettetem iframe
-  TC-Kopfzeile feste Hoehe wie bei den anderen Dashboards
-- change: 2026-10-30 c8be507 Dokumentation und Layoutanpassungen fur die
-  embedded URL fur ftui
-- change: 2026-10-30 5ef24ee Hilfen und Kontaktinformationen angepasst.
-- change: 2026-10-30 0739b5e - grafische Anpassungen in den Dashboards -
-  Aufteilung der readme fur einzelene bereiche und eine fur alle Module -
-  verandertes Verhalten fur Editieren / Speichern in den Dashboards
-- change: 2026-10-28 a8d5083 Erweitere Dashboards und Dokumentation
-- change: 2026-10-28 2fa0b0e ordnerstruktur und dokumentation angepasst
-- change: 2026-10-27 6b78def originalstruktur von initialem Zustand hergestellt
-- change: 2026-10-27 d9e2780 restore last changes in VolvoConnect
-- change: 2026-10-27 84883ac Aktualiserungen an Readme und Volvo Connect
-- change: 2026-10-27 82f2ae8 erster Entwurf
-- change: 2026-10-27 5f4ee0b Initiales Modul und Controls-Datei hinzugefugt
+- change: 2026-10-30 3b14e7d Initialer Hauptstand: alle Module in Version 1.0.0
+  DashboardHub 1.0.0
+  TemperatureCollector 1.0.0
+  VolvoConnect 1.0.0
+  GavazziEM24 1.0.0
+  SolaxModbus 1.0.0
