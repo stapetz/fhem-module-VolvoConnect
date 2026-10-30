@@ -859,7 +859,7 @@ changed with the generic Modbus set commands where the meter permits it.
 
 __DATA__
 <section class="gavazzi-dashboard" data-device="__DEVICE__" data-fhem-base="__FHEM_BASE__" aria-label="Gavazzi EM24 Energie-Dashboard">
-    <header class="ge24-header"><div class="ge24-brand"><span class="ge24-brand-mark">G</span><div><small>CARLO GAVAZZI / EM24</small><h1>Netzmonitor</h1></div></div><div class="ge24-live"><i class="ge24-led"></i><span class="ge24-state">warte auf Daten</span><small data-updated>Letzte Messung: --</small></div></header>
+    <header class="ge24-header"><div class="ge24-brand"><span class="ge24-brand-mark" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><rect x="7" y="6" width="10" height="5" rx="1"/><path d="M8 15h1m3 0h1m3 0h1M9 18h6"/></svg></span><div><small>CARLO GAVAZZI / EM24</small><h1>Netzmonitor</h1></div></div><div class="ge24-live"><i class="ge24-led"></i><span class="ge24-state">warte auf Daten</span><small data-updated>Letzte Messung: --</small></div></header>
     <main class="ge24-main">
         <section class="ge24-instrument"><div class="ge24-instrument-top"><span>WIRKLEISTUNG / NETZ</span><span>EM24-DIN &#183; 3~</span></div><div class="ge24-display-row"><div class="ge24-dial"><div class="ge24-dial-track"></div><div class="ge24-dial-arc" data-power-arc></div><div class="ge24-dial-needle" data-power-needle></div><div class="ge24-dial-hub"></div><span>&#8722;</span><span>+</span></div><div class="ge24-lcd"><small>SUMME L1 + L2 + L3</small><strong data-reading="activePowerTotal">--</strong><div class="ge24-flow"><i></i><span data-flow>Leistung wird ermittelt</span></div></div></div><div class="ge24-instrument-bottom"><span>LEISTUNGSFAKTOR <b data-reading="powerFactorTotal">--</b></span><span>NETZFREQUENZ <b data-reading="frequency">--</b></span><span>PHASENFOLGE <b data-reading="phaseSequence">--</b></span></div></section>
         <section class="ge24-section"><div class="ge24-section-head"><div><small>LIVE / 3-PHASEN</small><h2>Phasenleistung</h2></div><small>W &#183; V &#183; A &#183; PF</small></div><div class="ge24-phases">
@@ -890,7 +890,7 @@ __DATA__
 __CONFIGDATA__
 <div class="gec" data-device="__DEVICE__" data-fhem-base="__FHEM_BASE__" data-csrf="__FW_CSRF__">
 <div class="gec-head">
-<div class="gec-brand"><span class="gec-brand-mark">G</span><div><small>CARLO GAVAZZI / EM24</small><h1>Register-Konfiguration __DEVICE__</h1></div></div>
+<div class="gec-brand"><span class="gec-brand-mark" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><rect x="7" y="6" width="10" height="5" rx="1"/><path d="M8 15h1m3 0h1m3 0h1M9 18h6"/></svg></span><div><small>CARLO GAVAZZI / EM24</small><h1>Register-Konfiguration __DEVICE__</h1></div></div>
 <div class="gec-actions">
 <button type="button" class="gec-edit" title="Bearbeiten" aria-label="Bearbeiten">&#9998;</button>
 <div class="gec-edit-actions">
@@ -913,7 +913,7 @@ __ROWS__
 .gec{font:14px 'Avenir Next','Helvetica Neue',sans-serif;color:#f4f4e9;max-width:1120px;height:100vh;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;background:#1d2825;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a}
 .gec-head{min-height:76px;flex:0 0 auto;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px;background:#202e29;border-bottom:1px solid #405149}
 .gec-brand{display:flex;align-items:center;gap:12px;min-width:0}
-.gec-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;color:#52bd8b;display:grid;place-items:center;font:700 22px Georgia,serif}
+.gec-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;color:#52bd8b;display:grid;place-items:center}
 .gec-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
 .gec h1{font:500 22px Georgia,serif;margin:3px 0;letter-spacing:0}
 .gec-note{flex:0 0 auto;padding:10px 24px;background:#26342d;color:#c7d0c8;border-bottom:1px solid #46534a;font-size:12px;line-height:1.45}

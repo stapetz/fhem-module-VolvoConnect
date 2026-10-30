@@ -316,7 +316,7 @@ sub VolvoConnect_BuildEntityConfig($) {
     my $configNote = VolvoConnect_HtmlEscape(
         "Nur im Volvo-Entwicklerportal verfügbare Berechtigungen können angefordert werden. Eine geänderte Auswahl startet die erneute Autorisierung.");
     my $html = "<div class='vcc-entity-config' data-device='$device' data-fhem-base='$base' data-csrf='$csrf'>"
-        . "<header class='vcc-config-head'><div class='vcc-config-brand'><span class='vcc-brand-mark'>V</span>"
+        . "<header class='vcc-config-head'><div class='vcc-config-brand'><span class='vcc-brand-mark' aria-hidden='true'><svg viewBox='0 0 24 24'><path d='M3 14.5 4.5 9h15l1.5 5.5V19h-2v-2H5v2H3z'/><path d='M5 9l2-4h10l2 4M3 13h18'/><circle cx='7' cy='14' r='1'/><circle cx='17' cy='14' r='1'/></svg></span>"
         . "<div><small>VOLVO CONNECT / BERECHTIGUNGEN</small><h1>Scope-Konfiguration</h1></div></div>"
         . "<div class='vcc-config-actions'><button type='button' class='vcc-edit' title='Bearbeiten' aria-label='Bearbeiten'>&#9998;</button>"
         . "<div class='vcc-edit-actions'><button type='button' class='vcc-cancel'>Abbrechen</button>"
@@ -341,7 +341,7 @@ sub VolvoConnect_BuildEntityConfig($) {
     $html .= "</main></div><style>"
         . ".vcc-entity-config{font:14px 'Avenir Next','Helvetica Neue',sans-serif;color:#f4f4e9;background:#1d2825;max-width:1120px;height:100vh;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a;}"
         . ".vcc-entity-config *{box-sizing:border-box}.vcc-config-head{min-height:76px;flex:0 0 auto;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px;background:#202e29;border-bottom:1px solid #405149;}"
-        . ".vcc-config-brand{display:flex;align-items:center;gap:12px;min-width:0}.vcc-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;color:#52bd8b;display:grid;place-items:center;font:700 22px Georgia,serif;}"
+        . ".vcc-config-brand{display:flex;align-items:center;gap:12px;min-width:0}.vcc-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;color:#52bd8b;display:grid;place-items:center}.vcc-brand-mark svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}"
         . ".vcc-config-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}.vcc-config-head h1{font:500 22px Georgia,serif;margin:3px 0;letter-spacing:0;}"
         . ".vcc-config-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.vcc-config-note{flex:0 0 auto;padding:10px 24px;background:#26342d;color:#c7d0c8;border-bottom:1px solid #46534a;font-size:12px;line-height:1.45;}"
         . ".vcc-scope-list{flex:1 1 auto;min-height:0;overflow:auto;padding:4px 24px 18px;background:linear-gradient(155deg,#26352e,#1b2823 62%,#202c27);}"
@@ -981,7 +981,8 @@ sub VolvoConnect_BuildDashboard {
         . ".wrap{width:100%;max-width:1120px;margin:0 auto;padding-bottom:0;background:#1d2825;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a;overflow:hidden;}"
         . ".toolbar{min-height:76px;padding:0 24px;background:#202e29;border-bottom:1px solid #405149;display:flex;align-items:center;gap:12px;}"
         . ".brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0;}"
-        . ".brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;color:#52bd8b;display:grid;place-items:center;font:700 22px Georgia,serif;}"
+        . ".brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;color:#52bd8b;display:grid;place-items:center;}"
+        . ".brand-mark svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}"
         . ".brand small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac;}"
         . ".toolbar-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}"
         . ".grid{column-width:280px;column-gap:10px;column-fill:balance;padding:22px 24px 24px;background:linear-gradient(155deg,#26352e,#1b2823 62%,#202c27);}"
@@ -1057,7 +1058,7 @@ sub VolvoConnect_BuildDashboard {
         . "</style></head><body><div class='wrap' data-device='" . VolvoConnect_HtmlEscape($name)
         . "' data-fhem-path='" . VolvoConnect_HtmlEscape($fhemPath)
         . "' data-csrf='$csrf'>"
-        . "<div class='toolbar'><div class='brand'><span class='brand-mark'>V</span><div><small>VOLVO CONNECT / FAHRZEUG</small><h1>$name</h1></div></div>"
+        . "<div class='toolbar'><div class='brand'><span class='brand-mark' aria-hidden='true'><svg viewBox='0 0 24 24'><path d='M3 14.5 4.5 9h15l1.5 5.5V19h-2v-2H5v2H3z'/><path d='M5 9l2-4h10l2 4M3 13h18'/><circle cx='7' cy='14' r='1'/><circle cx='17' cy='14' r='1'/></svg></span><div><small>VOLVO CONNECT / FAHRZEUG</small><h1>$name</h1></div></div>"
         . "<span class='auth-indicator' role='img' aria-label='" . VolvoConnect_HtmlEscape($authStatusTitle)
         . "' title='" . VolvoConnect_HtmlEscape($authStatusTitle) . "'><span class='auth-dot "
         . ($tokenValid ? "auth-dot-valid" : "auth-dot-invalid") . "'></span></span><div class='toolbar-controls'>"

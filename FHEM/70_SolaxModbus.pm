@@ -713,7 +713,7 @@ sub SetFn {
 __DATA__
 <section class="solax-dashboard" data-device="__DEVICE__" data-fhem-base="__FHEM_BASE__" aria-label="SolaX Solardashboard">
     <header class="sx-header">
-        <div class="sx-brand"><span class="sx-brand-mark">S</span><div><small>SOLAX / X-HYBRID</small><h1>Energiefluss</h1></div></div>
+        <div class="sx-brand"><span class="sx-brand-mark" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><path d="m5 10 12-1.5 2 7.5H7zM8 16v2m4-2v2m4-2v2M4 21h16M4 6l1-2m-3 5h2"/></svg></span><div><small>SOLAX / X-HYBRID</small><h1>Energiefluss</h1></div></div>
         <div class="sx-live"><i class="sx-led" data-connection data-state="unknown" aria-label="Modbus-Verbindungsstatus" title="Modbus-Verbindungsstatus"></i><small data-updated>Warte auf Messwerte</small></div>
     </header>
     <main class="sx-main">
@@ -738,7 +738,7 @@ __DATA__
 .solax-dashboard *{box-sizing:border-box}
 .sx-header{min-height:76px;padding:0 24px;display:flex;justify-content:space-between;align-items:center;gap:20px;background:#202e29;border-bottom:1px solid #405149}
 .sx-brand{display:flex;align-items:center;gap:12px;min-width:0}
-.sx-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid var(--mint);border-radius:50%;color:var(--mint);display:grid;place-items:center;font:700 22px Georgia,serif}
+.sx-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid var(--mint);border-radius:50%;color:var(--mint);display:grid;place-items:center}
 .sx-header small,.sx-card-head,.sx-section-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
 .sx-header h1,.sx-section h2,.sx-section-head h2{font:500 22px Georgia,serif;margin:3px 0;letter-spacing:0;line-height:1.1}
 .sx-live{display:grid;grid-template-columns:12px auto;gap:2px 8px;align-items:center;font-size:12px}

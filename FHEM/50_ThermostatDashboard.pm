@@ -383,8 +383,8 @@ sub ThermostatDashboard_BuildDashboard {
         . '<div class="td" data-base="' . $base . '" data-csrf="' . $csrf . '" data-device="'
         . ThermostatDashboard_Escape($name) . '" data-refresh="' . $refresh . '">'
         . '<header class="td-head"><div class="td-brand"><span class="td-brand-mark" aria-hidden="true">'
-        . '<svg viewBox="0 0 24 24"><path d="M9 14.5V5a3 3 0 0 1 6 0v9.5a5 5 0 1 1-6 0Z"/>'
-        . '<path d="M12 8v9"/><circle cx="12" cy="18" r="1.5"/></svg></span>'
+        . '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="13" rx="1"/>'
+        . '<path d="M8 6v11m4-11v11m4-11v11M6 18v2m12-2v2M20 9h2v5h-2"/></svg></span>'
         . '<div><small>HEIZUNG / THERMOSTATE</small><h1>Thermostate</h1></div></div>'
         . '<div class="td-head-actions">'
         . ($options->{editable} ? '<button type="button" class="td-edit" title="Bearbeiten" aria-label="Thermostate bearbeiten">&#9998;</button>' : '')
