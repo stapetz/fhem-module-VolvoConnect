@@ -2,6 +2,10 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- bugfix: 2026-10-30 964f1b0 fix(thermostatdashboard): read battery from parent
+  device [ThermostatDashboard]
+  Resolve Homematic battery readings from the parent device when absent on a
+    channel.
 - change: 2026-10-30 3808d46 style(thermostatdashboard): align valve gauge
   height [ThermostatDashboard]
 - feature: 2026-10-30 9d17c7a feat(thermostatdashboard): compact thermostat
