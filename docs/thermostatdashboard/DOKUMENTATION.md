@@ -41,7 +41,6 @@ Weitere Befehle:
 
 | FHEM-Befehl | Funktion |
 | --- | --- |
-| `get <name> dashboard` | Dashboard anzeigen |
 | `get <name> _showDashboard` | Dashboard direkt in FHEMWEB anzeigen |
 | `get <name> _dashboardURL` | eigenständige Dashboard-URL |
 | `get <name> _dashboardEmbedURL` | Fragment-URL für DashboardHub oder FTUI |

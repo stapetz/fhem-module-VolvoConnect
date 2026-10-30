@@ -94,7 +94,6 @@ sub ThermostatDashboard_Get {
     $cmd = '' if (!defined($cmd));
 
     return ThermostatDashboard_BuildDashboard($hash, {editable => 1}) if ($cmd eq '_showDashboard');
-    return ThermostatDashboard_BuildDashboard($hash) if ($cmd eq 'dashboard');
     if ($cmd eq '_dashboardEmbedURL') {
         return ThermostatDashboard_BasePath() . '/ThermostatDashboard/' . urlEncode($name) . '?embed=1';
     }
@@ -115,7 +114,7 @@ sub ThermostatDashboard_Get {
         } @{$devices});
     }
 
-    return 'Unknown argument ' . $cmd . ', choose one of dashboard:noArg diagnose:noArg list:noArg '
+    return 'Unknown argument ' . $cmd . ', choose one of diagnose:noArg list:noArg '
         . '_showDashboard:noArg _dashboardURL:noArg _dashboardEmbedURL:noArg';
 }
 
