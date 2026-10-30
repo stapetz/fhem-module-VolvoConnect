@@ -62,6 +62,9 @@ beim FHEM-Start).
 - Auf `dev` trägt jede Version das Suffix `-dev`, z. B. `1.1.0-dev`. Daran erkennt man in FHEM,
   dass ein Entwicklungsstand läuft.
 - Auf `main` steht nur die freigegebene Version ohne Suffix.
+- Der initiale Hauptstand wird einmalig als gemeinsamer Snapshot aller fünf Module auf `1.0.0`
+  angelegt; danach starten alle Module auf `dev` bei `1.0.1-dev`. Der bisherige Hauptstand bleibt
+  zur Wiederherstellung im Backup-Branch `archive/main-before-versioned-initial-20261030`.
 - Module werden **einzeln** freigegeben. `main` bekommt dabei nur die Moduldatei und
   `docs/<modul>/` aus `dev`; andere Module auf `main` bleiben unverändert.
 - Der Git-Tag heißt `<modul>-v<version>`, z. B. `dashboardhub-v1.0.0`.

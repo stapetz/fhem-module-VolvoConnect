@@ -118,7 +118,7 @@ package SolaxModbus;
 use strict;
 use warnings;
 
-our $VERSION = '1.0.0-dev';
+our $VERSION = '1.0.1-dev';
 use GPUtils qw(:all);
 
 BEGIN {
