@@ -2,6 +2,8 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 07a5d69 embedded Dashboard view TemperatureCollector
+  angepasst
 - change: 2026-10-30 c8be507 Dokumentation und Layoutanpassungen fur die
   embedded URL fur ftui
 - change: 2026-10-30 5ef24ee Hilfen und Kontaktinformationen angepasst.
