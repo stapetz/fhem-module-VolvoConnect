@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 d3ca88b Add repository instructions for Copilot
+  Require coding agents to read dev-docs/ENTWICKLUNG.md and follow its branch,
+    testing, and release procedures.
 - change: 2026-10-30 f458b29 ThermostatDashboard: remove dashboard get alias
   [ThermostatDashboard]
   Keep _showDashboard as the sole dashboard display command and remove the
