@@ -3,7 +3,7 @@ package main;
 use strict;
 use warnings;
 
-our $TemperatureCollector_VERSION = '1.0.3-dev';
+our $TemperatureCollector_VERSION = '1.0.4-dev';
 use POSIX qw(strftime);
 use Time::Local qw(timelocal);
 use JSON qw(encode_json decode_json);
