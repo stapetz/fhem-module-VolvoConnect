@@ -2,6 +2,11 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 2f89f7b Replace dashboard letter marks with icons
+  [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus,
+  ThermostatDashboard]
+  Use module-specific SVG symbols for the Volvo, Gavazzi, TemperatureCollector,
+    Solax, and thermostat dashboard headers and configuration panel.
 - change: 2026-10-30 9e02d80 ThermostatDashboard: remove measurement timestamp
   [ThermostatDashboard]
   Remove the redundant measurement timestamp from thermostat cards and update

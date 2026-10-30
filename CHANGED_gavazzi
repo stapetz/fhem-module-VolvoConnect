@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 2f89f7b Replace dashboard letter marks with icons
+  Use module-specific SVG symbols for the Volvo, Gavazzi, TemperatureCollector,
+    Solax, and thermostat dashboard headers and configuration panel.
 - change: 2026-10-30 a655754 Alle Modulversionen auf 1.0.1-dev setzen
 - change: 2026-10-30 a156270 Versionsnummern je Modul und Release-Skript
 - change: 2026-10-30 f4e8148 Dashboards: Kopfzeile einheitlich 76px,
