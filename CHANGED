@@ -2,6 +2,11 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 dfdc338 Entwicklungsablauf mit dev-Branch und interne
+  Dokumentation
+  Workflow erzeugt controls/CHANGED auch fuer den Branch dev
+  dev-docs/ENTWICKLUNG.md: Ablauf, Design-Regeln, Hub-Architektur, Fallstricke
+  AGENTS.md verweist darauf
 - change: 2026-10-30 f4e8148 Dashboards: Kopfzeile einheitlich 76px,
   Volvo-Embed ohne doppelten Rand [VolvoConnect, GavazziEM24, SolaxModbus,
   DashboardHub]
