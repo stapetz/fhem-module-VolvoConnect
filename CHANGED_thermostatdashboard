@@ -2,6 +2,11 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 3be2e32 ThermostatDashboard: hide devices and detect MAX
+  Plus
+  Add persistent per-dashboard visibility controls and include
+    HeatingThermostatPlus devices. Document the edit mode and expose hidden
+    status in list and diagnose output.
 - change: 2026-10-30 add4da3 ThermostatDashboard fuer Homematic und MAX
   CUL_HM- und MAX-Thermostate automatisch erkennen\n- Ist-/Solltemperatur,
     Modus, Ventil und Batterie anzeigen\n- Solltemperatur sowie verfuegbare
