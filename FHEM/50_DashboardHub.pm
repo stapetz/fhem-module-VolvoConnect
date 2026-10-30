@@ -254,7 +254,7 @@ sub DashboardHub_Css {
 .dh-grip{cursor:grab;color:#9fb3a8}
 .dh-status{padding:0 12px 6px;font-size:12px;color:#9fb3a8}.dh-status:empty{display:none}
 .dh-main{flex:1;min-width:0;background:#151f1b}
-.dh-content{padding:12px;min-height:__HEIGHT__}
+.dh-content{padding:12px;min-height:__HEIGHT__;line-height:1.4}
 .dh-content .tc-dashboard,.dh-content .wrap,.dh-content .gavazzi-dashboard,.dh-content .solax-dashboard,.dh-content .vcc-embed{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
 .dh-content>.vcc-embed>.wrap{margin:0!important}
 .dh-loading{padding:24px;color:#9fb3a8}

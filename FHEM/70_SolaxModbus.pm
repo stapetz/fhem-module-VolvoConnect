@@ -731,13 +731,13 @@ __DATA__
     </main>
 </section>
 <style>
-.solax-dashboard{--ink:#1d2825;--mint:#52bd8b;--amber:#e3b953;--red:#d45b45;background:var(--ink);color:#f4f4e9;font:14px 'Avenir Next','Helvetica Neue',sans-serif;width:100%;max-width:1120px;margin:0 auto;overflow:hidden;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a}
+.solax-dashboard{--ink:#1d2825;--mint:#52bd8b;--amber:#e3b953;--red:#d45b45;background:var(--ink);color:#f4f4e9;font:14px 'Avenir Next','Helvetica Neue',sans-serif;line-height:1.4;width:100%;max-width:1120px;margin:0 auto;overflow:hidden;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a}
 .solax-dashboard *{box-sizing:border-box}
 .sx-header{min-height:76px;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px;background:#202e29;border-bottom:1px solid #405149}
 .sx-brand{display:flex;align-items:center;gap:12px;min-width:0}
 .sx-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid var(--mint);border-radius:50%;color:var(--mint);display:grid;place-items:center;font:700 22px Georgia,serif}
-.sx-header small,.sx-card-head,.sx-section-head>small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
-.sx-header h1,.sx-section h2,.sx-section-head h2{font:500 22px Georgia,serif;margin:3px 0;letter-spacing:0}
+.sx-header small,.sx-card-head,.sx-section-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
+.sx-header h1,.sx-section h2,.sx-section-head h2{font:500 22px Georgia,serif;margin:3px 0;letter-spacing:0;line-height:1.1}
 .sx-live{display:grid;grid-template-columns:12px auto;gap:2px 8px;align-items:center;font-size:12px}
 .sx-live small{grid-column:2;font-size:10px;color:#a9b7ac}
 .sx-led{grid-row:1/3;width:10px;height:10px;border:1px solid #17231f;border-radius:50%;background:#879088}
