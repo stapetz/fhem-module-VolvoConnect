@@ -257,6 +257,7 @@ sub DashboardHub_Css {
 .dh-content{padding:12px;min-height:__HEIGHT__;line-height:1.4}
 .dh-content .tc-dashboard,.dh-content .wrap,.dh-content .gavazzi-dashboard,.dh-content .solax-dashboard,.dh-content .vcc-embed{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
 .dh-content>.vcc-embed>.wrap{margin:0!important}
+.dh-content .vcc-embed{padding:0!important}
 .dh-loading{padding:24px;color:#9fb3a8}
 .dh-empty{padding:24px;color:#9fb3a8}
 @media (max-width:700px){.dh{flex-direction:column}.dh-nav{flex:none;border-right:0;border-bottom:1px solid #46544c}.dh-list{display:flex;overflow-x:auto}.dh-item{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}.dh-item.dh-active{border-bottom-color:#52bd8b}.dh-editing .dh-list{display:block}}

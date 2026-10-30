@@ -976,7 +976,7 @@ sub VolvoConnect_BuildDashboard {
         . "body{font-family:'Avenir Next','Helvetica Neue',sans-serif;background:#151f1b;color:#f4f4e9;margin:0;padding:12px;overflow-x:hidden;font-size:14px;line-height:1.4;}"
         . "h1{font:500 22px Georgia,serif;margin:3px 0;letter-spacing:0;line-height:1.1;}"
         . ".wrap{width:100%;max-width:1120px;margin:0 auto;padding-bottom:0;background:#1d2825;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a;overflow:hidden;}"
-        . ".toolbar{min-height:76px;padding:15px 24px;background:#202e29;border-bottom:1px solid #405149;display:flex;align-items:center;gap:12px;}"
+        . ".toolbar{min-height:76px;padding:0 24px;background:#202e29;border-bottom:1px solid #405149;display:flex;align-items:center;gap:12px;}"
         . ".brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0;}"
         . ".brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;color:#52bd8b;display:grid;place-items:center;font:700 22px Georgia,serif;}"
         . ".brand small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac;}"
