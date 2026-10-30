@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.2.0-dev';
+our $ThermostatDashboard_VERSION = '1.2.1-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -366,8 +366,8 @@ sub ThermostatDashboard_Css {
 .td-target-value{display:flex;align-items:baseline;gap:5px}
 .td-target-control input[type=range]{display:block;width:100%;height:22px;margin:9px 0 0;accent-color:#52bd8b;cursor:pointer}
 .td-meta{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:0 14px 12px}
-.td-mode-select{max-width:145px;padding:5px 25px 5px 8px;border:1px solid #69796f;border-radius:0;background:#26342d;color:#f4f4e9;font:12px 'Helvetica Neue',sans-serif}
-.td-valve{position:relative;display:grid;place-items:center;min-width:86px;height:28px;overflow:hidden;border:1px solid #46544c;background:linear-gradient(90deg,#2679ce 0%,#338b81 50%,#741d2d 100%);color:#fff;font-size:11px;font-weight:700;text-shadow:0 1px 2px #111}
+.td-mode-select{height:34px;max-width:145px;padding:5px 25px 5px 8px;border:1px solid #69796f;border-radius:0;background:#26342d;color:#f4f4e9;font:12px 'Helvetica Neue',sans-serif}
+.td-valve{position:relative;display:grid;place-items:center;min-width:86px;height:34px;overflow:hidden;border:1px solid #46544c;background:linear-gradient(90deg,#2679ce 0%,#338b81 50%,#741d2d 100%);color:#fff;font-size:11px;font-weight:700;text-shadow:0 1px 2px #111}
 .td-valve::before{position:absolute;top:0;bottom:0;left:var(--td-valve,0%);width:2px;background:#fff;box-shadow:0 0 3px #111;content:""}
 .td-valve span{position:relative}
 .td-battery{display:inline-flex;align-items:center;gap:5px;color:#58cf8e;font-size:11px}
