@@ -697,6 +697,13 @@ sub SetFn {
     </ul>
 </ul>
 
+<a name="SolaxModbusFeedback"></a>
+<b>Feedback</b>
+<ul>
+    Fragen, Fehlermeldungen und Ideen: <a href="https://github.com/stapetz/fhem-modules/issues/new/choose">GitHub-Issues</a>.
+    Issues sind &ouml;ffentlich, bitte keine Passw&ouml;rter, Tokens oder Adressen posten.
+</ul>
+
 =end html
 =cut
 

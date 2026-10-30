@@ -475,6 +475,13 @@ In allen Fällen erneut `reauth` ausführen und den Login-Vorgang vollständig w
 - Die benötigten Perl-Module `JSON`, `MIME::Base64` und `Digest::SHA` installieren beziehungsweise deren Verfügbarkeit prüfen.
 - Den vollständigen Fehler aus dem FHEM-Log verwenden, aber Secrets und Tokens vor dem Weitergeben entfernen.
 
+## Feedback
+
+Fragen, Fehlermeldungen und Ideen können als [GitHub-Issue](https://github.com/stapetz/fhem-modules/issues/new/choose) gemeldet werden.
+Issues sind öffentlich sichtbar und können von Suchmaschinen gefunden werden. Bitte keine
+Passwörter, Tokens, Adressen oder Fahrzeugdaten veröffentlichen; bei Fehlern genügen
+Modulversion, FHEM-Version und die betroffene Logzeile.
+
 ## 15. Sicherheit und Datenschutz
 
 - `client_secret`, VCC API Key, Access-Token, Refresh-Token, Autorisierungscode und vollständige OAuth-URLs vertraulich behandeln.

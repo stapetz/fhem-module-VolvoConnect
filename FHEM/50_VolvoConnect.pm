@@ -2632,6 +2632,13 @@ sub VolvoConnect_Reschedule($$) {
     </ul>
 </ul>
 
+<a name="VolvoConnectFeedback"></a>
+<b>Feedback</b>
+<ul>
+    Questions, bug reports and ideas: <a href="https://github.com/stapetz/fhem-modules/issues/new/choose">GitHub issues</a>.
+    Issues are public, so please do not post passwords, tokens or addresses.
+</ul>
+
 =end html
 
 =begin html_DE
@@ -2804,6 +2811,13 @@ set Volvo1 authCode AUTH_CODE_BEISPIEL</pre>
         <li><code>command_state</code>, <code>last_command</code> - Ergebnis des letzten
             Fahrzeugbefehls</li>
     </ul>
+</ul>
+
+<a name="VolvoConnectFeedback"></a>
+<b>Feedback</b>
+<ul>
+    Fragen, Fehlermeldungen und Ideen: <a href="https://github.com/stapetz/fhem-modules/issues/new/choose">GitHub-Issues</a>.
+    Issues sind &ouml;ffentlich, bitte keine Passw&ouml;rter, Tokens oder Adressen posten.
 </ul>
 
 =end html_DE

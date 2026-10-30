@@ -844,6 +844,13 @@ changed with the generic Modbus set commands where the meter permits it.
     entries such as <code>i0=1,i2=0</code>.
 </ul>
 
+<a name="GavazziEM24Feedback"></a>
+<b>Feedback</b>
+<ul>
+    Questions, bug reports and ideas: <a href="https://github.com/stapetz/fhem-modules/issues/new/choose">GitHub issues</a>.
+    Issues are public, so please do not post passwords, tokens or addresses.
+</ul>
+
 =end html
 =cut
 

@@ -53,3 +53,7 @@ Die ausführlichen Anleitungen stehen in den jeweiligen Dokumentationsordnern:
 - [TemperatureCollector-Dokumentation](docs/temperaturecollector/DOKUMENTATION.md)
 - [Gavazzi-Dokumentation](docs/gavazzi/DOKUMENTATION.md)
 - [SolaX-Dokumentation](docs/solax/DOKUMENTATION.md)
+
+## Feedback
+
+Fragen, Fehler und Ideen bitte als [GitHub-Issue](https://github.com/stapetz/fhem-modules/issues/new/choose) melden. Issues sind öffentlich; keine Passwörter, Tokens oder Adressen posten.

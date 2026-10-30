@@ -301,3 +301,10 @@ nicht in die Quellgeräte und verändert keine DbLog-Daten. Das Dashboard kann
 jedoch Temperaturverläufe und damit Informationen über Anwesenheit oder
 Raumnutzung offenlegen. FHEMWEB sollte daher mit geeigneter Authentifizierung
 und nicht ungeschützt aus dem Internet erreichbar sein.
+
+## Feedback
+
+Fragen, Fehlermeldungen und Ideen können als [GitHub-Issue](https://github.com/stapetz/fhem-modules/issues/new/choose) gemeldet werden.
+Issues sind öffentlich sichtbar und können von Suchmaschinen gefunden werden. Bitte keine
+Passwörter, Tokens, Adressen oder Fahrzeugdaten veröffentlichen; bei Fehlern genügen
+Modulversion, FHEM-Version und die betroffene Logzeile.

@@ -136,6 +136,13 @@ feste Höhe und Breite im FTUI-Layout.
 Ob die Einbettung in der eigenen FTUI-Installation sauber läuft, hängt vom
 verwendeten Widget und Layout ab und sollte dort geprüft werden.
 
+## Feedback
+
+Fragen, Fehlermeldungen und Ideen können als [GitHub-Issue](https://github.com/stapetz/fhem-modules/issues/new/choose) gemeldet werden.
+Issues sind öffentlich sichtbar und können von Suchmaschinen gefunden werden. Bitte keine
+Passwörter, Tokens, Adressen oder Fahrzeugdaten veröffentlichen; bei Fehlern genügen
+Modulversion, FHEM-Version und die betroffene Logzeile.
+
 ## Hinweise
 
 - Vor der Einrichtung muss die Modbus-TCP-Schnittstelle des Wechselrichters
