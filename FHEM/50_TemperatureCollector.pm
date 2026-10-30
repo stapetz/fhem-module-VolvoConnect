@@ -19,6 +19,8 @@ sub TemperatureCollector_Initialize {
     $modHash->{SetFn} = 'TemperatureCollector_Set';
     $modHash->{AttrList} = join(' ',
         'dbLog',
+        'fileLog',
+        'historySource:auto,dblog,filelog',
         'historyHours',
         'autoRefresh:0,15,30,60,300',
         'showHistoryTable:0,1',
@@ -104,6 +106,10 @@ sub TemperatureCollector_Get {
         if ($cmd eq '_showDashboard');
     return TemperatureCollector_BuildDashboard($hash, {editable => 0})
         if ($cmd eq 'dashboard');
+    if ($cmd eq '_dashboardEmbedURL') {
+        return TemperatureCollector_DashboardBasePath() . '/TemperatureCollector/'
+            . (defined(&urlEncode) ? urlEncode($name) : $name) . '?tcEmbed=1';
+    }
     if ($cmd eq '_dashboardURL') {
         my $scheme = AttrVal($main::FW_wname, 'HTTPS', 0) ? 'https' : 'http';
         my $host = $main::FW_httpheader{Host} || 'localhost';
@@ -113,7 +119,7 @@ sub TemperatureCollector_Get {
     }
 
     return 'Unknown argument ' . ($cmd // '') . ', choose one of '
-        . '_showDashboard:noArg _dashboardURL:noArg';
+        . '_showDashboard:noArg _dashboardURL:noArg _dashboardEmbedURL:noArg';
 }
 
 sub TemperatureCollector_DashboardBasePath {
@@ -141,12 +147,27 @@ sub TemperatureCollector_Number {
 }
 
 sub TemperatureCollector_TimeLabel {
-    my ($timestamp, $edge) = @_;
+    my ($timestamp, $edge, $longRange) = @_;
     return '' if (!defined($timestamp));
     if ($timestamp =~ /^(\d{4})-(\d{2})-(\d{2})[_ ](\d{2}):(\d{2})/) {
+        return "$3.$2.$1" if ($longRange);
         return $edge ? "$3.$2.$1 $4:$5" : "$4:$5";
     }
     return $timestamp;
+}
+
+sub TemperatureCollector_GermanTime {
+    my ($timestamp) = @_;
+    return '' if (!defined($timestamp));
+    return "$3.$2.$1 $4:$5" if ($timestamp =~ /^(\d{4})-(\d{2})-(\d{2})[_ T](\d{2}):(\d{2})/);
+    return $timestamp;
+}
+
+sub TemperatureCollector_StepLabel {
+    my ($step) = @_;
+    return $step % 1440 == 0 ? ($step / 1440) . '-Tages-Auflösung'
+        : $step % 60 == 0 ? ($step / 60) . '-Stunden-Auflösung'
+        : $step . '-Minuten-Auflösung';
 }
 
 sub TemperatureCollector_QueryValue {
@@ -290,24 +311,105 @@ sub TemperatureCollector_DbLog {
     return undef;
 }
 
+sub TemperatureCollector_FileLog {
+    my ($hash) = @_;
+    my $configured = AttrVal($hash->{NAME}, 'fileLog', '');
+    if ($configured ne '') {
+        return $main::defs{$configured}
+            if (ref($main::defs{$configured}) eq 'HASH'
+                && ($main::defs{$configured}{TYPE} || '') eq 'FileLog');
+        main::Log3($hash->{NAME}, 2, "TemperatureCollector: configured FileLog '$configured' was not found");
+        return undef;
+    }
+
+    # Without an explicit FileLog, use the first one whose regexp matches a collected device.
+    my $devices = TemperatureCollector_Discover($hash->{NAME});
+    for my $name (sort keys %main::defs) {
+        my $fl = $main::defs{$name};
+        next if (ref($fl) ne 'HASH' || ($fl->{TYPE} || '') ne 'FileLog');
+        my $regexp = $fl->{REGEXP};
+        next if (!defined($regexp));
+        for my $device (@{$devices}) {
+            my $line = $device->{name} . ':' . $device->{temperatureReading} . ': 0';
+            return $fl if (eval { $line =~ /^(?:$regexp)$/ });
+        }
+    }
+    return undef;
+}
+
+# 'dblog' or 'filelog' for the effective history source, undef if none is usable.
+sub TemperatureCollector_HistorySource {
+    my ($hash) = @_;
+    my $mode = AttrVal($hash->{NAME}, 'historySource', 'auto');
+    my $db = defined(&DbLog_Get) && TemperatureCollector_DbLog($hash);
+    return $db ? 'dblog' : undef if ($mode eq 'dblog');
+    return TemperatureCollector_FileLog($hash) ? 'filelog' : undef if ($mode eq 'filelog');
+    return 'dblog' if ($db);
+    return 'filelog' if (TemperatureCollector_FileLog($hash));
+    return undef;
+}
+
+sub TemperatureCollector_FileLogRows {
+    my ($hash, $device, $reading, $from, $to) = @_;
+    my $fl = TemperatureCollector_FileLog($hash);
+    return [] if (!$fl || !defined($fl->{logfile}));
+
+    my $logdir = ($main::attr{global} && $main::attr{global}{logdir}) || './log';
+    my %files;
+    for (my $day = $from - ($from % 86400); $day <= $to + 86400; $day += 86400) {
+        my $name = $fl->{logfile};
+        $name =~ s/%L/$logdir/g;
+        $name = strftime($name, localtime($day));
+        $files{$name} = 1 if (-r $name);
+    }
+
+    my @rows;
+    for my $file (sort keys %files) {
+        open(my $fh, '<', $file) or next;
+        while (my $line = <$fh>) {
+            next if ($line !~ /^(\d{4}-\d{2}-\d{2})_(\d{2}:\d{2}:\d{2})\s+\Q$device\E\s+\Q$reading\E:\s*(\S+)/);
+            my ($d, $t, $value) = ($1, $2, $3);
+            my ($y, $m, $dd) = split /-/, $d;
+            my ($hh, $mm, $ss) = split /:/, $t;
+            my $epoch = eval { timelocal($ss, $mm, $hh, $dd, $m - 1, $y) };
+            next if (!defined($epoch) || $epoch < $from || $epoch > $to);
+            push @rows, {tstamp => "$d $t", value => $value};
+        }
+        close($fh);
+    }
+    return \@rows;
+}
+
 sub TemperatureCollector_History {
     my ($hash, $device, $reading, $options, $kind) = @_;
     $options ||= {};
-    my $dbHash = TemperatureCollector_DbLog($hash);
-    return [] if (!$dbHash || !defined(&DbLog_Get));
+    my $source = TemperatureCollector_HistorySource($hash);
+    return [] if (!$source);
+    my $dbHash = $source eq 'dblog' ? TemperatureCollector_DbLog($hash) : undef;
 
-    my $hours = AttrVal($hash->{NAME}, 'historyHours', 24);
-    $hours = 24 if ($hours !~ /^\d+(?:\.\d+)?$/ || $hours < 1 || $hours > 8760);
+    my $hours = $options->{hours} || 24;
     my $offset = $options->{offset} || 0;
     my $step = $options->{step} || 30;
     my $to = time() - ($offset * 3600);
+    if (($options->{range} || '') eq 'day') {
+        # Calendar day: end of the current day, shifted back in whole days
+        my @lt = localtime(time());
+        my $midnight = timelocal(0, 0, 0, $lt[3], $lt[4], $lt[5] + 1900);
+        $to = $midnight + 86400 - ($offset * 3600);
+    }
     my $from = $to - ($hours * 3600);
+    if (defined($options->{from}) && defined($options->{to})) {
+        $to = $options->{to} - ($offset * 3600);
+        $from = $options->{from} - ($offset * 3600);
+    }
     my $fromText = strftime('%Y-%m-%d_%H:%M:%S', localtime($from));
     my $toText = strftime('%Y-%m-%d_%H:%M:%S', localtime($to));
     my @rows;
 
     my $error;
-    {
+    if ($source eq 'filelog') {
+        @rows = @{TemperatureCollector_FileLogRows($hash, $device, $reading, $from, $to)};
+    } else {
         local $@;
         @rows = eval {
             DbLog_Get(
@@ -342,21 +444,26 @@ sub TemperatureCollector_History {
         if ($entry->{timestamp} =~ /^(\d{4})-(\d{2})-(\d{2})[_ ](\d{2}):(\d{2}):(\d{2})/) {
             my $epoch = eval { timelocal($6, $5, $4, $3, $2 - 1, $1) };
             if (defined($epoch)) {
-                $buckets{int($epoch / ($step * 60))} = $entry;
+                my $bucket = $buckets{int($epoch / ($step * 60))} ||= {sum => 0, count => 0};
+                $bucket->{sum} += $number;
+                $bucket->{count}++;
+                # Keep the latest timestamp of the bucket for axis labels and tooltips
+                $bucket->{timestamp} = $entry->{timestamp}
+                    if (!defined($bucket->{timestamp}) || $entry->{timestamp} gt $bucket->{timestamp});
                 next;
             }
         }
         push @history, $entry;
     }
-    push @history, values %buckets;
+    push @history, map { {timestamp => $_->{timestamp}, value => $_->{sum} / $_->{count}} } values %buckets;
     @history = sort { $a->{timestamp} cmp $b->{timestamp} } @history;
-    splice(@history, 0, @history - 240) if (@history > 240);
+    splice(@history, 0, @history - 400) if (@history > 400);
     return \@history;
 }
 
 sub TemperatureCollector_Svg {
-    my ($temperatureHistory, $humidityHistory, $hours, $step, $chartId) = @_;
-    return '<p class="tc-muted">Keine DbLog-Historie für dieses Reading verfügbar.</p>'
+    my ($temperatureHistory, $humidityHistory, $hours, $step, $chartId, $range, $fromValue, $toValue) = @_;
+    return '<p class="tc-muted">Keine Historie (DbLog/FileLog) für dieses Reading verfügbar.</p>'
         if ((!$temperatureHistory || !@{$temperatureHistory})
             && (!$humidityHistory || !@{$humidityHistory}));
 
@@ -379,76 +486,116 @@ sub TemperatureCollector_Svg {
     my $width = 560;
     my $height = 190;
     my $plotLeft = 52;
-    my $plotRight = $width - 14;
+    my $hasHumidity = ($humidityHistory && @{$humidityHistory}) ? 1 : 0;
+    my $plotRight = $width - ($hasHumidity ? 56 : 14);
     my $plotTop = 12;
     my $plotBottom = $height - 36;
+    # Catmull-Rom spline converted to cubic Beziers; control-point Y is clamped to avoid overshoot.
     my $points = sub {
         my ($history, $min, $range) = @_;
-        my @points;
+        my @p;
         for my $index (0 .. $#{$history}) {
             my $x = @{$history} == 1 ? ($plotLeft + $plotRight) / 2
                 : $plotLeft + $index * ($plotRight - $plotLeft) / ($#{$history});
             my $y = $plotBottom - (($history->[$index]{value} - $min)
                 / $range * ($plotBottom - $plotTop));
-            push @points, sprintf('%.1f,%.1f', $x, $y);
+            push @p, [$x, $y];
         }
-        return join(' ', @points);
+        return ('', '') if (!@p);
+        my $data = join(';', map {
+            sprintf('%.1f,%.1f,%s,%s', @{$p[$_]}, $history->[$_]{value}, $history->[$_]{timestamp} || '')
+        } 0 .. $#p);
+        my $d = sprintf('M%.1f,%.1f', @{$p[0]});
+        $d .= sprintf(' L%.1f,%.1f', @{$p[0]}) if (@p == 1);
+        for my $i (0 .. $#p - 1) {
+            my ($p0, $p1, $p2, $p3) = ($p[$i ? $i - 1 : 0], $p[$i], $p[$i + 1], $p[$i + 2 > $#p ? $#p : $i + 2]);
+            my @c1 = ($p1->[0] + ($p2->[0] - $p0->[0]) / 6, $p1->[1] + ($p2->[1] - $p0->[1]) / 6);
+            my @c2 = ($p2->[0] - ($p3->[0] - $p1->[0]) / 6, $p2->[1] - ($p3->[1] - $p1->[1]) / 6);
+            my ($lo, $hi) = $p1->[1] < $p2->[1] ? ($p1->[1], $p2->[1]) : ($p2->[1], $p1->[1]);
+            for my $v (\$c1[1], \$c2[1]) { ${$v} = $lo if (${$v} < $lo); ${$v} = $hi if (${$v} > $hi); }
+            $d .= sprintf(' C%.1f,%.1f %.1f,%.1f %.1f,%.1f', @c1, @c2, @{$p2});
+        }
+        return ($d, $data);
     };
-    my $temperaturePoints = $points->($temperatureHistory || [], $temperatureMin, $temperatureRange);
-    my $humidityPoints = $points->($humidityHistory || [], $humidityMin, $humidityRange);
+    my ($temperaturePoints, $temperatureData) = $points->($temperatureHistory || [], $temperatureMin, $temperatureRange);
+    my ($humidityPoints, $humidityData) = $points->($humidityHistory || [], $humidityMin, $humidityRange);
 
-    my $rangeLabel = defined($hours) ? 'Verlauf der letzten ' . $hours . ' Stunden' : 'Temperaturverlauf';
+    my $rangeLabel = 'Temperaturverlauf';
     my @timeLabels;
     my $labelHistory = @{$temperatureHistory || []} ? $temperatureHistory : $humidityHistory;
-    for my $index (0 .. 5) {
-        my $valueIndex = int($index * ($#{$labelHistory}) / 5);
+    my $longRange = ($hours || 24) > 48;
+    my $labelCount = $#{$labelHistory} < 5 ? $#{$labelHistory} : 5;
+    my $previousDate = '';
+    for my $index (0 .. $labelCount) {
+        my $valueIndex = $labelCount ? int($index * ($#{$labelHistory}) / $labelCount + 0.5) : 0;
+        my $timestamp = $labelHistory->[$valueIndex]{timestamp} || '';
+        my ($date, $time) = ('', '');
+        if ($timestamp =~ /^(\d{4})-(\d{2})-(\d{2})[_ ](\d{2}):(\d{2})/) {
+            $date = $longRange ? "$3.$2.$1" : "$3.$2.";
+            $time = "$4:$5";
+        } else {
+            $time = $timestamp;
+        }
         push @timeLabels, {
             x => $plotLeft + $valueIndex * ($plotRight - $plotLeft) / ($#{$labelHistory} || 1),
-            label => TemperatureCollector_TimeLabel(
-                $labelHistory->[$valueIndex]{timestamp}, $index == 0 || $index == 5
-            ),
+            lines => $longRange ? [$date] : [$time, ($date ne $previousDate ? $date : ())],
+            first => $index == 0,
+            last => $index == $labelCount && $index > 0,
         };
+        $previousDate = $date;
     }
     my $timeAxis = join('', map {
-        '<text class="tc-axis-value" x="' . sprintf('%.1f', $_->{x})
-        . '" y="' . ($plotBottom + 18) . '"'
-        . ($_->{x} == $plotRight ? ' text-anchor="end"' : '')
-        . '>' . TemperatureCollector_Escape($_->{label}) . '</text>'
+        my $label = $_;
+        my $anchor = $label->{first} ? 'start' : $label->{last} ? 'end' : 'middle';
+        my $line = 0;
+        '<text class="tc-axis-value" text-anchor="' . $anchor . '" x="' . sprintf('%.1f', $label->{x}) . '">'
+        . join('', map {
+            '<tspan x="' . sprintf('%.1f', $label->{x}) . '" y="' . ($plotBottom + 14 + 11 * $line++) . '">'
+            . TemperatureCollector_Escape($_) . '</tspan>'
+        } @{$label->{lines}}) . '</text>'
     } @timeLabels);
-    return '<div class="tc-chart-wrap"><div class="tc-chart-title">'
-        . '<span>' . TemperatureCollector_Escape($rangeLabel) . ' (' . $step . '-Minuten-Auflösung)</span>'
+    return '<div class="tc-chart-wrap"><div class="tc-tip" hidden></div><div class="tc-chart-title">'
+        . '<span><select class="tc-range" onchange="tcRange(this)" title="Zeitraum">'
+        . join('', map {
+            '<option value="' . $_->[0] . '"' . ($_->[0] eq ($range || '24h') ? ' selected' : '') . '>' . $_->[1] . '</option>'
+        } (['24h', 'Letzte 24 Stunden'], ['day', 'Tag'], ['week', 'Woche'], ['month', 'Monat'], ['year', 'Jahr'], ['span', 'Eigener Zeitraum'],
+           (($range || '') eq 'custom' ? (['custom', 'Letzte ' . $hours . ' Stunden']) : ())))
+        . '</select> <span class="tc-muted">' . TemperatureCollector_Escape($rangeLabel) . ' (' . TemperatureCollector_StepLabel($step) . ')</span></span>'
         . '<span class="tc-chart-controls">'
         . '<button type="button" title="Älteres Zeitfenster" onclick="tcShift(this,1)">←</button>'
         . '<button type="button" title="Neueres Zeitfenster" onclick="tcShift(this,-1)">→</button>'
         . '<button type="button" title="Feinere Auflösung" onclick="tcZoom(this,-1)">+</button>'
         . '<button type="button" title="Gröbere Auflösung" onclick="tcZoom(this,1)">−</button>'
-        . '</span></div><svg class="tc-chart" viewBox="0 0 '
+        . '</span></div>'
+        . '<div class="tc-span"' . (($range || '') eq 'span' ? '' : ' hidden') . '>Von <input type="datetime-local" class="tc-from" value="'
+        . TemperatureCollector_Escape($fromValue || '') . '"> bis <input type="datetime-local" class="tc-to" value="'
+        . TemperatureCollector_Escape($toValue || '') . '"><button type="button" onclick="tcSpan(this)">Anwenden</button></div>'
+        . '<svg class="tc-chart" viewBox="0 0 '
         . $width . ' ' . $height . '" role="img" aria-label="Temperaturverlauf">'
         . '<line class="tc-axis" x1="' . $plotLeft . '" y1="' . $plotTop . '" x2="'
         . $plotLeft . '" y2="' . $plotBottom . '" /><line class="tc-axis" x1="'
         . $plotLeft . '" y1="' . $plotBottom . '" x2="' . $plotRight . '" y2="'
         . $plotBottom . '" /><text class="tc-axis-label" transform="translate(14 '
         . (($plotTop + $plotBottom) / 2) . ') rotate(-90)">Temperatur (°C)</text>'
-        . '<text class="tc-axis-label" x="' . (($plotLeft + $plotRight) / 2)
-        . '" y="' . ($height - 5) . '">Zeit</text><text class="tc-axis-value" x="'
+        . '<text class="tc-axis-value" x="'
         . ($plotLeft - 8) . '" y="' . ($plotTop + 4) . '" text-anchor="end">'
         . TemperatureCollector_Escape(sprintf('%.1f', $temperatureMax)) . '</text><text class="tc-axis-value" x="'
         . ($plotLeft - 8) . '" y="' . ($plotBottom + 4) . '" text-anchor="end">'
         . TemperatureCollector_Escape(sprintf('%.1f', $temperatureMin)) . '</text>'
         . ($humidityHistory && @{$humidityHistory}
-            ? '<text class="tc-axis-label" transform="translate(' . ($width - 10) . ' '
-                . (($plotTop + $plotBottom) / 2) . ') rotate(90)">Luftfeuchtigkeit (%)</text>'
+            ? '<text class="tc-axis-label" transform="translate(' . ($width - 6) . ' '
+                . (($plotTop + $plotBottom) / 2) . ') rotate(-90)">Luftfeuchtigkeit (%)</text>'
                 . '<text class="tc-axis-value" x="' . ($plotRight + 8) . '" y="' . ($plotTop + 4) . '">'
                 . TemperatureCollector_Escape(sprintf('%.1f', $humidityMax)) . '</text>'
                 . '<text class="tc-axis-value" x="' . ($plotRight + 8) . '" y="' . ($plotBottom + 4) . '">'
                 . TemperatureCollector_Escape(sprintf('%.1f', $humidityMin)) . '</text>'
             : '')
         . $timeAxis
-        . '<g id="' . TemperatureCollector_Escape($chartId . '-temperature') . '" class="tc-series-temperature">'
-        . ($temperaturePoints ne '' ? '<polyline points="' . TemperatureCollector_Escape($temperaturePoints) . '" />' : '')
+        . '<g id="' . TemperatureCollector_Escape($chartId . '-temperature') . '" class="tc-series-temperature" data-unit="°C" data-pts="' . TemperatureCollector_Escape($temperatureData) . '">'
+        . ($temperaturePoints ne '' ? '<path d="' . TemperatureCollector_Escape($temperaturePoints) . '" />' : '')
         . '</g>'
-        . ($humidityPoints ne '' ? '<g id="' . TemperatureCollector_Escape($chartId . '-humidity') . '" class="tc-series-humidity">'
-            . '<polyline points="' . TemperatureCollector_Escape($humidityPoints) . '" /></g>' : '')
+        . ($humidityPoints ne '' ? '<g id="' . TemperatureCollector_Escape($chartId . '-humidity') . '" class="tc-series-humidity" data-unit="%" data-pts="' . TemperatureCollector_Escape($humidityData) . '">'
+            . '<path d="' . TemperatureCollector_Escape($humidityPoints) . '" /></g>' : '')
         . '</svg><div class="tc-legend">'
         . '<button type="button" class="tc-legend-item" onclick="tcToggleSeries(this,\'' . TemperatureCollector_Escape($chartId . '-temperature') . '\')"><i class="tc-legend-temperature"></i>Temperatur</button>'
         . ($humidityPoints ne '' ? '<button type="button" class="tc-legend-item" onclick="tcToggleSeries(this,\'' . TemperatureCollector_Escape($chartId . '-humidity') . '\')"><i class="tc-legend-humidity"></i>Luftfeuchtigkeit</button>' : '')
@@ -486,25 +633,86 @@ sub TemperatureCollector_HistoryTable {
     return $html . '</tbody></table>';
 }
 
+sub TemperatureCollector_HistoryParams {
+    my ($hash, $options) = @_;
+    $options ||= {};
+    my $attrHours = AttrVal($hash->{NAME}, 'historyHours', 24);
+    $attrHours = 24 if ($attrHours !~ /^\d+(?:\.\d+)?$/ || $attrHours < 1 || $attrHours > 8760);
+    my %rangeHours = (day => 24, week => 168, month => 720, year => 8760, '24h' => 24);
+    my %rangeStep = (day => 30, week => 60, month => 240, year => 1440, '24h' => 30);
+    my ($spanFrom, $spanTo);
+    my $range = $options->{range};
+    if (defined($range) && $range eq 'span') {
+        my $parse = sub {
+            return undef if (!defined($_[0]) || $_[0] !~ /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?$/);
+            return eval { timelocal(0, $5 || 0, $4 || 0, $3, $2 - 1, $1) };
+        };
+        $spanFrom = $parse->($options->{from});
+        $spanTo = $parse->($options->{to});
+        # A date-only end value includes that whole day
+        $spanTo += 86400 if (defined($spanTo) && ($options->{to} || '') !~ /[T ]/);
+        if (!defined($spanFrom) || !defined($spanTo) || $spanTo <= $spanFrom || $spanTo - $spanFrom > 366 * 86400) {
+            $spanFrom = $spanTo = undef;
+            $range = undef;
+        }
+    }
+    $range = ($attrHours == 24 ? '24h' : 'custom') if (!defined($range) || !exists($rangeHours{$range}));
+    my $hours = defined($spanFrom) ? ($spanTo - $spanFrom) / 3600
+        : $range eq 'custom' ? $attrHours : $rangeHours{$range};
+    $range = 'span' if (defined($spanFrom));
+    my $offset = $options->{offset};
+    $offset = 0 if (!defined($offset) || $offset !~ /^-?\d+$/ || $offset > 8760 || $offset < -8760);
+    $offset = 0 if ($offset < 0 && !defined($spanFrom));
+    $rangeStep{span} = $hours <= 48 ? 30 : $hours <= 200 ? 60 : $hours <= 800 ? 240 : 1440;
+    my $step = $options->{step};
+    $step = ($rangeStep{$range} || 30) if (!defined($step) || $step !~ /^\d+$/ || $step < 5 || $step > 1440);
+    return {offset => $offset, step => $step, hours => $hours, range => $range,
+        from => $spanFrom, to => $spanTo};
+}
+
+# Chart and history table of one card; only built when the card is opened.
+sub TemperatureCollector_DetailHtml {
+    my ($hash, $device, $index, $options) = @_;
+    my $params = TemperatureCollector_HistoryParams($hash, $options);
+    my $temperatureHistory = [];
+    my $humidityHistory = [];
+    if (TemperatureCollector_HistorySource($hash)) {
+        $temperatureHistory = TemperatureCollector_History(
+            $hash, $device->{name}, $device->{temperatureReading}, $params);
+        $humidityHistory = TemperatureCollector_History(
+            $hash, $device->{name}, $device->{humidityReading}, $params, 'humidity')
+            if ($device->{humidityReading});
+    }
+    my $html = '<div data-hours="' . $params->{hours} . '" data-step="' . $params->{step} . '">'
+        . TemperatureCollector_Svg($temperatureHistory, $humidityHistory, $params->{hours},
+            $params->{step}, 'tc-chart-' . $index, $params->{range},
+            strftime('%Y-%m-%dT%H:%M', localtime(defined($params->{from}) ? $params->{from} : time() - 86400)),
+            strftime('%Y-%m-%dT%H:%M', localtime(defined($params->{to}) ? $params->{to} : time())));
+    if (AttrVal($hash->{NAME}, 'showHistoryTable', 0)) {
+        my $tableId = 'tc-history-' . $index;
+        $html .= '<button type="button" class="tc-history-toggle" aria-expanded="false"'
+            . ' aria-controls="' . $tableId . '" title="Messwerttabelle ein-/ausblenden"'
+            . ' onclick="var p=document.getElementById(\'' . $tableId
+            . '\');var o=p.hidden;p.hidden=!o;this.textContent=o?\'−\':\'+\';'
+            . 'this.setAttribute(\'aria-expanded\',o?\'true\':\'false\');">+</button>'
+            . '<div id="' . $tableId . '" class="tc-history-panel" hidden>'
+            . TemperatureCollector_HistoryTable($temperatureHistory, $humidityHistory) . '</div>';
+    }
+    return $html . '</div>';
+}
+
 sub TemperatureCollector_BuildDashboard {
     my ($hash, $options) = @_;
     $options ||= {};
     my $devices = TemperatureCollector_Discover($hash->{NAME});
     $devices = TemperatureCollector_ApplyOrder($hash->{NAME}, $devices);
-    my $dbHash = TemperatureCollector_DbLog($hash);
     my $refresh = AttrVal($hash->{NAME}, 'autoRefresh', 60);
     $refresh = 60 if ($refresh !~ /^\d+$/ || $refresh > 3600);
-    my $historyHours = AttrVal($hash->{NAME}, 'historyHours', 24);
-    $historyHours = 24 if ($historyHours !~ /^\d+(?:\.\d+)?$/ || $historyHours < 1 || $historyHours > 8760);
-    my $offset = $options->{offset};
-    $offset = 0 if (!defined($offset) || $offset !~ /^\d+$/ || $offset > 8760);
-    my $step = $options->{step};
-    $step = 30 if (!defined($step) || $step !~ /^\d+$/ || $step < 5 || $step > 240);
     my $html = <<'HTML';
 <style>
 .tc-dashboard{font:14px 'Avenir Next','Helvetica Neue',sans-serif;color:#f4f4e9;background:#1d2825;width:100%;max-width:1120px;margin:0 auto;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a;overflow:hidden}
 .tc-header{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:76px;margin:0;padding:15px 24px;background:#202e29;border-bottom:1px solid #405149}
-.tc-header-actions{display:flex;align-items:center;gap:8px}.tc-edit{width:38px;height:38px;padding:0;border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 18px 'Helvetica Neue',sans-serif;line-height:1}
+.tc-header-actions{display:flex;align-items:center;gap:8px}.tc-edit{width:40px;height:40px;padding:0;border:0;border-radius:0;background:none;color:#f4f4e9;cursor:pointer;font:600 28px 'Helvetica Neue',sans-serif;line-height:1}.tc-edit:hover{color:#9ce2bb}.tc-save{display:none;padding:8px 12px;border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}.tc-save:hover{background:#34463c}.tc-reorder-mode .tc-save{display:inline-block}
 .tc-clock{position:absolute;left:56%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;color:#c9d8cd}.tc-clock-face{width:44px;height:44px}.tc-clock-face circle{fill:#1d2825;stroke:#52bd8b;stroke-width:1.5}.tc-clock-face line{stroke:#a9b7ac;stroke-width:1}.tc-clock-face .tc-tick-major{stroke:#f4f4e9;stroke-width:1.8}.tc-clock-face .tc-hand-hour{stroke:#f4f4e9;stroke-width:2}.tc-clock-face .tc-hand-minute{stroke:#52bd8b;stroke-width:1.5}.tc-clock-face .tc-hand-second{stroke:#e07b65;stroke-width:1}.tc-clock-date{font-size:11px;white-space:nowrap;color:#a9b7ac}
 @media(max-width:760px){.tc-header{padding:13px 15px}.tc-grid{padding:16px 15px 18px}}
 @media(max-width:640px){.tc-clock{display:none}}
@@ -512,15 +720,14 @@ sub TemperatureCollector_BuildDashboard {
 .tc-brand small{display:block;color:#a9b7ac;font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px}.tc-brand h1{margin:3px 0;font:500 22px Georgia,serif;letter-spacing:0;line-height:1.1}
 .tc-live{display:flex;align-items:center;gap:8px;color:#a9b7ac}.tc-led{width:9px;height:9px;border-radius:50%;background:#52bd8b;box-shadow:0 0 8px #52bd8b;animation:tc-live-pulse 4s ease-in-out infinite}@keyframes tc-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #52bd8b}50%{opacity:1;box-shadow:0 0 10px #52bd8b}}
 .tc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:22px 24px 24px;background:linear-gradient(155deg,#26352e,#1b2823 62%,#202c27)}
-.tc-card{border:0;border-top:2px solid #52bd8b;border-radius:0;background:#26342d;overflow:hidden;box-shadow:none;padding:0 15px 0}
-.tc-card:nth-child(3n){border-top-color:#e3b953}.tc-card:nth-child(3n+2){border-top-color:#8ab6d1}
+.tc-card{border:0;border-top:1px solid #46544c;border-radius:0;background:#26342d;overflow:hidden;box-shadow:none;padding:0 15px 0}
 .tc-card summary{cursor:pointer;list-style:none;padding:14px 0;display:flex;justify-content:space-between;gap:12px}
 .tc-card summary::-webkit-details-marker{display:none}
 .tc-name{font-weight:600}.tc-type,.tc-meta,.tc-muted{color:#a9b7ac;font-size:12px}
 .tc-value{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:22px;font-weight:600;white-space:nowrap;color:#edf0e6}.tc-temperature{font-size:22px}.tc-humidity{font-size:13px;color:#8ab6d1}
-.tc-detail{border-top:1px solid #46534a;padding:12px 0}.tc-chart-wrap{overflow-x:auto}.tc-chart-title{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#a9b7ac;font-size:12px;margin-bottom:4px}.tc-chart-controls{display:flex;gap:3px}.tc-chart-controls button{border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;min-width:24px;height:24px;font:600 12px 'Helvetica Neue',sans-serif}.tc-chart{display:block;width:100%;min-width:560px;height:190px;background:#202e29}
-.tc-axis{stroke:#69796f;stroke-width:1}.tc-axis-label,.tc-axis-value{fill:#a9b7ac;font-size:10px}.tc-history-toggle{border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font-size:18px;height:28px;width:28px;line-height:20px;margin-top:12px}.tc-history-panel[hidden]{display:none}
-.tc-chart polyline{fill:none;stroke:#52bd8b;stroke-width:3;vector-effect:non-scaling-stroke}.tc-chart .tc-series-humidity polyline{stroke:#8ab6d1}.tc-series-hidden{display:none}.tc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.tc-legend-item{border:0;background:transparent;color:#a9b7ac;cursor:pointer;padding:0;font:inherit;font-size:12px}.tc-legend-item.tc-legend-hidden{opacity:.45;text-decoration:line-through}.tc-legend-item i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#52bd8b;margin-right:5px}.tc-legend-item .tc-legend-humidity{background:#8ab6d1}
+.tc-detail{border-top:1px solid #46534a;padding:12px 0}.tc-chart-wrap{overflow-x:auto;position:relative}.tc-tip{position:absolute;pointer-events:none;background:#101a16;color:#f4f4e9;border:1px solid #52bd8b;padding:3px 7px;font-size:12px;white-space:nowrap;z-index:5}.tc-tip[hidden]{display:none}.tc-tip-time{display:block;font-size:10px;color:#a9b7ac;margin-top:1px}.tc-dot{pointer-events:none}.tc-chart-title{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#a9b7ac;font-size:12px;margin-bottom:4px}.tc-chart-controls{display:flex;gap:3px}.tc-chart-controls button{border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;min-width:24px;height:24px;font:600 12px 'Helvetica Neue',sans-serif}.tc-chart{display:block;width:100%;min-width:560px;height:190px;background:#202e29}
+.tc-range{background:#26342d;color:#f4f4e9;border:1px solid #52bd8b;border-radius:0;font-size:12px;height:24px}.tc-axis-humidity{fill:#8ab6d1!important}.tc-axis{stroke:#69796f;stroke-width:1}.tc-axis-label,.tc-axis-value{fill:#a9b7ac;font-size:10px}.tc-history-toggle{border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font-size:18px;height:28px;width:28px;line-height:20px;margin-top:12px}.tc-history-panel[hidden]{display:none}
+.tc-chart path{fill:none;stroke:#52bd8b;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}.tc-chart .tc-series-humidity path{stroke:#8ab6d1}.tc-span{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0;font-size:12px;color:#a9b7ac}.tc-span[hidden]{display:none}.tc-span input{background:#26342d;color:#f4f4e9;border:1px solid #52bd8b;border-radius:0;font-size:12px;height:24px;color-scheme:dark}.tc-span button{border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;height:26px;font-size:12px}.tc-series-hidden{display:none}.tc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.tc-legend-item{border:0;background:transparent;color:#a9b7ac;cursor:pointer;padding:0;font:inherit;font-size:12px}.tc-legend-item.tc-legend-hidden{opacity:.45;text-decoration:line-through}.tc-legend-item i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#52bd8b;margin-right:5px}.tc-legend-item .tc-legend-humidity{background:#8ab6d1}
 .tc-history{border-collapse:collapse;width:100%;margin-top:12px;font-size:12px}.tc-history th,.tc-history td{padding:4px 6px;border-bottom:1px solid #46534a;text-align:left}
 .tc-error{padding:12px;border:1px solid #a45b5b;background:#321f1f;color:#ffd9d9}
 .tc-reorder-mode .tc-card{cursor:move;outline:1px dashed #52bd8b;outline-offset:3px}.tc-reorder-mode .tc-card summary{pointer-events:none}.tc-card.tc-dragging{opacity:.45}
@@ -557,6 +764,7 @@ HTML
         . ($options->{editable}
             ? '<button type="button" class="tc-edit tc-reorder-edit" title="Sensorreihenfolge bearbeiten" aria-label="Sensorreihenfolge bearbeiten"'
                 . ' onclick="tcToggleEdit(this)">✎</button>'
+                . '<button type="button" class="tc-save" onclick="tcSaveClick()">💾 Speichern</button>'
             : '')
         . '</div></header><div class="tc-grid">';
 
@@ -566,13 +774,6 @@ HTML
 
     my $index = 0;
     for my $device (@{$devices}) {
-        my $temperatureHistory = $dbHash
-            ? TemperatureCollector_History($hash, $device->{name}, $device->{temperatureReading}, {offset => $offset, step => $step})
-            : [];
-        my $humidityHistory = $dbHash && $device->{humidityReading}
-            ? TemperatureCollector_History($hash, $device->{name}, $device->{humidityReading},
-                {offset => $offset, step => $step}, 'humidity')
-            : [];
         my $humidity = defined($device->{humidity})
             ? TemperatureCollector_Escape(sprintf('%s', $device->{humidity})) . ' %' : '';
         my $readingName = AttrVal($hash->{NAME}, 'showReadingName', 1);
@@ -584,21 +785,9 @@ HTML
             . '<span class="tc-value"><span class="tc-temperature">'
             . TemperatureCollector_Escape(sprintf('%s', $device->{temperature})) . ' °C</span>'
             . '<span class="tc-humidity">' . ($humidity || '&nbsp;') . '</span></span></summary>'
-            . '<div class="tc-detail">' . TemperatureCollector_Svg(
-                $temperatureHistory, $humidityHistory, $historyHours, $step, 'tc-chart-' . $index
-            );
-        if (AttrVal($hash->{NAME}, 'showHistoryTable', 0)) {
-            my $tableId = 'tc-history-' . $index;
-            $html .= '<button type="button" class="tc-history-toggle" aria-expanded="false"'
-                . ' aria-controls="' . $tableId . '" title="Messwerttabelle ein-/ausblenden"'
-                . ' onclick="var p=document.getElementById(\'' . $tableId
-                . '\');var o=p.hidden;p.hidden=!o;this.textContent=o?\'−\':\'+\';'
-                . 'this.setAttribute(\'aria-expanded\',o?\'true\':\'false\');">+</button>'
-                . '<div id="' . $tableId . '" class="tc-history-panel" hidden>'
-                . TemperatureCollector_HistoryTable($temperatureHistory, $humidityHistory) . '</div>';
-        }
-        $html .= '<p class="tc-meta">Aktualisiert: '
-            . TemperatureCollector_Escape($device->{temperatureTimestamp}) . '</p></div></details>';
+            . '<div class="tc-detail"><div class="tc-slot"><p class="tc-muted">Lade Verlauf …</p></div>'
+            . '<p class="tc-meta">Aktualisiert: '
+            . TemperatureCollector_Escape(TemperatureCollector_GermanTime($device->{temperatureTimestamp})) . '</p></div></details>';
         $index++;
     }
     $html .= '</div></div>';
@@ -617,6 +806,7 @@ HTML
         . TemperatureCollector_EscapeJson($hash->{NAME}) . ',vk=k+":view",ek=k+":edit",cn='
         . TemperatureCollector_EscapeJson($hash->{NAME}) . ',cp='
         . TemperatureCollector_EscapeJson(TemperatureCollector_DashboardBasePath()) . ',su=cp+"/TemperatureCollector/"+encodeURIComponent(cn);'
+        . ($options->{embed} ? 'window.tcCurrentUrl=su+"?tcEmbed=1";' : '')
         . 'window.tcApplyOrder=function(root){};'
         . 'window.tcApplyView=function(root){var list=localStorage.getItem(vk)==="list";root.classList.toggle("tc-list-view",list);'
         . 'var button=root.querySelector(".tc-header-actions .tc-edit");if(button)button.textContent=list?"▦":"☷";};'
@@ -625,10 +815,18 @@ HTML
         . 'window.tcApplyEdit=function(root){var active=localStorage.getItem(ek)==="1";root.classList.toggle("tc-reorder-mode",active);'
         . 'var button=root.querySelector(".tc-reorder-edit");if(!button){root.classList.remove("tc-reorder-mode");'
         . 'root.querySelectorAll(".tc-card").forEach(function(card){card.draggable=false;});return;}'
-        . 'button.textContent=active?"✓":"✎";'
         . 'root.querySelectorAll(".tc-card").forEach(function(card){card.draggable=active;});};'
-        . 'window.tcToggleEdit=function(button){var active=d.classList.toggle("tc-reorder-mode");'
-        . 'localStorage.setItem(ek,active?"1":"0");button.textContent=active?"✓":"✎";button.setAttribute("aria-pressed",active?"true":"false");'
+        . 'window.tcOrder=function(){return Array.prototype.map.call(d.querySelectorAll(".tc-card"),function(c){return c.getAttribute("data-device");}).join("|");};'
+        . 'window.tcTake=function(){var cards=Array.prototype.slice.call(d.querySelectorAll(".tc-card"));'
+        . 'window.tcSnap={sig:tcOrder(),cards:cards,parent:cards.length?cards[0].parentNode:null,anchor:cards.length?cards[cards.length-1].nextSibling:null};};'
+        . 'window.tcRestore=function(){var s=window.tcSnap;if(!s||!s.parent)return;s.cards.forEach(function(c){s.parent.insertBefore(c,s.anchor);});};'
+        . 'window.tcAsk=function(onDiscard,onSave){var o=document.createElement(\'div\');o.style.cssText=\'position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center\';var b=document.createElement(\'div\');b.style.cssText=\'background:#1d2825;color:#f4f4e9;border:1px solid #46544c;padding:20px 24px;font:14px sans-serif;max-width:360px\';var p=document.createElement(\'p\');p.style.cssText=\'margin:0 0 16px\';p.textContent=\'\\u00c4nderungen verwerfen?\';b.appendChild(p);function mk(t,fn){var x=document.createElement(\'button\');x.type=\'button\';x.textContent=t;x.style.cssText=\'margin:0 8px 0 0;padding:8px 12px;border:1px solid #52bd8b;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px sans-serif\';x.onclick=function(){o.remove();if(fn)fn();};b.appendChild(x);}mk(\'OK\',onDiscard);mk(\'Abbrechen\',null);mk(\'\\u00c4nderungen speichern\',onSave);o.appendChild(b);document.body.appendChild(o);};'
+        . 'window.tcToggleEdit=function(button){var s=window.tcSnap;'
+        . 'if(d.classList.contains("tc-reorder-mode")&&s&&tcOrder()!==s.sig){tcAsk(function(){tcRestore();tcFlip(button);},function(){tcSaveClick();});return;}'
+        . 'tcFlip(button);};'
+        . 'window.tcFlip=function(button){'
+        . 'var active=d.classList.toggle("tc-reorder-mode");'
+        . 'localStorage.setItem(ek,active?"1":"0");button.setAttribute("aria-pressed",active?"true":"false");'
         . 'd.querySelectorAll(".tc-card").forEach(function(card){card.draggable=active;});};'
         . 'window.tcBindReorder=function(d){d.addEventListener("dragstart",function(e){if(!d.classList.contains("tc-reorder-mode"))return;'
         . 'var card=e.target.closest(".tc-card");if(!card)return;e.dataTransfer.setData("text/plain",card.getAttribute("data-device"));card.classList.add("tc-dragging");});'
@@ -640,35 +838,64 @@ HTML
         . 'var source=d.querySelector(".tc-card[data-device=\\"" + e.dataTransfer.getData("text/plain") + "\\"]"),target=e.target.closest(".tc-card");'
         . 'if(!source||!target||source===target)return;var rect=target.getBoundingClientRect();'
         . 'target.parentNode.insertBefore(source,e.clientY<rect.top+rect.height/2?target:target.nextSibling);'
-        . 'tcSaveOrder();});};'
-        . 'window.tcSaveOrder=function(){if(!d.querySelector(".tc-reorder-edit"))return;'
+        . '});};'
+        . 'window.tcSaveOrder=function(){if(!d.querySelector(".tc-reorder-edit"))return Promise.resolve(false);'
         . 'var order=Array.prototype.map.call(d.querySelectorAll(".tc-card"),function(c){return c.getAttribute("data-device");});'
         . 'var json=JSON.stringify(order),b64=btoa(unescape(encodeURIComponent(json)));'
-        . 'fetch(su+"?tcSaveOrder="+encodeURIComponent(b64),{credentials:"same-origin"}).then(function(response){'
+        . 'return fetch(su+"?tcSaveOrder="+encodeURIComponent(b64),{credentials:"same-origin"}).then(function(response){'
         . 'return response.text().then(function(text){if(!response.ok||text.indexOf("gespeichert")<0)throw new Error(text||"Speichern fehlgeschlagen");});'
         . '}).catch(function(){return fetch(cp+"?cmd=set%20"+encodeURIComponent(cn)+"%20saveOrder%20"+encodeURIComponent(b64)+"&XHR=1",'
         . '{credentials:"same-origin"}).then(function(response){return response.text();}).then(function(text){'
         . 'if(text.indexOf("gespeichert")<0)throw new Error(text||"Speichern fehlgeschlagen");});'
-        . '}).catch(function(error){if(window.console)console.error("TemperatureCollector: "+error.message);});};'
-        . 'tcBindReorder(d);tcApplyOrder(d);tcApplyView(d);tcApplyEdit(d);'
-        . 'window.tcDashboardLoad=function(url){window.tcCurrentUrl=url;var o={},p={};'
-        . 'd.querySelectorAll("details[data-device][open]").forEach(function(e){o[e.getAttribute("data-device")]=true;});'
-        . 'd.querySelectorAll("details[data-device] .tc-history-panel:not([hidden])").forEach(function(e){'
-        . 'var card=e.closest("details[data-device]");if(card)p[card.getAttribute("data-device")]=true;});'
+        . '}).then(function(){return true;},function(error){if(window.console)console.error("TemperatureCollector: "+error.message);return false;});};'
+        . 'window.tcSaveClick=function(){tcSaveOrder().then(function(ok){if(!ok)return;tcTake();d.classList.remove("tc-reorder-mode");localStorage.setItem(ek,"0");'
+        . 'd.querySelectorAll(".tc-card").forEach(function(card){card.draggable=false;});});};'
+        . 'tcTake();tcBindReorder(d);tcApplyOrder(d);tcApplyView(d);tcApplyEdit(d);'
+        . 'window.tcDetailLoad=function(card){var slot=card.querySelector(".tc-slot");if(!slot)return;'
+        . 'var u=new URL(su,window.location.href),st=card.tcState||{};'
+        . 'Object.keys(st).forEach(function(n){if(st[n]!==undefined&&st[n]!=="")u.searchParams.set(n,st[n]);});'
+        . 'u.searchParams.set("tcDetail",card.getAttribute("data-device"));'
+        . 'var wasOpen=!!slot.querySelector(".tc-history-panel:not([hidden])");'
+        . 'fetch(u.href,{cache:"no-store",credentials:"same-origin"}).then(function(x){return x.text();}).then(function(t){'
+        . 'if(!card.open)return;slot.innerHTML=t;if(wasOpen){var np=slot.querySelector(".tc-history-panel"),nb=slot.querySelector(".tc-history-toggle");'
+        . 'if(np){np.hidden=false;if(nb){nb.textContent="−";nb.setAttribute("aria-expanded","true");}}}}).catch(function(){});};'
+        . 'window.tcHover=function(e){var svg=e.target.closest&&e.target.closest("svg.tc-chart");if(!svg)return;'
+        . 'var wrap=svg.closest(".tc-chart-wrap"),tip=wrap.querySelector(".tc-tip"),dot=svg.querySelector(".tc-dot");'
+        . 'var m=svg.getScreenCTM();if(!m)return;var pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;pt=pt.matrixTransform(m.inverse());'
+        . 'var best=null;svg.querySelectorAll("g[data-pts]").forEach(function(g){if(g.classList.contains("tc-series-hidden"))return;'
+        . '(g.getAttribute("data-pts")||"").split(";").forEach(function(r){var a=r.split(",");if(a.length<4)return;'
+        . 'var dx=Math.abs(pt.x-parseFloat(a[0])),dy=Math.abs(pt.y-parseFloat(a[1]));'
+        . 'if(dy<=14&&(!best||dx<best.dx||(dx===best.dx&&dy<best.dy)))best={dx:dx,dy:dy,x:parseFloat(a[0]),y:parseFloat(a[1]),v:a[2],t:a.slice(3).join(","),u:g.getAttribute("data-unit")};});});'
+        . 'if(!best||best.dx>12){tip.hidden=true;if(dot)dot.setAttribute("r","0");return;}'
+        . 'if(!dot){dot=document.createElementNS("http://www.w3.org/2000/svg","circle");dot.setAttribute("class","tc-dot");dot.setAttribute("fill","#f4f4e9");svg.appendChild(dot);}'
+        . 'dot.setAttribute("cx",best.x);dot.setAttribute("cy",best.y);dot.setAttribute("r","3");'
+        . 'tip.textContent="";var tv=document.createElement("div");tv.textContent=parseFloat(best.v).toFixed(1)+" "+best.u;tip.appendChild(tv);var td=document.createElement("small");td.className="tc-tip-time";td.textContent=best.t.replace(/_/g," ").replace(/^(\\d{4})-(\\d{2})-(\\d{2})/,"$3.$2.$1").replace(/(\\d{2}:\\d{2}):\\d{2}/,"$1");tip.appendChild(td);tip.hidden=false;'
+        . 'var wr=wrap.getBoundingClientRect(),sx=best.x*m.a+m.e-wr.left+wrap.scrollLeft,sy=best.y*m.d+m.f-wr.top;'
+        . 'tip.style.left=Math.max(0,sx-tip.offsetWidth/2)+"px";tip.style.top=Math.max(0,sy-tip.offsetHeight-10)+"px";};'
+        . 'window.tcBindDetails=function(root){root.addEventListener("mousemove",tcHover);root.addEventListener("mouseleave",function(){root.querySelectorAll(".tc-tip").forEach(function(t){t.hidden=true;});});root.addEventListener("toggle",function(e){var card=e.target;'
+        . 'if(card.matches&&card.matches("details[data-device]")&&card.open)tcDetailLoad(card);},true);};'
+        . 'window.tcReloadOpen=function(){d.querySelectorAll("details[data-device][open]").forEach(tcDetailLoad);};'
+        . 'tcBindDetails(d);'
+        . 'window.tcDashboardLoad=function(url){window.tcCurrentUrl=url;var o={};'
+        . 'd.querySelectorAll("details[data-device][open]").forEach(function(e){o[e.getAttribute("data-device")]={html:e.querySelector(".tc-slot").innerHTML,st:e.tcState};});'
         . 'fetch(url,{cache:"no-store",credentials:"same-origin"}).then(function(x){return x.text();}).then(function(t){'
-        . 'var n=new DOMParser().parseFromString(t,"text/html").querySelector(".tc-dashboard");if(!n)return;tcApplyOrder(n);tcApplyView(n);tcApplyEdit(n);tcBindReorder(n);'
+        . 'var n=new DOMParser().parseFromString(t,"text/html").querySelector(".tc-dashboard");if(!n)return;tcApplyOrder(n);tcApplyView(n);tcApplyEdit(n);tcBindReorder(n);tcBindDetails(n);'
         . 'n.querySelectorAll("details[data-device]").forEach(function(e){var name=e.getAttribute("data-device");'
-        . 'if(o[name])e.open=true;if(p[name]){var panel=e.querySelector(".tc-history-panel"),button=e.querySelector(".tc-history-toggle");'
-        . 'if(panel){panel.hidden=false;if(button){button.textContent="−";button.setAttribute("aria-expanded","true");}}}});'
-        . 'd.replaceWith(n);d=n;}).catch(function(){});};'
-        . 'window.tcShift=function(button,direction){var u=new URL(window.tcCurrentUrl);'
-        . 'var h=parseFloat(u.searchParams.get("tcHours")||"' . (0 + $historyHours) . '");'
-        . 'var o=parseInt(u.searchParams.get("tcOffset")||"0",10)||0;'
-        . 'u.searchParams.set("tcHours",h);u.searchParams.set("tcOffset",Math.max(0,o+direction*h));window.tcDashboardLoad(u.href);};'
-        . 'window.tcZoom=function(button,direction){var u=new URL(window.tcCurrentUrl);'
-        . 'var s=[5,10,15,30,60,120,240];var c=parseInt(u.searchParams.get("tcStep")||"' . (0 + $step) . '",10)||30;'
-        . 'var i=s.indexOf(c);if(i<0)i=3; i=Math.max(0,Math.min(s.length-1,i+direction));'
-        . 'u.searchParams.set("tcStep",s[i]);window.tcDashboardLoad(u.href);};})();</script>';
+        . 'if(o[name]){e.querySelector(".tc-slot").innerHTML=o[name].html;e.tcState=o[name].st;e.open=true;}});'
+        . 'd.replaceWith(n);d=n;tcReloadOpen();}).catch(function(){});};'
+        . 'window.tcState=function(el){var card=el.closest("details[data-device]");if(!card.tcState)card.tcState={};return card;};'
+        . 'window.tcShift=function(button,direction){var card=tcState(button),w=button.closest("[data-hours]"),h=parseFloat(w.getAttribute("data-hours"))||24;'
+        . 'var o=parseInt(card.tcState.tcOffset||"0",10)||0;card.tcState.tcOffset=Math.round(o+direction*h);'
+        . 'if(card.tcState.tcRange!=="span"&&card.tcState.tcOffset<0)card.tcState.tcOffset=0;tcDetailLoad(card);};'
+        . 'window.tcRange=function(sel){var card=tcState(sel);'
+        . 'if(sel.value==="span"){var row=card.querySelector(".tc-span");if(row)row.hidden=false;return;}'
+        . 'card.tcState={tcRange:sel.value};tcDetailLoad(card);};'
+        . 'window.tcSpan=function(button){var card=tcState(button),row=button.closest(".tc-span"),f=row.querySelector(".tc-from").value,t=row.querySelector(".tc-to").value;'
+        . 'if(!f||!t||t<=f){alert("Bitte einen gültigen Zeitraum (von < bis) wählen.");return;}'
+        . 'card.tcState={tcRange:"span",tcFrom:f,tcTo:t};tcDetailLoad(card);};'
+        . 'window.tcZoom=function(button,direction){var card=tcState(button),w=button.closest("[data-step]"),c=parseInt(w.getAttribute("data-step"),10)||30;'
+        . 'var s=[5,10,15,30,60,120,240,480,1440],i=s.indexOf(c);if(i<0)i=3;i=Math.max(0,Math.min(s.length-1,i+direction));'
+        . 'card.tcState.tcStep=s[i];tcDetailLoad(card);};})();</script>';
     if ($refresh) {
         $html .= '<script>setInterval(function(){if(!document.querySelector(".tc-reorder-mode"))'
             . 'window.tcDashboardLoad(window.tcCurrentUrl);},'
@@ -697,8 +924,27 @@ sub main::TemperatureCollector_CGI {
 
     my $options = {
         offset => TemperatureCollector_QueryValue($request, 'tcOffset', 0),
-        step => TemperatureCollector_QueryValue($request, 'tcStep', 30),
+        step => TemperatureCollector_QueryValue($request, 'tcStep', undef),
+        range => TemperatureCollector_QueryValue($request, 'tcRange', undef),
+        from => TemperatureCollector_QueryValue($request, 'tcFrom', undef),
+        to => TemperatureCollector_QueryValue($request, 'tcTo', undef),
     };
+    my $detail = TemperatureCollector_QueryValue($request, 'tcDetail', undef);
+    if (defined($detail)) {
+        my $devices = TemperatureCollector_ApplyOrder($name,
+            TemperatureCollector_Discover($name));
+        for my $index (0 .. $#{$devices}) {
+            next if ($devices->[$index]{name} ne $detail);
+            return ('text/html; charset=utf-8',
+                TemperatureCollector_DetailHtml($hash, $devices->[$index], $index, $options));
+        }
+        return ('text/plain; charset=utf-8', 'Unknown sensor');
+    }
+    # Fragment for embedding (e.g. FTUI): no html/head/body, base URL independent of the host page
+    if (TemperatureCollector_QueryValue($request, 'tcEmbed', 0) || TemperatureCollector_QueryValue($request, 'embed', 0)) {
+        $options->{embed} = 1;
+        return ('text/html; charset=utf-8', TemperatureCollector_BuildDashboard($hash, $options));
+    }
     my $html = TemperatureCollector_BuildDashboard($hash, $options);
     return ('text/html; charset=utf-8', '<!doctype html><html lang="de"><head><meta charset="utf-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
@@ -734,6 +980,7 @@ sub main::TemperatureCollector_CGI {
 <ul>
     <li><code>get &lt;name&gt; _showDashboard</code> - Dashboard mit allen erkannten Thermometern</li>
     <li><code>get &lt;name&gt; _dashboardURL</code> - URL für die eigenständige FHEMWEB-Ansicht</li>
+    <li><code>get &lt;name&gt; _dashboardEmbedURL</code> - relative URL des Dashboard-Fragments ohne html/head/body, z.B. für FTUI</li>
 </ul>
 <p>
     Der Editierstift für die Sensorreihenfolge wird nur bei
@@ -744,7 +991,9 @@ sub main::TemperatureCollector_CGI {
 <b>Attributes</b>
 <ul>
     <li><code>dbLog &lt;name&gt;</code> - optionales DbLog-Gerät; ohne Angabe wird das erste DbLog-Gerät verwendet</li>
-    <li><code>historyHours &lt;1..8760&gt;</code> - Zeitraum der DbLog-Historie, Standard: 24</li>
+    <li><code>fileLog &lt;name&gt;</code> - optionales FileLog-Gerät für die Historie; ohne Angabe wird das erste FileLog verwendet, dessen Regexp zu einem Temperatur-Reading passt</li>
+    <li><code>historySource auto|dblog|filelog</code> - Quelle der Historie; <code>auto</code> bevorzugt DbLog und fällt auf FileLog zurück, Standard: auto</li>
+    <li><code>historyHours &lt;1..8760&gt;</code> - Zeitraum der Historie, Standard: 24</li>
     <li><code>autoRefresh 0|15|30|60|300</code> - Aktualisierung ohne vollständigen Seiten-Reload in Sekunden, Standard: 60</li>
     <li><code>showHistoryTable 0|1</code> - Plus-Schalter für die Messwerttabelle aktivieren, Standard: 0</li>
     <li><code>showReadingName 0|1</code> - Reading-Namen unter dem Alias anzeigen, Standard: 1</li>
@@ -752,10 +1001,19 @@ sub main::TemperatureCollector_CGI {
     <li><code>excludeDevices &lt;name,...&gt;</code> - diese Geräte aus der Erkennung ausschließen</li>
 </ul>
 
+<b>FileLog</b>
+<p>
+    Wird im Dateisystem statt in einer Datenbank geloggt, liest das Modul die
+    Logdateien des FileLog-Geräts direkt aus. Erwartet werden Zeilen im
+    Standardformat <code>2024-01-01_12:00:00 Geraet reading: wert</code>
+    (FileLog-Regexp z.B. <code>Geraet:temperature:.*</code>). Der Rest
+    (Diagramm, Navigation, Tabelle) verhält sich wie bei DbLog.
+</p>
+
 <b>DbLog</b>
 <p>
     Wenn ein DbLog-Gerät vorhanden ist, fragt das Modul die historische
-    Temperatur über die FHEM-interne DbLog-Schnittstelle ab. Ohne DbLog werden
+    Temperatur über die FHEM-interne DbLog-Schnittstelle ab. Ohne DbLog und FileLog werden
     die aktuellen Readings weiterhin angezeigt; historische Diagramme sind dann
     nicht verfügbar. Das Diagramm zeigt die Achsen Temperatur (Y) und Zeit (X)
     sowie den gewählten Zeitraum und mehrere Zeitmarken. Beim automatischen

@@ -3,9 +3,9 @@
 VolvoConnect verbindet ein FHEM-Gerät mit den offiziellen Volvo Cars APIs. Das Modul liest Energie-, Fahrzeug-, Diagnose- und Standortdaten und stellt ausgewählte Fahrzeugbefehle bereit. Es handelt sich um ein Community-Modul, nicht um ein von Volvo Cars herausgegebenes Produkt.
 
 **Dokumente:** [Installations- und Betriebsdokumentation](DOKUMENTATION.md) ·
-[Projektübersicht](../../README.md) · [Änderungsprotokoll](../../CHANGED)
+[Projektübersicht](../../README.md) · [Änderungsprotokoll](../../CHANGED_volvo)
 
-`CHANGED` ist das FHEM-kompatible Änderungsprotokoll. Es wird beim GitHub-Actions-Lauf
+`CHANGED_volvo` ist das FHEM-kompatible Änderungsprotokoll dieses Moduls. Es wird beim GitHub-Actions-Lauf
 automatisch aus den Git-Commits erzeugt und zusammen mit den vier Controls-Dateien
 veröffentlicht:
 

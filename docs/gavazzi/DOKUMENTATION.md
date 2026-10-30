@@ -179,6 +179,41 @@ ordnungsgemäßen Zustand pulsiert langsam; Fehler-, Offline- und unbekannte
 Zustände bleiben rot beziehungsweise neutral. `_dashboardURL` liefert eine
 eigenständige Ansicht des Dashboards.
 
+## Einbettung in FTUI
+
+Für die Einbettung in eine andere Seite liefert die Dashboard-URL mit dem
+Parameter `embed=1` nur ein Fragment ohne `<html>`, `<head>` und `<body>`.
+Die relative URL ermittelt `get GavazziEM24_1 _dashboardEmbedURL`, sie
+lautet zum Beispiel `/fhem/GavazziEM24/GavazziEM24_1?embed=1`.
+Die Aktualisierung läuft weiterhin über FHEMWEB.
+
+Das Fragment enthält ein Skript. Ein einfaches HTML-Widget, das den Inhalt nur
+per `innerHTML` setzt, führt dieses Skript nicht aus. Die folgende Variante
+in reinem JavaScript funktioniert in FTUI 1 und FTUI 2, weil sie kein jQuery
+benötigt. Sie setzt voraus, dass FTUI und FHEMWEB über denselben Host und Port
+erreichbar sind (sonst ist CORS nötig):
+
+```html
+<div id="fhem-dashboard"></div>
+<script>
+  fetch('/fhem/GavazziEM24/GavazziEM24_1?embed=1', {credentials: 'same-origin'})
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var target = document.getElementById('fhem-dashboard');
+      target.innerHTML = '';
+      target.appendChild(document.createRange().createContextualFragment(html));
+    });
+</script>
+```
+
+`createContextualFragment` führt die enthaltenen Skripte aus. In FTUI 1 kann
+alternativ `$('#fhem-dashboard').load('<URL>')` verwendet werden. Ein `iframe`
+mit der normalen `_dashboardURL` funktioniert ebenfalls, benötigt aber eine
+feste Höhe und Breite im FTUI-Layout.
+
+Ob die Einbettung in der eigenen FTUI-Installation sauber läuft, hängt vom
+verwendeten Widget und Layout ab und sollte dort geprüft werden.
+
 ## Fehlerbehebung und Sicherheit
 
 - Bei fehlenden Werten zuerst IO-Device, serielle Schnittstelle, Baudrate und

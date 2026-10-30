@@ -412,7 +412,7 @@ sub DashboardBasePath {
 our $DashboardTemplate;
 
 sub BuildDashboard {
-    my ($hash) = @_;
+    my ($hash, $embed) = @_;
     if (!defined($DashboardTemplate)) {
         open my $moduleFile, '<', __FILE__
             or die "cannot read Solax dashboard template: $!";
@@ -428,6 +428,8 @@ sub BuildDashboard {
     my $html = $DashboardTemplate;
     $html =~ s/__DEVICE__/$name/g;
     $html =~ s/__FHEM_BASE__/HtmlEscape($basePath)/ge;
+    # Embed mode: fragment without html/head/body for FTUI and similar hosts
+    return $html if ($embed);
     return '<!doctype html><html lang="de"><head><meta charset="utf-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . $name . ' - SolaX Energie</title></head>'
@@ -438,6 +440,9 @@ sub BuildDashboard {
 sub GetFn {
     my ($hash, $name, $cmd, @args) = @_;
     return BuildDashboard($hash) if ($cmd eq '_showDashboard');
+    if ($cmd eq '_dashboardEmbedURL') {
+        return DashboardBasePath() . '/SolaxModbus/' . main::urlEncode($name) . '?embed=1';
+    }
     if ($cmd eq '_dashboardURL') {
         my $webName = $main::FW_wname;
         my $webHash = defined($webName) ? $main::defs{$webName} : undef;
@@ -457,7 +462,7 @@ sub GetFn {
 
     my $ret = Modbus::GetLDFn($hash, $name, $cmd, @args);
     if (defined($ret) && $ret =~ /^Unknown argument (.*?), choose one of (.*)$/) {
-        $ret = "Unknown argument $1, choose one of _showDashboard:noArg _dashboardURL:noArg $2";
+        $ret = "Unknown argument $1, choose one of _showDashboard:noArg _dashboardURL:noArg _dashboardEmbedURL:noArg $2";
     }
     return $ret;
 }
@@ -472,7 +477,8 @@ sub main::SolaxModbus_DashboardCGI {
     return ('text/plain; charset=utf-8', "Unknown SolaxModbus device: $name")
         if (!$hash || $hash->{TYPE} ne 'SolaxModbus');
 
-    my $html = eval { SolaxModbus::BuildDashboard($hash) };
+    my $embed = $request =~ /[?&]embed=1(?:&|$)/ ? 1 : 0;
+    my $html = eval { SolaxModbus::BuildDashboard($hash, $embed) };
     if ($@ || !defined($html)) {
         main::Log3($name, 2, "$name: Solax dashboard rendering failed: $@");
         return ('text/plain; charset=utf-8', "Dashboard rendering failed: $@");
@@ -677,6 +683,7 @@ sub SetFn {
         get for any reading defined above, e.g. <code>get SolaxWR batterySOC</code>
         <li><code>_showDashboard</code> - Live-Solax-Dashboard direkt in FHEM anzeigen</li>
         <li><code>_dashboardURL</code> - vollst&auml;ndige URL zur isolierten Dashboard-Ansicht ausgeben</li>
+        <li><code>_dashboardEmbedURL</code> - relative URL des Dashboard-Fragments (<code>?embed=1</code>, ohne html/head/body) f&uuml;r FTUI ausgeben</li>
     </ul>
     <br>
 

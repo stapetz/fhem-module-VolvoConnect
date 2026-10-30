@@ -101,6 +101,41 @@ verbundener Status dargestellt. Die eigenständige URL-Ansicht ist über
 `get SolaxWR _dashboardURL` verfügbar und dient der Anzeige ohne
 Bearbeitungsfunktion.
 
+## Einbettung in FTUI
+
+Für die Einbettung in eine andere Seite liefert die Dashboard-URL mit dem
+Parameter `embed=1` nur ein Fragment ohne `<html>`, `<head>` und `<body>`.
+Die relative URL ermittelt `get SolaxWR _dashboardEmbedURL`, sie
+lautet zum Beispiel `/fhem/SolaxModbus/SolaxWR?embed=1`.
+Die Aktualisierung läuft weiterhin über FHEMWEB.
+
+Das Fragment enthält ein Skript. Ein einfaches HTML-Widget, das den Inhalt nur
+per `innerHTML` setzt, führt dieses Skript nicht aus. Die folgende Variante
+in reinem JavaScript funktioniert in FTUI 1 und FTUI 2, weil sie kein jQuery
+benötigt. Sie setzt voraus, dass FTUI und FHEMWEB über denselben Host und Port
+erreichbar sind (sonst ist CORS nötig):
+
+```html
+<div id="fhem-dashboard"></div>
+<script>
+  fetch('/fhem/SolaxModbus/SolaxWR?embed=1', {credentials: 'same-origin'})
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var target = document.getElementById('fhem-dashboard');
+      target.innerHTML = '';
+      target.appendChild(document.createRange().createContextualFragment(html));
+    });
+</script>
+```
+
+`createContextualFragment` führt die enthaltenen Skripte aus. In FTUI 1 kann
+alternativ `$('#fhem-dashboard').load('<URL>')` verwendet werden. Ein `iframe`
+mit der normalen `_dashboardURL` funktioniert ebenfalls, benötigt aber eine
+feste Höhe und Breite im FTUI-Layout.
+
+Ob die Einbettung in der eigenen FTUI-Installation sauber läuft, hängt vom
+verwendeten Widget und Layout ab und sollte dort geprüft werden.
+
 ## Hinweise
 
 - Vor der Einrichtung muss die Modbus-TCP-Schnittstelle des Wechselrichters

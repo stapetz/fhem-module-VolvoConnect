@@ -531,7 +531,7 @@ sub DashboardBasePath {
 our $DashboardTemplate;
 
 sub BuildDashboard {
-    my ($hash) = @_;
+    my ($hash, $embed) = @_;
     if (!defined($DashboardTemplate)) {
         open my $moduleFile, '<', __FILE__
             or die "cannot read Gavazzi module template: $!";
@@ -549,6 +549,8 @@ sub BuildDashboard {
     $html =~ s/__FHEM_BASE__/$basePath/g;
     main::Log3($hash, 3, 'GavazziEM24 DEBUG BuildDashboard name=' . $hash->{NAME}
         . ' templateLength=' . length($DashboardTemplate) . ' htmlLength=' . length($html));
+    # Embed mode: fragment without html/head/body for FTUI and similar hosts
+    return $html if ($embed);
     return '<!doctype html><html lang="de"><head><meta charset="utf-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . $name . ' - EM24 Netzmonitor</title></head>'
@@ -566,7 +568,8 @@ sub main::GavazziEM24_DashboardCGI {
     return ('text/plain; charset=utf-8', "Unknown GavazziEM24 device: $name")
         if (!$hash || $hash->{TYPE} ne 'GavazziEM24');
 
-    my $html = eval { GavazziEM24::BuildDashboard($hash) };
+    my $embed = $request =~ /[?&]embed=1(?:&|$)/ ? 1 : 0;
+    my $html = eval { GavazziEM24::BuildDashboard($hash, $embed) };
     if ($@ || !defined($html)) {
         main::Log3($name, 2, "$name: Gavazzi dashboard rendering failed: $@");
         return ('text/plain; charset=utf-8', "Dashboard rendering failed: $@");
@@ -740,6 +743,9 @@ sub GetFn {
     my ($hash, $name, $cmd, @args) = @_;
     main::Log3($hash, 3, 'GavazziEM24 DEBUG GetFn name=' . $name . ' cmd=' . ($cmd // 'undef'));
     return ClearInactiveEntityReadings($hash) if ($cmd eq '_finishEntityConfig');
+    if ($cmd eq '_dashboardEmbedURL') {
+        return DashboardBasePath() . '/GavazziEM24/' . main::urlEncode($name) . '?embed=1';
+    }
     if ($cmd eq '_dashboardURL') {
         my $webName = $main::FW_wname;
         my $webHash = defined($webName) ? $main::defs{$webName} : undef;
@@ -757,7 +763,7 @@ sub GetFn {
 
     my $ret = Modbus::GetLDFn($hash, $name, $cmd, @args);
     if (defined($ret) && $ret =~ /^Unknown argument .*?, choose one of (.*)$/) {
-        $ret = "Unknown argument $cmd, choose one of _dashboardURL:noArg _showDashboard:noArg _showEntityConfig:noArg $1";
+        $ret = "Unknown argument $cmd, choose one of _dashboardURL:noArg _dashboardEmbedURL:noArg _showDashboard:noArg _showEntityConfig:noArg $1";
     }
     return $ret;
 }
@@ -879,7 +885,7 @@ __CONFIGDATA__
 <button type="button" class="gec-edit" title="Bearbeiten" aria-label="Bearbeiten">&#9998;</button>
 <div class="gec-edit-actions">
 <button type="button" class="gec-cancel">Abbrechen</button>
-<button type="button" class="gec-save">Speichern</button>
+<button type="button" class="gec-save">&#128190; Speichern</button>
 </div>
 <button type="button" class="gec-toggle-all">Alle auswählen</button>
 <div class="gec-status" aria-live="polite"></div>
@@ -913,10 +919,10 @@ __ROWS__
 .gec-switch input:disabled{opacity:.45;cursor:not-allowed}
 .gec-switch span{display:none}
 .gec-status{font-size:12px;color:#a9b7ac;min-height:16px}
-.gec-edit,.gec-cancel,.gec-save,.gec-toggle-all{padding:8px 12px;border:1px solid #52bd8b;background:#26342d;color:#f4f4e9;cursor:pointer}
-.gec-edit{font-size:18px;line-height:1;min-width:38px;min-height:36px}
+.gec-edit,.gec-cancel,.gec-save,.gec-toggle-all{padding:8px 12px;border:1px solid #52bd8b;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}
+.gec-edit{padding:0;border:0;background:none;font-size:28px;line-height:1;width:40px;height:40px}
+.gec-edit:hover{color:#9ce2bb}
 .gec-edit-actions{display:none;align-items:center;gap:8px}
-.gec.edit-mode .gec-edit{display:none}
 .gec.edit-mode .gec-edit-actions{display:flex}
 .gec-toggle-all{display:none}
 .gec.edit-mode .gec-toggle-all{display:inline-block}
@@ -1004,7 +1010,14 @@ __ROWS__
             toggleAll.disabled=false;
         });
     }
-    editButton.addEventListener('click',beginEditing);
+    function ask(onDiscard,onSave){var o=document.createElement('div');o.style.cssText='position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center';var b=document.createElement('div');b.style.cssText='background:#1d2825;color:#f4f4e9;border:1px solid #46544c;padding:20px 24px;font:14px sans-serif;max-width:360px';var p=document.createElement('p');p.style.cssText='margin:0 0 16px';p.textContent='\u00c4nderungen verwerfen?';b.appendChild(p);function mk(t,fn){var x=document.createElement('button');x.type='button';x.textContent=t;x.style.cssText='margin:0 8px 0 0;padding:8px 12px;border:1px solid #52bd8b;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px sans-serif';x.onclick=function(){o.remove();if(fn)fn();};b.appendChild(x);}mk('OK',onDiscard);mk('Abbrechen',null);mk('\u00c4nderungen speichern',onSave);o.appendChild(b);document.body.appendChild(o);}
+    function toggleEditing(){
+        if(!root.classList.contains('edit-mode')){beginEditing();return;}
+        var changed=Array.prototype.some.call(fields,function(field,index){return field.checked!==originalStates[index]});
+        if(!changed){cancelEditing();return;}
+        ask(cancelEditing,saveConfig);
+    }
+    editButton.addEventListener('click',toggleEditing);
     cancelButton.addEventListener('click',cancelEditing);
     saveButton.addEventListener('click',saveConfig);
     if(window.jQuery){

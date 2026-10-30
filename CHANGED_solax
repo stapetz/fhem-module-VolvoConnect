@@ -1,0 +1,8 @@
+# SolaxModbus change history
+# Generated from Git commits by scripts/generate_changed.py.
+# Keep this file ASCII-only and use lines no longer than 79 characters.
+
+- change: 2026-10-28 a8d5083 Erweitere Dashboards und Dokumentation
+- change: 2026-10-28 2fa0b0e ordnerstruktur und dokumentation angepasst
+- change: 2026-10-27 b6fa30c Gavazzi aus projekt geloscht
+- change: 2026-10-27 5f4ee0b Initiales Modul und Controls-Datei hinzugefugt

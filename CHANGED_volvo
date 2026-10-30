@@ -1,0 +1,11 @@
+# VolvoConnect change history
+# Generated from Git commits by scripts/generate_changed.py.
+# Keep this file ASCII-only and use lines no longer than 79 characters.
+
+- change: 2026-10-28 a8d5083 Erweitere Dashboards und Dokumentation
+- change: 2026-10-28 2fa0b0e ordnerstruktur und dokumentation angepasst
+- change: 2026-10-27 6b78def originalstruktur von initialem Zustand hergestellt
+- change: 2026-10-27 d9e2780 restore last changes in VolvoConnect
+- change: 2026-10-27 84883ac Aktualiserungen an Readme und Volvo Connect
+- change: 2026-10-27 82f2ae8 erster Entwurf
+- change: 2026-10-27 5f4ee0b Initiales Modul und Controls-Datei hinzugefugt

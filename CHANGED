@@ -1,11 +1,16 @@
-# VolvoConnect change history
-# Generated from Git commits by the GitHub Actions workflow.
-# Keep this file ASCII-only and use lines no longer than 80 characters.
+# FHEM modules change history
+# Generated from Git commits by scripts/generate_changed.py.
+# Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-28 f3f93a7 Farben und schriften angepasst
+  [TemperatureCollector]
 - change: 2026-10-28 a8d5083 Erweitere Dashboards und Dokumentation
-- change: 2026-10-28 629cbe6 dokumentation gavazzi angepasst
+  [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus]
+- change: 2026-10-28 629cbe6 dokumentation gavazzi angepasst [GavazziEM24]
 - change: 2026-10-28 2fa0b0e ordnerstruktur und dokumentation angepasst
+  [VolvoConnect, GavazziEM24, SolaxModbus]
 - change: 2026-10-28 e0e88ab initiales commit fur Gavazzi Modul und SolaxModul
+  [GavazziEM24]
 - change: 2026-10-28 01ee194 Kurze Textanpassung Readme
 - change: 2026-10-27 9fa5274 automatisierte change Eintrage, Anpassung
   Dokumentation und Readme.
@@ -14,21 +19,25 @@
 - change: 2026-10-27 3ba03df Corrected Readme
 - change: 2026-10-27 8a25f11 Struktur sauber gemacht
 - change: 2026-10-27 2db6889 Update README to remove module references
-- change: 2026-10-27 f713b3b Nur noch VolvoModul
-- change: 2026-10-27 b6fa30c Gavazzi aus projekt geloscht
+  Removed SolaxModbus and Gavazzi Stromzahler from README.
+- change: 2026-10-27 f713b3b Nur noch VolvoModul [GavazziEM24]
+- change: 2026-10-27 b6fa30c Gavazzi aus projekt geloscht [SolaxModbus]
 - change: 2026-10-27 0a26e7c workflow korrigiert
 - change: 2026-10-27 e4df637 Workflow korrigiert
-- change: 2026-10-27 ecd6f68 Apply remaining changes
-- change: 2026-10-27 67de784 Initial plan
 - change: 2026-10-27 555d619 Workflow korrigiert
 - change: 2026-10-27 57ebcdb Workflow verschoben
 - change: 2026-10-27 e6b991f Workflow erstellt
 - change: 2026-10-27 e7ac680 Remove FHEM Modules header from README
 - change: 2026-10-27 14f7e5f Revise FHEM Modules section in README
+  Updated module list and removed versioning.
 - change: 2026-10-27 6b78def originalstruktur von initialem Zustand hergestellt
+  [VolvoConnect]
 - change: 2026-10-27 d9e2780 restore last changes in VolvoConnect
+  [VolvoConnect]
 - change: 2026-10-27 4fd00f7 Readme angepasst
 - change: 2026-10-27 84883ac Aktualiserungen an Readme und Volvo Connect
-- change: 2026-10-27 82f2ae8 erster Entwurf
+  [VolvoConnect]
+- change: 2026-10-27 82f2ae8 erster Entwurf [VolvoConnect]
 - change: 2026-10-27 5f4ee0b Initiales Modul und Controls-Datei hinzugefugt
+  [VolvoConnect, GavazziEM24, SolaxModbus]
 - change: 2026-10-27 74507f3 Initial commit

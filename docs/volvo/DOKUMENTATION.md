@@ -122,10 +122,12 @@ Für die anderen Module stehen eigene Controls-Dateien zur Verfügung:
 - `https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_gavazzi.txt`
 - `https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt`
 
-Das FHEM-Änderungsprotokoll heißt `CHANGED` und hat keine Dateiendung. Der GitHub-Actions-
-Workflow erzeugt diese Datei bei jedem Lauf automatisch aus den Git-Commits, ergänzt sie in
-alle vier Controls-Dateien und veröffentlicht sie zusammen. Dadurch können Änderungen nach
-einem FHEM-Update über das übliche FHEM-Änderungsprotokoll nachvollzogen werden.
+Je Modul gibt es ein Änderungsprotokoll (`CHANGED_volvo`, `CHANGED_temperaturecollector`,
+`CHANGED_gavazzi`, `CHANGED_solax`, ohne Dateiendung) und ein gemeinsames `CHANGED`. Der
+GitHub-Actions-Workflow erzeugt sie bei jedem Push mit `scripts/generate_changed.py` aus den
+Git-Commits (Betreff plus Zeilen der Commit-Beschreibung) und trägt das Protokoll des Moduls in
+dessen Controls-Datei ein, `CHANGED` in `controls_all.txt`. Dadurch können Änderungen nach
+einem FHEM-Update nachvollzogen werden.
 
 ### 3.2 Manuelle Installation
 
@@ -328,6 +330,41 @@ Layout-Konfiguration dieses Geräts auf Standard zurückzusetzen:
 ```
 
 Das setzt Reihenfolge, Sichtbarkeit und individuelle Labels zurück, aber keine Tokens oder Device-Attribute.
+
+## Einbettung in FTUI
+
+Für die Einbettung in eine andere Seite liefert die Dashboard-URL mit dem
+Parameter `embed=1` nur ein Fragment ohne `<html>`, `<head>` und `<body>`.
+Die relative URL ermittelt `get MeinVolvo _dashboardEmbedURL`, sie
+lautet zum Beispiel `/fhem/VolvoConnect/MeinVolvo?embed=1`.
+Im Embed-Modus ist das Dashboard nicht editierbar. Stil und Skript sind auf das Fragment begrenzt, die Aktualisierung läuft über diese Adresse und nicht über die der einbettenden Seite.
+
+Das Fragment enthält ein Skript. Ein einfaches HTML-Widget, das den Inhalt nur
+per `innerHTML` setzt, führt dieses Skript nicht aus. Die folgende Variante
+in reinem JavaScript funktioniert in FTUI 1 und FTUI 2, weil sie kein jQuery
+benötigt. Sie setzt voraus, dass FTUI und FHEMWEB über denselben Host und Port
+erreichbar sind (sonst ist CORS nötig):
+
+```html
+<div id="fhem-dashboard"></div>
+<script>
+  fetch('/fhem/VolvoConnect/MeinVolvo?embed=1', {credentials: 'same-origin'})
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var target = document.getElementById('fhem-dashboard');
+      target.innerHTML = '';
+      target.appendChild(document.createRange().createContextualFragment(html));
+    });
+</script>
+```
+
+`createContextualFragment` führt die enthaltenen Skripte aus. In FTUI 1 kann
+alternativ `$('#fhem-dashboard').load('<URL>')` verwendet werden. Ein `iframe`
+mit der normalen `_dashboardURL` funktioniert ebenfalls, benötigt aber eine
+feste Höhe und Breite im FTUI-Layout.
+
+Ob die Einbettung in der eigenen FTUI-Installation sauber läuft, hängt vom
+verwendeten Widget und Layout ab und sollte dort geprüft werden.
 
 ## 10. Readings und Status
 
