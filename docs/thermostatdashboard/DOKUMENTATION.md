@@ -9,7 +9,8 @@ gemeinsamen, responsiven Übersicht. Homematic-Geräte über `CUL_HM` und eQ-3 M
 - FHEM mit FHEMWEB
 - Homematic-Thermostate mit `TYPE CUL_HM`, Temperatur-Readings `measured-temp` und
   `desired-temp` sowie dem Set-Befehl `desired-temp`
-- eQ-3 MAX-Heizkörperthermostate mit `TYPE MAX`, `type HeatingThermostat` und den
+- eQ-3 MAX-Heizkörperthermostate mit `TYPE MAX`, `type HeatingThermostat`,
+  `HeatingThermostatPlus` oder `WallMountedThermostat` und den
   Readings `temperature` und `desiredTemperature`
 
 Die Erkennung nutzt den tatsächlichen Set-Befehl des Gerätetyps. Andere Geräte, die keine
@@ -44,14 +45,20 @@ Weitere Befehle:
 | `get <name> _showDashboard` | Dashboard direkt in FHEMWEB anzeigen |
 | `get <name> _dashboardURL` | eigenständige Dashboard-URL |
 | `get <name> _dashboardEmbedURL` | Fragment-URL für DashboardHub oder FTUI |
-| `get <name> list` | erkannte Thermostate auflisten |
-| `get <name> diagnose` | erkannte CUL_HM-/MAX-Geräte samt Erkennungsstatus anzeigen |
+| `get <name> list` | erkannte Thermostate auflisten; ausgeblendete markieren |
+| `get <name> diagnose` | erkannte CUL_HM-/MAX-Geräte samt Erkennungs- und Sichtbarkeitsstatus anzeigen |
 
 ## Anzeige und Bedienung
 
 Pro Gerät werden Alias (ersatzweise Gerätename), Raum, Isttemperatur und Solltemperatur
 angezeigt. Wenn vorhanden, zeigt das Dashboard außerdem Modus, Ventilstellung und
 Batteriestatus. Die Daten werden standardmäßig alle 15 Sekunden aus FHEM aktualisiert.
+
+Über das Stiftsymbol kann der Bearbeitungsmodus geöffnet werden. Dort lässt sich für jedes
+erkannte Thermostat per **Anzeigen**-Kontrollkästchen festlegen, ob es im Dashboard erscheint.
+Ausgeblendete Thermostate bleiben während der Bearbeitung sichtbar und sind abgedunkelt.
+**Speichern** übernimmt die Auswahl dauerhaft für dieses ThermostatDashboard-Gerät;
+**Abbrechen** verwirft alle Änderungen der aktuellen Bearbeitung.
 
 Die Temperatur kann in 0,5-Grad-Schritten im Bereich von 5 bis 30 °C eingestellt werden.
 Die MAX-Sonderwerte 4,5 °C (`Off`) und 30,5 °C (`On`) werden bewusst nicht als normale
@@ -76,7 +83,8 @@ Thermostaten kann es erforderlich sein, den Befehl für jedes Gerät einzeln zu 
 | `excludeDevices` | Regex; passende Gerätenamen ausblenden |
 | `autoRefresh` | Aktualisierung in Sekunden: `0`, `15`, `30` oder `60`; Standard `15` |
 
-Geräte mit `disable 1` werden ausgelassen. Die Anzeige wird nach Raum und Alias sortiert.
+Geräte mit `disable 1` werden ausgelassen. Die manuell ausgeblendete Auswahl wird getrennt
+je ThermostatDashboard-Gerät gespeichert. Die Anzeige wird nach Raum und Alias sortiert.
 
 ## Sicherheit und Datenschutz
 

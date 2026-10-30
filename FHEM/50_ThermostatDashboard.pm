@@ -2,6 +2,8 @@ package main;
 
 use strict;
 use warnings;
+use JSON qw(encode_json decode_json);
+use MIME::Base64 qw(decode_base64);
 
 our $ThermostatDashboard_VERSION = '1.0.0-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
@@ -12,6 +14,8 @@ sub ThermostatDashboard_Initialize {
 
     $modHash->{DefFn} = 'ThermostatDashboard_Define';
     $modHash->{GetFn} = 'ThermostatDashboard_Get';
+    $modHash->{SetFn} = 'ThermostatDashboard_Set';
+    $modHash->{UndefFn} = 'ThermostatDashboard_Undef';
     $modHash->{AttrList} = join(' ',
         'includeDevices',
         'excludeDevices',
@@ -29,6 +33,52 @@ sub ThermostatDashboard_Define {
     return 'Usage: define <name> ThermostatDashboard' if (@args != 2);
     $hash->{VERSION} = $ThermostatDashboard_VERSION;
     $hash->{STATE} = 'defined';
+    return undef;
+}
+
+sub ThermostatDashboard_Set {
+    my ($hash, $name, $cmd, @args) = @_;
+    if (defined($cmd) && $cmd eq 'saveConfig') {
+        my $error = ThermostatDashboard_SaveConfig($name, decode_base64(join('', @args)));
+        return $error if (defined($error));
+        return 'ThermostatDashboard-Konfiguration gespeichert.';
+    }
+    return 'Unknown argument ' . ($cmd // '') . ', choose one of saveConfig';
+}
+
+sub ThermostatDashboard_Undef {
+    my ($hash, $arg) = @_;
+    setKeyValue(ThermostatDashboard_ConfigKey($hash->{NAME}), undef);
+    return undef;
+}
+
+sub ThermostatDashboard_ConfigKey {
+    my ($name) = @_;
+    return 'ThermostatDashboard_config_' . $name;
+}
+
+sub ThermostatDashboard_LoadHidden {
+    my ($name) = @_;
+    my ($error, $value) = getKeyValue(ThermostatDashboard_ConfigKey($name));
+    return {} if ($error || !defined($value) || $value eq '');
+    my $config = eval { decode_json($value) };
+    return {} if (ref($config) ne 'HASH' || ref($config->{hidden}) ne 'ARRAY');
+    return {map { defined($_) && !ref($_) && $_ ne '' ? ($_ => 1) : () } @{$config->{hidden}}};
+}
+
+sub ThermostatDashboard_SaveConfig {
+    my ($name, $json) = @_;
+    my $config = eval { decode_json($json || '') };
+    return 'Ungueltige Konfiguration'
+        if (ref($config) ne 'HASH' || ref($config->{hidden}) ne 'ARRAY'
+            || grep { !defined($_) || ref($_) || $_ eq '' } @{$config->{hidden}});
+    my %seen;
+    my @hidden = grep { !$seen{$_}++ } @{$config->{hidden}};
+    my $error = setKeyValue(ThermostatDashboard_ConfigKey($name), encode_json({hidden => \@hidden}));
+    if (defined($error) && $error ne '') {
+        Log3($name, 1, "ThermostatDashboard ($name): setKeyValue failed: $error");
+        return 'Speichern fehlgeschlagen: ' . $error;
+    }
     return undef;
 }
 
@@ -55,9 +105,11 @@ sub ThermostatDashboard_Get {
     return ThermostatDashboard_Diagnose($name) if ($cmd eq 'diagnose');
     if ($cmd eq 'list') {
         my $devices = ThermostatDashboard_Discover($name);
+        my $hidden = ThermostatDashboard_LoadHidden($name);
         return 'Keine kompatiblen Thermostate gefunden' if (!@{$devices});
         return join("\n", map {
-            sprintf('%s (%s, %s)', $_->{alias}, $_->{name}, $_->{type})
+            sprintf('%s (%s, %s)%s', $_->{alias}, $_->{name}, $_->{type},
+                $hidden->{$_->{name}} ? ' [ausgeblendet]' : '')
         } @{$devices});
     }
 
@@ -116,8 +168,8 @@ sub ThermostatDashboard_MatchesType {
         return $device->{READINGS}{'measured-temp'} && $device->{READINGS}{'desired-temp'} ? 1 : 0;
     }
     if ($type eq 'MAX') {
-        return (($device->{type} // '') =~ /^(?:HeatingThermostat|WallMountedThermostat)$/
-            || ($device->{model} // '') =~ /^(?:HeatingThermostat|WallMountedThermostat)$/) ? 1 : 0;
+        return (($device->{type} // '') =~ /^(?:HeatingThermostat(?:Plus)?|WallMountedThermostat)$/
+            || ($device->{model} // '') =~ /^(?:HeatingThermostat(?:Plus)?|WallMountedThermostat)$/) ? 1 : 0;
     }
     return 0;
 }
@@ -177,6 +229,7 @@ sub ThermostatDashboard_Discover {
         }
         my $room = AttrVal($name, 'room', '');
         ($room) = split(/,/, $room, 2);
+        $room = '' if (!defined($room));
 
         push @found, {
             name => $name,
@@ -203,6 +256,7 @@ sub ThermostatDashboard_Discover {
 
 sub ThermostatDashboard_Diagnose {
     my ($dashboardName) = @_;
+    my $hidden = ThermostatDashboard_LoadHidden($dashboardName);
     my @lines;
     for my $name (sort keys %main::defs) {
         my $device = $main::defs{$name};
@@ -225,6 +279,7 @@ sub ThermostatDashboard_Diagnose {
                 $reason = 'OK';
             }
         }
+        $reason .= ' (im Dashboard ausgeblendet)' if ($reason eq 'OK' && $hidden->{$name});
         push @lines, "$name ($type): $reason";
     }
     return @lines ? join("\n", @lines) : 'Keine CUL_HM- oder MAX-Geräte gefunden';
@@ -249,9 +304,24 @@ sub ThermostatDashboard_Css {
 .td-head{min-height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#202e29;border-bottom:1px solid #405149}
 .td-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
 .td h1{font:500 22px/1.1 Georgia,serif;margin:3px 0}
+.td-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .td-summary{font-size:12px;color:#a9b7ac;text-align:right}
+.td-edit-actions{display:none;align-items:center;gap:8px}
+.td-edit,.td-cancel,.td-save{padding:8px 12px;border:1px solid #52bd8b;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}
+.td-edit{font-size:18px;line-height:1;min-width:38px;min-height:36px}
+.td-cancel{border-color:#69796f}
+.td-edit-actions button:disabled{opacity:.5;cursor:wait}
+.td.edit-mode .td-edit{display:none}
+.td.edit-mode .td-edit-actions{display:flex}
+.td-head-status{flex:1 0 100%;min-height:16px;text-align:right;color:#a9b7ac;font-size:11px}
+.td-head-status[data-error="1"]{color:#ef9a8b}
 .td-grid{padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:12px}
 .td-card{min-width:0;background:#202e29;border:1px solid #46544c}
+.td-card[data-hidden="1"]{display:none}
+.td.edit-mode .td-card[data-hidden="1"]{display:block;opacity:.55;border-style:dashed}
+.td-visibility{display:none;align-items:center;gap:6px;color:#c7d0c8;font-size:11px;white-space:nowrap}
+.td-visibility input{width:16px;height:16px;margin:0;accent-color:#52bd8b}
+.td.edit-mode .td-visibility{display:flex}
 .td-card-head{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1px solid #3a463f}
 .td-room{font-size:10px;font-weight:700;letter-spacing:1px;color:#9fb3a8;text-transform:uppercase}
 .td-name{font:500 18px Georgia,serif;margin:2px 0 0;overflow-wrap:anywhere}
@@ -277,7 +347,7 @@ sub ThermostatDashboard_Css {
 .td-updated[data-stale="1"]{color:#ef9a8b}
 .td-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .td-empty{margin:12px;padding:18px;background:#202e29;border:1px solid #46544c;color:#c7d0c8}
-@media(max-width:600px){.td-head{padding:12px 15px;align-items:flex-start;flex-direction:column;justify-content:center;gap:4px}.td-summary{text-align:left}.td-grid{padding:8px;gap:8px}.td-set-row input{width:82px}}
+@media(max-width:600px){.td-head{padding:12px 15px;align-items:flex-start;flex-direction:column;justify-content:center;gap:4px}.td-head-actions{width:100%;justify-content:flex-start}.td-head-status{text-align:left}.td-summary{text-align:left}.td-grid{padding:8px;gap:8px}.td-set-row input{width:82px}}
 </style>
 CSS
 }
@@ -286,6 +356,8 @@ sub ThermostatDashboard_BuildDashboard {
     my ($hash) = @_;
     my $name = $hash->{NAME};
     my $devices = ThermostatDashboard_Discover($name);
+    my $hidden = ThermostatDashboard_LoadHidden($name);
+    my $visibleCount = scalar(grep { !$hidden->{$_->{name}} } @{$devices});
     my $base = ThermostatDashboard_Escape(ThermostatDashboard_BasePath());
     my $csrf = $main::FW_CSRF // '';
     $csrf =~ s/^&?fwcsrf=//;
@@ -296,8 +368,12 @@ sub ThermostatDashboard_BuildDashboard {
         . '<div class="td" data-base="' . $base . '" data-csrf="' . $csrf . '" data-device="'
         . ThermostatDashboard_Escape($name) . '" data-refresh="' . $refresh . '">'
         . '<header class="td-head"><div><small>HEIZUNG / THERMOSTATE</small><h1>Thermostate</h1></div>'
-        . '<div class="td-summary"><span data-count>' . scalar(@{$devices})
-        . '</span> erkannte Thermostate</div></header>';
+        . '<div class="td-head-actions"><button type="button" class="td-edit" title="Bearbeiten" aria-label="Thermostate bearbeiten">&#9998;</button>'
+        . '<div class="td-edit-actions"><button type="button" class="td-cancel">Abbrechen</button>'
+        . '<button type="button" class="td-save">Speichern</button></div>'
+        . '<div class="td-summary"><span data-count>' . $visibleCount . '</span> von <span data-total>'
+        . scalar(@{$devices}) . '</span> Thermostaten angezeigt</div>'
+        . '<span class="td-head-status" aria-live="polite"></span></div></header>';
 
     if (!@{$devices}) {
         $html .= '<div class="td-empty">Keine kompatiblen Thermostate gefunden. Unterst&uuml;tzt werden '
@@ -314,7 +390,8 @@ sub ThermostatDashboard_BuildDashboard {
             my $time = $device->{actual}{time};
             my $targetValue = defined($target) ? sprintf('%.1f', $target) : '';
             my $room = $device->{room} ne '' ? $device->{room} : 'Ohne Raum';
-            $html .= '<section class="td-card" data-device="' . ThermostatDashboard_Escape($device->{name})
+            my $isHidden = $hidden->{$device->{name}} ? 1 : 0;
+            $html .= '<section class="td-card" data-hidden="' . $isHidden . '" data-device="' . ThermostatDashboard_Escape($device->{name})
                 . '" data-actual="' . ThermostatDashboard_Escape($device->{actual}{name})
                 . '" data-target="' . ThermostatDashboard_Escape($device->{target}{name})
                 . '" data-mode="' . ThermostatDashboard_Escape($device->{mode} ? $device->{mode}{name} : '')
@@ -325,7 +402,8 @@ sub ThermostatDashboard_BuildDashboard {
                 . '<header class="td-card-head"><div><div class="td-room">'
                 . ThermostatDashboard_Escape($room) . '</div><h2 class="td-name">'
                 . ThermostatDashboard_Escape($device->{alias}) . '</h2></div><div class="td-model">'
-                . ThermostatDashboard_Escape($device->{model}) . '</div></header>'
+                . ThermostatDashboard_Escape($device->{model}) . '<label class="td-visibility"><input type="checkbox" data-visible'
+                . ($isHidden ? '' : ' checked') . ' disabled> Anzeigen</label></div></header>'
                 . '<div class="td-values"><div class="td-value"><span class="td-value-label">Isttemperatur</span>'
                 . '<strong data-value="actual">' . (defined($actual) ? sprintf('%.1f', $actual) : '&ndash;')
                 . ' <small>&deg;C</small></strong></div><div class="td-value">'
@@ -372,6 +450,23 @@ function request(command){var url=base+"?cmd="+encodeURIComponent(command)+"&XHR
 return fetch(url,{cache:"no-store",credentials:"same-origin"}).then(function(response){return response.text().then(function(text){
 if(!response.ok)throw new Error(text.trim().slice(0,160)||"HTTP "+response.status);return text;});});}
 function status(card,text,error){var node=card.querySelector(".td-status");node.textContent=text;node.setAttribute("data-error",error?"1":"0");}
+var cards=Array.prototype.slice.call(root.querySelectorAll(".td-card")),editButton=root.querySelector(".td-edit");
+var cancelButton=root.querySelector(".td-cancel"),saveButton=root.querySelector(".td-save");
+var headStatus=root.querySelector(".td-head-status"),countNode=root.querySelector("[data-count]");
+var checkboxes=root.querySelectorAll("[data-visible]"),originalHidden=[];
+function updateVisibility(card,visible){card.setAttribute("data-hidden",visible?"0":"1");}
+function updateCount(){countNode.textContent=String(cards.filter(function(card){return card.getAttribute("data-hidden")!=="1";}).length);}
+function setEditMode(editing){root.classList.toggle("edit-mode",editing);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=!editing;});headStatus.textContent="";headStatus.setAttribute("data-error","0");}
+function fail(text){headStatus.textContent=text;headStatus.setAttribute("data-error","1");}
+editButton.addEventListener("click",function(){originalHidden=cards.map(function(card){return card.getAttribute("data-hidden")==="1";});setEditMode(true);});
+cancelButton.addEventListener("click",function(){cards.forEach(function(card,index){updateVisibility(card,!originalHidden[index]);});Array.prototype.forEach.call(checkboxes,function(checkbox,index){checkbox.checked=!originalHidden[index];});updateCount();setEditMode(false);});
+Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.addEventListener("change",function(){updateVisibility(checkbox.closest(".td-card"),checkbox.checked);updateCount();});});
+saveButton.addEventListener("click",function(){var hidden=cards.filter(function(card){return card.getAttribute("data-hidden")==="1";}).map(function(card){return card.getAttribute("data-device");});
+var encoded=btoa(unescape(encodeURIComponent(JSON.stringify({hidden:hidden})))),command="set "+root.getAttribute("data-device")+" saveConfig "+encoded;
+Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=true;});saveButton.disabled=true;cancelButton.disabled=true;headStatus.textContent="Konfiguration wird gespeichert ...";
+request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));setEditMode(false);})
+.catch(function(error){fail("Speichern fehlgeschlagen: "+error.message);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=false;});})
+.then(function(){saveButton.disabled=false;cancelButton.disabled=false;});});
 function refreshCard(card){var command="jsonlist2 "+card.getAttribute("data-device");
 return request(command).then(function(text){var result=JSON.parse(text),device=result.Results&&result.Results[0];if(!device)throw new Error("Geraet nicht gefunden");
 var readings=device.Readings||{};
@@ -388,6 +483,7 @@ var updated=card.querySelector("[data-updated]"),time=actual&&actual.Time?String
 var timestamp=Date.parse(time.replace(" ","T")),stale=timestamp&&!isNaN(timestamp)&&(Date.now()-timestamp>1800000);updated.setAttribute("data-stale",stale?"1":"0");})
 .catch(function(error){status(card,"Aktualisierung fehlgeschlagen: "+error.message,true);});}
 root.addEventListener("click",function(event){var button=event.target.closest("button");if(!button)return;var card=button.closest(".td-card");if(!card)return;
+if(root.classList.contains("edit-mode"))return;
 var command="",input=card.querySelector("[data-temp]");
 if(button.hasAttribute("data-set-temperature")){var value=Number(input.value),minimum=Number(card.getAttribute("data-min")),maximum=Number(card.getAttribute("data-max"));
 if(!Number.isFinite(value)||value<minimum||value>maximum){status(card,"Temperatur muss zwischen "+minimum.toFixed(1)+" und "+maximum.toFixed(1)+" \u00b0C liegen.",true);return;}
@@ -398,7 +494,7 @@ if(!command)return;var buttons=card.querySelectorAll("button");Array.prototype.f
 request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed/i.test(text))throw new Error(text.trim().slice(0,160));status(card,"Befehl an FHEM gesendet.",false);window.setTimeout(function(){refreshCard(card);},1500);})
 .catch(function(error){status(card,"Befehl fehlgeschlagen: "+error.message,true);})
 .then(function(){Array.prototype.forEach.call(buttons,function(item){item.disabled=false;});});});
-function refreshAll(){if(document.hidden)return;Array.prototype.forEach.call(root.querySelectorAll(".td-card"),refreshCard);}
+function refreshAll(){if(document.hidden)return;Array.prototype.forEach.call(cards,function(card){if(card.getAttribute("data-hidden")!=="1")refreshCard(card);});}
 refreshAll();var seconds=Number(root.getAttribute("data-refresh"))||0;if(seconds)window.setInterval(refreshAll,seconds*1000);
 })();</script>
 JS

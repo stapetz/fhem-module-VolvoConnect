@@ -27,9 +27,10 @@ das zugehörige Modul sowie dessen Änderungsprotokoll: [`CHANGED_volvo`](CHANGE
 Zusätzlich enthält [`controls_all.txt`](controls_all.txt) alle Module des Repositories
 sowie das gemeinsame [Änderungsprotokoll](CHANGED).
 
-ThermostatDashboard erkennt Homematic- und eQ-3 MAX-Heizkörperthermostate automatisch,
-zeigt Ist- und Solltemperatur sowie Statuswerte an und ermöglicht die Steuerung der
-Solltemperatur und unterstützter Betriebsarten.
+ThermostatDashboard erkennt Homematic- und eQ-3 MAX-Heizkörperthermostate (einschließlich
+`HeatingThermostatPlus`) automatisch, zeigt Ist- und Solltemperatur sowie Statuswerte an
+und ermöglicht die Steuerung der Solltemperatur und unterstützter Betriebsarten.
+Einzelne Thermostate können im Bearbeitungsmodus dauerhaft ein- oder ausgeblendet werden.
 
 Die Änderungsprotokolle werden bei jedem Push von
 [`scripts/generate_changed.py`](scripts/generate_changed.py) aus den Git-Commits erzeugt:

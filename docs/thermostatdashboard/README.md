@@ -3,7 +3,9 @@
 ThermostatDashboard stellt kompatible Homematic- und eQ-3 MAX-Heizkörperthermostate
 übersichtlich in einem Dashboard dar. Ist- und Solltemperatur sowie Betriebsart,
 Ventilstellung und Batteriestatus werden angezeigt. Solltemperatur und unterstützte
-Betriebsarten können direkt bedient werden.
+Betriebsarten können direkt bedient werden. MAX-Geräte vom Typ `HeatingThermostatPlus`
+werden ebenfalls erkannt. Im Bearbeitungsmodus können einzelne Thermostate dauerhaft
+ein- oder ausgeblendet werden.
 
 ## Installation
 
