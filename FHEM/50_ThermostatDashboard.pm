@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.1.1-dev';
+our $ThermostatDashboard_VERSION = '1.2.0-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -232,10 +232,20 @@ sub ThermostatDashboard_Discover {
         }
 
         my ($minimum, $maximum) = (5, 30);
-        if ($type eq 'CUL_HM'
-            && $usage =~ /\b\Q$temperatureCommand\E\s+\([^)]*?(\d+(?:\.\d+)?)\.\.(\d+(?:\.\d+)?)/) {
-            $minimum = $1 if ($1 > $minimum);
-            $maximum = $2 if ($2 < $maximum);
+        if ($type eq 'CUL_HM') {
+            if ($usage =~ /\b\Q$temperatureCommand\E:([A-Za-z0-9.,|+-]+)/) {
+                my @options = grep { defined($_) }
+                    map { ThermostatDashboard_Number($_) } split(/[|,]/, $1);
+                if (@options) {
+                    ($minimum, $maximum) = ($options[0], $options[0]);
+                    for my $option (@options) {
+                        $minimum = $option if ($option < $minimum);
+                        $maximum = $option if ($option > $maximum);
+                    }
+                }
+            } elsif ($usage =~ /\b\Q$temperatureCommand\E\s+\([^)]*?([-+]?\d+(?:\.\d+)?)\.\.([-+]?\d+(?:\.\d+)?)/) {
+                ($minimum, $maximum) = ($1, $2);
+            }
         }
         my $room = AttrVal($name, 'room', '');
         ($room) = split(/,/, $room, 2);
@@ -251,7 +261,7 @@ sub ThermostatDashboard_Discover {
             target => $target,
             mode => ThermostatDashboard_Reading($device, 'controlMode', 'mode'),
             valve => ThermostatDashboard_Reading($device, 'ValvePosition', 'valveposition'),
-            battery => ThermostatDashboard_Reading($device, 'batteryState', 'battery'),
+            battery => ThermostatDashboard_Reading($device, 'batteryPercent', 'batteryLevel', 'batteryState', 'battery'),
             modes => \@modes,
             temperatureCommand => $temperatureCommand,
             minimum => $minimum,
@@ -352,21 +362,27 @@ sub ThermostatDashboard_Css {
 .td-value-label{display:block;color:#9fb3a8;font-size:10px;text-transform:uppercase;letter-spacing:.8px}
 .td-value strong{display:block;margin-top:3px;font-size:24px;line-height:1.15;font-weight:600;white-space:nowrap}
 .td-value small{font-size:13px;font-weight:400;color:#a9b7ac}
-.td-target-control{display:flex;align-items:baseline;gap:5px;margin-top:3px}
-.td-target-control input{width:100%;min-width:0;padding:0;border:0;outline:0;background:transparent;color:#f4f4e9;font:600 24px/1.15 'Avenir Next','Helvetica Neue',sans-serif;font-variant-numeric:tabular-nums}
-.td-target-control input::-webkit-inner-spin-button,.td-target-control input::-webkit-outer-spin-button{opacity:.65}
-.td-target-control input:focus{color:#9ce2bb}
-.td-meta{display:flex;flex-wrap:wrap;gap:7px;padding:0 14px 12px}
-.td-badge{padding:3px 7px;border:1px solid #46544c;color:#c7d0c8;font-size:11px}
-.td-controls{padding:12px 14px;border-top:1px solid #3a463f}
+.td-target-control{margin-top:3px}
+.td-target-value{display:flex;align-items:baseline;gap:5px}
+.td-target-control input[type=range]{display:block;width:100%;height:22px;margin:9px 0 0;accent-color:#52bd8b;cursor:pointer}
+.td-meta{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:0 14px 12px}
+.td-mode-select{max-width:145px;padding:5px 25px 5px 8px;border:1px solid #69796f;border-radius:0;background:#26342d;color:#f4f4e9;font:12px 'Helvetica Neue',sans-serif}
+.td-valve{position:relative;display:grid;place-items:center;min-width:86px;height:28px;overflow:hidden;border:1px solid #46544c;background:linear-gradient(90deg,#2679ce 0%,#338b81 50%,#741d2d 100%);color:#fff;font-size:11px;font-weight:700;text-shadow:0 1px 2px #111}
+.td-valve::before{position:absolute;top:0;bottom:0;left:var(--td-valve,0%);width:2px;background:#fff;box-shadow:0 0 3px #111;content:""}
+.td-valve span{position:relative}
+.td-battery{display:inline-flex;align-items:center;gap:5px;color:#58cf8e;font-size:11px}
+.td-battery[data-level="medium"]{color:#e8bc57}
+.td-battery[data-level="low"]{color:#ef695e}
+.td-battery[data-level="unknown"]{color:#a9b7ac}
+.td-battery svg{width:23px;height:14px;overflow:visible}
+.td-battery-outline{fill:none;stroke:currentColor;stroke-width:1.5}
+.td-battery-bar{fill:currentColor}
+.td-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .td button{min-height:34px;padding:6px 11px;background:#26342d;color:#f4f4e9;border:1px solid #52bd8b;font:600 12px 'Helvetica Neue',sans-serif;cursor:pointer}
 .td button:hover{background:#30453a}
 .td button:disabled{opacity:.5;cursor:wait}
-.td-modes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.td-modes button{min-height:30px;padding:4px 9px;border-color:#69796f}
-.td-modes button[data-active="1"]{background:#52bd8b;color:#17231e;border-color:#9ce2bb;box-shadow:0 0 0 2px #52bd8b40}
-.td-modes button[data-active="1"]:hover{background:#52bd8b;color:#17231e}
-.td-status{min-height:18px;margin-top:7px;color:#a9b7ac;font-size:11px}
+.td-status{margin:0 14px 10px;color:#a9b7ac;font-size:11px}
+.td-status:empty{display:none}
 .td-status[data-error="1"]{color:#ef9a8b}
 .td-status[data-success="1"]{color:#9ce2bb}
 .td-empty{margin:12px;padding:18px;background:#202e29;border:1px solid #46544c;color:#c7d0c8}
@@ -431,7 +447,10 @@ sub ThermostatDashboard_BuildDashboard {
             my $mode = $device->{mode} ? $device->{mode}{value} : '';
             my $valve = $device->{valve} ? $device->{valve}{value} : '';
             my $battery = $device->{battery} ? $device->{battery}{value} : '';
-            my $targetValue = defined($target) ? sprintf('%.1f', $target) : '';
+            my $sliderMaximum = $device->{maximum} < 25 ? $device->{maximum} : 25;
+            my $sliderValue = defined($target) ? $target : $device->{minimum};
+            $sliderValue = $device->{minimum} if ($sliderValue < $device->{minimum});
+            $sliderValue = $sliderMaximum if ($sliderValue > $sliderMaximum);
             my $room = $device->{room} ne '' ? $device->{room} : 'Ohne Raum';
             my $isHidden = $hidden->{$device->{name}} ? 1 : 0;
             $html .= '<section class="td-card" data-hidden="' . $isHidden . '" data-device="' . ThermostatDashboard_Escape($device->{name})
@@ -451,26 +470,48 @@ sub ThermostatDashboard_BuildDashboard {
                 . '<strong data-value="actual">' . (defined($actual) ? sprintf('%.1f', $actual) : '&ndash;')
                 . ' <small>&deg;C</small></strong></div><div class="td-value">'
                 . '<span class="td-value-label">Solltemperatur</span><div class="td-target-control">'
-                . '<input data-temp type="number" min="' . $device->{minimum} . '" max="' . $device->{maximum}
-                . '" step="0.5" value="' . $targetValue . '" aria-label="Solltemperatur in Grad Celsius">'
-                . '<small>&deg;C</small></div></div></div>'
-                . '<div class="td-meta">'
-                . '<span class="td-badge" data-value="mode">' . ($mode ne '' ? ThermostatDashboard_Escape($mode) : 'Modus unbekannt') . '</span>'
-                . ($valve ne '' ? '<span class="td-badge" data-dynamic="1">Ventil ' . ThermostatDashboard_Escape($valve) . '%</span>' : '')
-                . ($battery ne '' ? '<span class="td-badge" data-dynamic="1">Batterie ' . ThermostatDashboard_Escape($battery) . '</span>' : '')
-                . '</div><div class="td-controls">';
+                . '<div class="td-target-value"><strong data-target-value>' . (defined($target) ? sprintf('%.1f', $target) : '&ndash;')
+                . '</strong><small>&deg;C</small></div><label class="td-sr-only" for="td-temp-'
+                . ThermostatDashboard_Escape($device->{name}) . '">Solltemperatur</label>'
+                . '<input id="td-temp-' . ThermostatDashboard_Escape($device->{name})
+                . '" data-temp type="range" min="' . $device->{minimum} . '" max="' . $sliderMaximum
+                . '" step="0.5" value="' . sprintf('%.1f', $sliderValue)
+                . '" aria-label="Solltemperatur in Grad Celsius"></div></div></div>'
+                . '<div class="td-meta">';
             if (@{$device->{modes}}) {
-                $html .= '<div class="td-modes">';
+                $html .= '<label><span class="td-sr-only">Betriebsart</span><select class="td-mode-select" data-mode-select'
+                    . ' data-mode-command="' . ThermostatDashboard_Escape($device->{modes}[0][0]) . '">';
                 for my $mode (@{$device->{modes}}) {
-                    $html .= '<button type="button" data-mode-command="'
-                        . ThermostatDashboard_Escape($mode->[0]) . '" data-mode-value="'
-                        . ThermostatDashboard_Escape($mode->[1]) . '" data-active="'
-                        . ($device->{mode} && lc($device->{mode}{value}) eq lc($mode->[1]) ? '1' : '0') . '">'
-                        . ThermostatDashboard_Escape($mode->[2]) . '</button>';
+                    $html .= '<option value="' . ThermostatDashboard_Escape($mode->[1]) . '"'
+                        . ($device->{mode} && lc($device->{mode}{value}) eq lc($mode->[1]) ? ' selected' : '')
+                        . '>' . ThermostatDashboard_Escape($mode->[2]) . '</option>';
                 }
-                $html .= '</div>';
+                $html .= '</select></label>';
+            } elsif ($mode ne '') {
+                $html .= '<span class="td-mode-value">' . ThermostatDashboard_Escape($mode) . '</span>';
             }
-            $html .= '<div class="td-status" aria-live="polite"></div></div></section>';
+            if ($device->{valve}) {
+                my $valvePercent = ThermostatDashboard_Number($valve);
+                my $valvePosition = defined($valvePercent) ? $valvePercent : 0;
+                $valvePosition = 0 if ($valvePosition < 0);
+                $valvePosition = 100 if ($valvePosition > 100);
+                $html .= '<div class="td-valve" data-valvebar style="--td-valve:' . $valvePosition
+                    . '%" role="img" aria-label="Ventil ' . ThermostatDashboard_Escape($valve)
+                    . '%"><span data-valve-value>' . ThermostatDashboard_Escape($valve) . '%</span></div>';
+            }
+            if ($device->{battery}) {
+                $html .= '<div class="td-battery" data-battery-indicator data-level="unknown" data-battery-value="'
+                    . ThermostatDashboard_Escape($battery) . '" role="img" aria-label="Batterie '
+                    . ThermostatDashboard_Escape($battery) . '"><svg viewBox="0 0 24 14" aria-hidden="true">'
+                    . '<rect class="td-battery-outline" x="1" y="1" width="19" height="12" rx="1"/>'
+                    . '<path class="td-battery-outline" d="M22 4v6"/>'
+                    . '<rect class="td-battery-bar" data-battery-bar x="3" y="3" width="4" height="8"/>'
+                    . '<rect class="td-battery-bar" data-battery-bar x="8" y="3" width="4" height="8"/>'
+                    . '<rect class="td-battery-bar" data-battery-bar x="13" y="3" width="4" height="8"/></svg>'
+                    . '<span data-battery-text>' . ThermostatDashboard_Escape($battery) . '</span></div>';
+            }
+            $html .= '</div>';
+            $html .= '<div class="td-status" aria-live="polite"></div></section>';
         }
         $html .= '</main>';
     }
@@ -489,6 +530,20 @@ function request(command){var url=base+"?cmd="+encodeURIComponent(command)+"&XHR
 return fetch(url,{cache:"no-store",credentials:"same-origin"}).then(function(response){return response.text().then(function(text){
 if(!response.ok)throw new Error(text.trim().slice(0,160)||"HTTP "+response.status);return text;});});}
 function status(card,text,error,success){var node=card.querySelector(".td-status");window.clearTimeout(card._tdStatusTimer);node.textContent=text;node.setAttribute("data-error",error?"1":"0");node.setAttribute("data-success",success?"1":"0");}
+function formatTemperature(value){return value.toFixed(1).replace(".",",");}
+function updateBattery(node,raw){var text=String(raw==null?"":raw).trim(),normalized=text.toLowerCase(),level="unknown",filled=0;
+var numeric=normalized.match(/^(\d+(?:[.,]\d+)?)\s*%?$/);
+if(numeric){var percent=Number(numeric[1].replace(",","."));if(Number.isFinite(percent)){filled=percent>=66?3:percent>=33?2:percent>0?1:0;level=percent>60?"good":percent>25?"medium":"low";}}
+else if(/\b(nok|not ok|low|empty|critical|replace|error|weak|bad)\b/.test(normalized)){filled=/\b(low|weak)\b/.test(normalized)?1:0;level="low";}
+else if(/\b(ok|good|full|charged)\b/.test(normalized)){filled=3;level="good";}
+var displayText=numeric&&text.indexOf("%")<0?text+"%":text;
+node.setAttribute("data-level",level);node.setAttribute("data-battery-value",text);node.setAttribute("aria-label","Batterie "+displayText);
+var label=node.querySelector("[data-battery-text]");if(label)label.textContent=displayText;
+Array.prototype.forEach.call(node.querySelectorAll("[data-battery-bar]"),function(bar,index){bar.style.display=index<filled?"":"none";});}
+function updateValve(node,raw){var text=String(raw==null?"":raw).trim(),value=Number(text.replace(",","."));if(!Number.isFinite(value))return;
+value=Math.max(0,Math.min(100,value));node.style.setProperty("--td-valve",value+"%");
+node.setAttribute("aria-label","Ventil "+text+"%");
+var label=node.querySelector("[data-valve-value]");if(label)label.textContent=text+"%";}
 var cards=Array.prototype.slice.call(root.querySelectorAll(".td-card")),editButton=root.querySelector(".td-edit");
 var cancelButton=root.querySelector(".td-cancel"),saveButton=root.querySelector(".td-save");
 var backdrop=root.querySelector("[data-dialog-backdrop]"),dialog=backdrop&&backdrop.querySelector('[role="dialog"]');
@@ -512,37 +567,40 @@ request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf
 .catch(function(error){fail("Speichern fehlgeschlagen: "+error.message);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=false;});})
 .then(function(){saveButton.disabled=false;cancelButton.disabled=false;});});
 }
+Array.prototype.forEach.call(root.querySelectorAll("[data-battery-indicator]"),function(node){updateBattery(node,node.getAttribute("data-battery-value"));});
 function refreshCard(card){var command="jsonlist2 "+card.getAttribute("data-device");
 return request(command).then(function(text){var result=JSON.parse(text),device=result.Results&&result.Results[0];if(!device)throw new Error("Geraet nicht gefunden");
 var readings=device.Readings||{};
 function value(attr){var name=card.getAttribute(attr);return name&&readings[name]?readings[name]:null;}
 var actual=value("data-actual"),target=value("data-target"),mode=value("data-mode"),valve=value("data-valve"),battery=value("data-battery");
-var actualNode=card.querySelector('[data-value="actual"]'),modeNode=card.querySelector('[data-value="mode"]');
+var actualNode=card.querySelector('[data-value="actual"]'),targetNode=card.querySelector("[data-target-value]"),input=card.querySelector("[data-temp]");
 if(actual&&actualNode){var actualNumber=Number(String(actual.Value).replace(",","."));actualNode.innerHTML=(Number.isFinite(actualNumber)?actualNumber.toFixed(1):"&ndash;")+' <small>&deg;C</small>';}
-if(target){var targetNumber=Number(String(target.Value).replace(",",".")),input=card.querySelector("[data-temp]");if(input&&document.activeElement!==input&&!input._tdTimer&&!input.disabled&&Number.isFinite(targetNumber))input.value=targetNumber.toFixed(1);}
-if(mode&&modeNode){modeNode.textContent=mode.Value;var normalizedMode=String(mode.Value).toLowerCase();Array.prototype.forEach.call(card.querySelectorAll("[data-mode-value]"),function(button){button.setAttribute("data-active",String(button.getAttribute("data-mode-value")).toLowerCase()===normalizedMode?"1":"0");});}
-var badges=card.querySelector(".td-meta"),dynamic=badges.querySelectorAll("[data-dynamic]");
-Array.prototype.forEach.call(dynamic,function(node){node.parentNode.removeChild(node);});
-[[valve,"Ventil ","%"],[battery,"Batterie ",""]].forEach(function(item){if(!item[0])return;var badge=document.createElement("span");badge.className="td-badge";badge.setAttribute("data-dynamic","1");badge.textContent=item[1]+item[0].Value+item[2];badges.appendChild(badge);});
+if(target){var targetNumber=Number(String(target.Value).replace(",","."));if(Number.isFinite(targetNumber)&&targetNode)targetNode.textContent=formatTemperature(targetNumber);
+if(input&&document.activeElement!==input&&!input._tdTimer&&!input.disabled&&Number.isFinite(targetNumber)){var sliderMin=Number(input.min),sliderMax=Number(input.max);input.value=Math.max(sliderMin,Math.min(sliderMax,targetNumber));}}
+if(mode){var select=card.querySelector("[data-mode-select]");if(select&&!select.disabled){var normalizedMode=String(mode.Value).toLowerCase();if(Array.prototype.some.call(select.options,function(option){return option.value.toLowerCase()===normalizedMode;}))select.value=normalizedMode;}}
+if(valve){var valveNode=card.querySelector("[data-valvebar]");if(valveNode)updateValve(valveNode,valve.Value);}
+if(battery){var batteryNode=card.querySelector("[data-battery-indicator]");if(batteryNode)updateBattery(batteryNode,battery.Value);}
 })
 .catch(function(error){status(card,"Aktualisierung fehlgeschlagen: "+error.message,true);});}
 function sendTemperature(card,input){if(root.classList.contains("edit-mode"))return;
 var value=Number(input.value),minimum=Number(card.getAttribute("data-min")),maximum=Number(card.getAttribute("data-max"));
 if(!Number.isFinite(value)||value<minimum||value>maximum){status(card,"Temperatur muss zwischen "+minimum.toFixed(1)+" und "+maximum.toFixed(1)+" \u00b0C liegen.",true);return;}
 var halfStep=Math.round(value*2)/2;if(Math.abs(value-halfStep)>0.001){status(card,"Bitte die Temperatur in 0,5-Grad-Schritten angeben.",true);return;}
-value=halfStep;input.value=value.toFixed(1);var command="set "+card.getAttribute("data-device")+" "+card.getAttribute("data-command")+" "+value.toFixed(1);
+value=halfStep;input.value=value;var targetNode=card.querySelector("[data-target-value]");if(targetNode)targetNode.textContent=formatTemperature(value);
+var command="set "+card.getAttribute("data-device")+" "+card.getAttribute("data-command")+" "+value.toFixed(1);
 input.disabled=true;status(card,"Befehl wird gesendet ...",false);
 request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));status(card,"Wert gesendet",false,true);card._tdStatusTimer=window.setTimeout(function(){status(card,"",false);},3000);window.setTimeout(function(){refreshCard(card);},1000);})
 .catch(function(error){status(card,"Befehl fehlgeschlagen: "+error.message,true);})
 .then(function(){input.disabled=false;});}
 root.addEventListener("input",function(event){var input=event.target;if(!input.matches("[data-temp]")||root.classList.contains("edit-mode"))return;
-var card=input.closest(".td-card");if(!card)return;window.clearTimeout(input._tdTimer);status(card,"",false);input._tdTimer=window.setTimeout(function(){input._tdTimer=null;sendTemperature(card,input);},1500);});
-root.addEventListener("click",function(event){var button=event.target.closest("button");if(!button||!button.hasAttribute("data-mode-command"))return;var card=button.closest(".td-card");if(!card||root.classList.contains("edit-mode"))return;
-var command="set "+card.getAttribute("data-device")+" "+button.getAttribute("data-mode-command")+" "+button.getAttribute("data-mode-value"),buttons=card.querySelectorAll("button");
-Array.prototype.forEach.call(buttons,function(item){item.disabled=true;});status(card,"Befehl wird gesendet ...",false);
-request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));status(card,"Befehl an FHEM gesendet.",false);window.setTimeout(function(){refreshCard(card);},1000);})
+var card=input.closest(".td-card");if(!card)return;var targetNode=card.querySelector("[data-target-value]"),number=Number(input.value);if(targetNode&&Number.isFinite(number))targetNode.textContent=formatTemperature(number);
+window.clearTimeout(input._tdTimer);status(card,"",false);input._tdTimer=window.setTimeout(function(){input._tdTimer=null;sendTemperature(card,input);},1500);});
+root.addEventListener("change",function(event){var select=event.target;if(!select.matches("[data-mode-select]")||root.classList.contains("edit-mode"))return;
+var card=select.closest(".td-card");if(!card)return;var command="set "+card.getAttribute("data-device")+" "+select.getAttribute("data-mode-command")+" "+select.value;
+select.disabled=true;status(card,"Befehl wird gesendet ...",false);
+request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));status(card,"Betriebsart gesendet",false,true);card._tdStatusTimer=window.setTimeout(function(){status(card,"",false);},3000);window.setTimeout(function(){refreshCard(card);},1000);})
 .catch(function(error){status(card,"Befehl fehlgeschlagen: "+error.message,true);})
-.then(function(){Array.prototype.forEach.call(buttons,function(item){item.disabled=false;});});});
+.then(function(){select.disabled=false;});});
 function refreshAll(){if(document.hidden)return;Array.prototype.forEach.call(cards,function(card){if(card.getAttribute("data-hidden")!=="1")refreshCard(card);});}
 refreshAll();var seconds=Number(root.getAttribute("data-refresh"))||0;if(seconds)window.setInterval(refreshAll,seconds*1000);
 })();</script>
@@ -591,8 +649,8 @@ sub main::ThermostatDashboard_CGI {
 <h3>ThermostatDashboard</h3>
 <p>Zeigt kompatible Homematic- (CUL_HM) und eQ-3 MAX-Heizkörperthermostate in einem
 Dashboard. Ist- und Solltemperatur, Betriebsart, Ventilstellung und Batteriestatus
-werden angezeigt. Die Solltemperatur und vom jeweiligen Ger&auml;t unterst&uuml;tzte
-Betriebsarten lassen sich direkt einstellen.</p>
+werden angezeigt. Die Solltemperatur wird &uuml;ber einen Schieberegler eingestellt;
+die Betriebsart l&auml;sst sich &uuml;ber ein Auswahlfeld direkt wechseln.</p>
 <a id="ThermostatDashboard-define"></a>
 <b>Define</b>
 <ul><code>define &lt;name&gt; ThermostatDashboard</code></ul>

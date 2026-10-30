@@ -50,8 +50,9 @@ Weitere Befehle:
 ## Anzeige und Bedienung
 
 Pro Gerät werden Alias (ersatzweise Gerätename), optional der Raum, Isttemperatur und
-Solltemperatur angezeigt. Wenn vorhanden, zeigt das Dashboard außerdem Modus, Ventilstellung
-und Batteriestatus. Die Daten werden standardmäßig alle 15 Sekunden aus FHEM aktualisiert.
+Solltemperatur angezeigt. Wenn vorhanden, zeigt das Dashboard außerdem Betriebsart,
+Ventilstellung und Batteriestatus. Die Daten werden standardmäßig alle 15 Sekunden aus FHEM
+aktualisiert.
 
 Über das Stiftsymbol kann der Bearbeitungsmodus geöffnet werden. Dort lässt sich für jedes
 erkannte Thermostat per **Anzeigen**-Kontrollkästchen festlegen, ob es im Dashboard erscheint.
@@ -59,10 +60,11 @@ Ausgeblendete Thermostate bleiben während der Bearbeitung sichtbar und sind abg
 **Speichern** übernimmt die Auswahl dauerhaft für dieses ThermostatDashboard-Gerät;
 **Abbrechen** verwirft alle Änderungen der aktuellen Bearbeitung.
 
-Die Solltemperatur lässt sich direkt in ihrer Kachel mit den Pfeilen oder per Tastatureingabe
-in 0,5-Grad-Schritten einstellen. Nach 1,5 Sekunden ohne weitere Änderung wird der Wert
-automatisch an FHEM gesendet; eine kurze Meldung bestätigt „Wert gesendet“.
-Der Standardbereich ist 5 bis 30 °C.
+Die Solltemperatur lässt sich direkt in ihrer Kachel über den Schieberegler in 0,5-Grad-Schritten
+einstellen. Der Regler reicht vom Geräteminimum bis maximal 25 °C. Nach 1,5 Sekunden ohne
+weitere Änderung wird der Wert automatisch an FHEM gesendet; eine kurze Meldung bestätigt
+„Wert gesendet“. Das Dashboard zeigt auch bestehende Sollwerte über 25 °C an, der Regler selbst
+endet jedoch bei 25 °C.
 Die MAX-Sonderwerte 4,5 °C (`Off`) und 30,5 °C (`On`) werden bewusst nicht als normale
 Temperaturwerte angeboten. Die FHEM-Geräte bleiben maßgeblich für die Validierung und
 Ausführung der Befehle.
@@ -75,9 +77,13 @@ Je nach Fähigkeiten des Geräts erscheinen passende Betriebsarten:
   MAX-Thermostat auf den manuellen Temperaturwert. Zusätzlich kann der Modus **Manuell**
   explizit gewählt werden.
 
-Der aktuell aktive Modus ist hervorgehoben. Die Modi werden an das einzelne Thermostat
-gesendet. Bei miteinander verknüpften MAX-
+Die aktuell aktive Betriebsart ist im Auswahlfeld sichtbar. Sie kann dort direkt geändert
+werden. Der Modus wird an das einzelne Thermostat gesendet. Bei miteinander verknüpften MAX-
 Thermostaten kann es erforderlich sein, den Befehl für jedes Gerät einzeln zu setzen.
+
+Die Ventilstellung erscheint als farbiger Balken von Blau nach Dunkelrot; Marker und Prozentwert
+zeigen die aktuelle Position. Der Batteriestatus wird als Batteriesymbol dargestellt: `ok` und
+hohe Prozentwerte erscheinen grün, niedrige Werte und `nok` rot.
 
 ## Attribute
 

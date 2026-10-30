@@ -8,7 +8,10 @@ werden ebenfalls erkannt. Im Bearbeitungsmodus können einzelne Thermostate daue
 ein- oder ausgeblendet werden. Die Modell-/Typzeile lässt sich mit
 `attr <Name> showDeviceType 0` ausblenden; mit `1` wird sie wieder angezeigt. Der Raum
 über dem Thermostatnamen kann analog mit `attr <Name> showRoom 0` ausgeblendet werden.
-Die Solltemperatur wird nach 1,5 Sekunden ohne weitere Eingabe automatisch gesendet.
+Die Solltemperatur wird über einen Schieberegler (Geräteminimum bis maximal 25 °C) eingestellt
+und nach 1,5 Sekunden ohne weitere Eingabe automatisch gesendet. Die Betriebsart kann direkt
+über das Auswahlfeld geändert werden; Ventilstellung und Batteriestatus werden grafisch
+dargestellt.
 
 ## Installation
 
