@@ -701,6 +701,24 @@ sub TemperatureCollector_DetailHtml {
     return $html . '</div>';
 }
 
+sub TemperatureCollector_EmbedCss {
+    return <<'CSS';
+.tc-dashboard,.tc-dashboard *{box-sizing:border-box;letter-spacing:normal;text-transform:none;text-shadow:none}
+.tc-dashboard{line-height:1.4;text-align:left;font-size:14px!important}
+.tc-dashboard select,.tc-dashboard input,.tc-dashboard button{margin:0!important;font-family:'Helvetica Neue',sans-serif!important;line-height:normal!important;float:none!important;box-shadow:none!important;width:auto!important;max-width:100%;text-transform:none!important}
+.tc-dashboard select.tc-range{-webkit-appearance:menulist;appearance:auto;height:26px!important;padding:0 6px!important;font-size:12px!important;background:#26342d!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important}
+.tc-dashboard .tc-span input{height:26px!important;padding:0 6px!important;font-size:12px!important;background:#26342d!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important}
+.tc-dashboard .tc-chart-controls button,.tc-dashboard .tc-span button{height:26px!important;min-width:26px!important;padding:0 8px!important;font-size:12px!important;font-weight:600!important;background:#26342d!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important}
+.tc-dashboard .tc-history-toggle{width:28px!important;height:28px!important;padding:0!important;font-size:18px!important;background:#26342d!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important}
+.tc-dashboard .tc-edit{width:40px!important;height:40px!important;padding:0!important;font-size:28px!important;background:none!important;border:0!important;color:#f4f4e9!important}
+.tc-dashboard .tc-save{padding:8px 12px!important;font-size:12px!important;background:#26342d!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important}
+.tc-dashboard .tc-chart-title{font-size:12px!important;line-height:1.3!important}.tc-dashboard .tc-chart-title .tc-muted{font-size:12px!important}
+.tc-dashboard h1,.tc-dashboard h2,.tc-dashboard h3,.tc-dashboard p{margin-top:0;text-transform:none}
+.tc-dashboard .tc-brand h1{margin:3px 0!important;font:500 22px Georgia,serif!important;line-height:1.1!important}
+.tc-dashboard table{width:100%;margin:12px 0 0!important}.tc-dashboard th,.tc-dashboard td{font-size:12px!important;padding:4px 6px!important}
+CSS
+}
+
 sub TemperatureCollector_BuildDashboard {
     my ($hash, $options) = @_;
     $options ||= {};
@@ -735,6 +753,8 @@ sub TemperatureCollector_BuildDashboard {
 </style>
 <div class="tc-dashboard">
 HTML
+    # Host pages such as FTUI style form controls globally; pin the dashboard's own look
+    $html =~ s{</style>\n<div class="tc-dashboard">\n\z}{@{[TemperatureCollector_EmbedCss()]}</style>\n<div class="tc-dashboard">\n} if ($options->{embed});
     $html .= '<div class="tc-header"><div class="tc-brand">'
         . '<span class="tc-brand-mark">T</span><div><small>FHEM / TEMPERATURE COLLECTOR</small>'
         . '<h1>Temperaturübersicht</h1></div></div>'
