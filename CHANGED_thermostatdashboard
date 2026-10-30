@@ -2,6 +2,10 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 3d39216 ThermostatDashboard: restrict editor to FHEMWEB
+  view
+  Render the visibility editor only for get _showDashboard; keep the standalone
+    and embed views read-only while preserving their dashboard controls.
 - change: 2026-10-30 6bbd079 ThermostatDashboard: add modal editing and type
   option
   Use a modal visibility editor with save and cancel controls, add a thermostat
