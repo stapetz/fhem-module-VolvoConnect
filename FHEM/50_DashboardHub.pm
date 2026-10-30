@@ -43,8 +43,11 @@ sub DashboardHub_Undef {
 
 sub DashboardHub_Set {
     my ($hash, $name, $cmd, @args) = @_;
-    return DashboardHub_SaveConfig($name, decode_base64(join('', @args)))
-        if (defined($cmd) && $cmd eq 'saveConfig');
+    if (defined($cmd) && $cmd eq 'saveConfig') {
+        my $error = DashboardHub_SaveConfig($name, decode_base64(join('', @args)));
+        return $error if (defined($error));
+        return 'Dashboard-Konfiguration gespeichert.';
+    }
     return 'Unknown argument ' . ($cmd // '') . ', choose one of saveConfig';
 }
 
@@ -95,7 +98,7 @@ sub DashboardHub_LoadConfig {
 
 sub DashboardHub_SaveConfig {
     my ($name, $json) = @_;
-    Log3($name, 3, "DashboardHub ($name): saveConfig " . length($json // '') . ' bytes');
+    Log3($name, 2, "DashboardHub ($name): saveConfig " . length($json // '') . ' bytes');
     my $config = eval { decode_json($json || '') };
     return 'Ungueltige Konfiguration'
         if (ref($config) ne 'HASH' || ref($config->{order}) ne 'ARRAY' || ref($config->{names}) ne 'HASH'
@@ -119,7 +122,7 @@ sub DashboardHub_SaveConfig {
         Log3($name, 1, "DashboardHub ($name): setKeyValue failed: $error");
         return 'Speichern fehlgeschlagen: ' . $error;
     }
-    Log3($name, 3, "DashboardHub ($name): config saved");
+    Log3($name, 2, "DashboardHub ($name): config saved");
     return undef;
 }
 
@@ -275,16 +278,15 @@ actions.style.display="flex";refreshButtons();say("Reihenfolge und Namen bearbei
 function stopEdit(){if(titleInput){titleInput.parentNode.removeChild(titleInput);titleInput=null;titleEl.style.display="";}editing=false;root.classList.remove("dh-editing");items().forEach(undecorate);actions.style.display="none";}
 function cancelEdit(){var byDev={};items().forEach(function(n){byDev[n.getAttribute("data-dev")]=n;});
 saved.forEach(function(d){if(byDev[d])list.appendChild(byDev[d]);});stopEdit();say("");}
-function ck(r){return r.text().then(function(t){if(!r.ok||t.indexOf("gespeichert")<0)throw new Error((t||"HTTP "+r.status).trim().slice(0,120));});}
+function ck(r){return r.text().then(function(t){if(!r.ok)throw new Error("HTTP "+r.status);if(/error|unknown|ungueltig|fehlgeschlagen/i.test(t))throw new Error(t.trim().slice(0,160));});}
 function post(b64){var tok=csrf;if(!tok){var m=document.cookie.match(/(?:^|;\s*)fwcsrf=([^;]+)/);tok=m?decodeURIComponent(m[1]):"";}
-return fetch(cp+"/DashboardHub/"+encodeURIComponent(hub)+"?hubSave="+encodeURIComponent(b64),{credentials:"same-origin",cache:"no-store"}).then(ck).catch(function(){
-return fetch(cp+"?cmd=set%20"+encodeURIComponent(hub)+"%20saveConfig%20"+encodeURIComponent(b64)+"&XHR=1"+(tok?"&fwcsrf="+encodeURIComponent(tok):""),{credentials:"same-origin",cache:"no-store"}).then(function(r){
-if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(function(t){if(t&&t.trim()!==""&&t.indexOf("gespeichert")<0)throw new Error(t.trim().slice(0,120));});});}
+var url=cp+"?cmd="+encodeURIComponent("set "+hub+" saveConfig "+b64)+"&XHR=1"+(tok?"&fwcsrf="+encodeURIComponent(tok):"");
+return fetch(url,{credentials:"same-origin",cache:"no-store"}).then(ck);}
 function save(){var order=[],names={};items().forEach(function(n){var d=n.getAttribute("data-dev");order.push(d);
 var v=n.querySelector(".dh-name").value.trim();if(v!==""&&v!==n.getAttribute("data-alias"))names[d]=v;});
 var ttl=titleInput?titleInput.value.trim():"";var json=JSON.stringify({order:order,names:names,title:ttl});var b64=btoa(unescape(encodeURIComponent(json)));say("Speichere ...");
 post(b64).then(function(){items().forEach(function(n){var d=n.getAttribute("data-dev"),v=names[d]||"";n.setAttribute("data-custom",v);
-n.querySelector(".dh-label").textContent=v||n.getAttribute("data-alias");});titleEl.setAttribute("data-custom",ttl);titleEl.textContent=ttl||DEFTITLE;stopEdit();say("Gespeichert");}).catch(function(err){say("Fehler: "+err.message);});}
+n.querySelector(".dh-label").textContent=v||n.getAttribute("data-alias");});titleEl.setAttribute("data-custom",ttl);titleEl.textContent=ttl||DEFTITLE;stopEdit();say("Gespeichert");}).catch(function(err){say("Fehler: "+err.message);window.alert("Speichern fehlgeschlagen: "+err.message);});}
 if(editable&&editBtn){editBtn.addEventListener("click",function(){if(editing)cancelEdit();else startEdit();});
 root.querySelector(".dh-save").addEventListener("click",save);root.querySelector(".dh-cancel").addEventListener("click",cancelEdit);}
 initial();
