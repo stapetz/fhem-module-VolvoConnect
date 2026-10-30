@@ -2,6 +2,13 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 ab2c0bc DashboardHub: Dashboards ohne iframe direkt
+  einbinden
+  Fragment (_dashboardEmbedURL) wird per fetch in die Seite geladen
+  Skripte der Dashboards werden ausgefuehrt, Timer des vorherigen Dashboards
+  beim Wechsel beendet
+  Einheitlicher Rand und volle Breite per CSS im Hub
+  Dokumentation angepasst
 - change: 2026-10-30 3cb0bfa DashboardHub: Umlaute in Namen korrigiert,
   einheitliche Raender
   Gespeicherte Namen und Titel beim Laden in UTF-8-Bytes wandeln
