@@ -237,9 +237,9 @@ sub DashboardHub_Css {
     return <<'CSS';
 <style>
 .dh,.dh *{box-sizing:border-box;letter-spacing:normal;text-transform:none;text-shadow:none}
-.dh{display:flex;width:100%;min-height:__HEIGHT__;background:#1d2825;color:#f4f4e9;border:1px solid #46544c;font:14px 'Avenir Next','Helvetica Neue',sans-serif!important;text-align:left;line-height:1.4}
-.dh-nav{flex:0 0 __NAVWIDTH__;display:flex;flex-direction:column;background:#26342d;border-right:1px solid #46544c;padding:6px 0 10px}
-.dh-brand{display:flex;align-items:center;justify-content:space-between;padding:0 12px 12px;font:500 18px Georgia,serif}
+.dh{display:flex;width:100%;min-height:__HEIGHT__;background:#151f1b;color:#f4f4e9;border:1px solid #46544c;font:14px 'Avenir Next','Helvetica Neue',sans-serif!important;text-align:left;line-height:1.4}
+.dh-nav{flex:0 0 __NAVWIDTH__;display:flex;flex-direction:column;align-self:flex-start;margin:6px 0 6px 6px;background:#26342d;border:1px solid #46544c;padding:10px 0}
+.dh-brand{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 12px;font:500 18px Georgia,serif}
 .dh-list{flex:1;overflow-y:auto}
 .dh-item{display:flex;align-items:center;gap:6px;padding:10px 14px;cursor:pointer;border-left:3px solid transparent;color:#f4f4e9;font-size:14px;user-select:none}
 .dh-item:hover{background:#2f4037}
@@ -260,7 +260,7 @@ sub DashboardHub_Css {
 .dh-content .vcc-embed{padding:0!important}
 .dh-loading{padding:24px;color:#9fb3a8}
 .dh-empty{padding:24px;color:#9fb3a8}
-@media (max-width:700px){.dh{flex-direction:column}.dh-nav{flex:none;border-right:0;border-bottom:1px solid #46544c}.dh-list{display:flex;overflow-x:auto}.dh-item{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}.dh-item.dh-active{border-bottom-color:#52bd8b}.dh-editing .dh-list{display:block}}
+@media (max-width:700px){.dh{flex-direction:column}.dh-nav{flex:none;align-self:stretch;margin:6px 6px 0}.dh-list{display:flex;overflow-x:auto}.dh-item{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}.dh-item.dh-active{border-bottom-color:#52bd8b}.dh-editing .dh-list{display:block}}
 </style>
 CSS
 }
