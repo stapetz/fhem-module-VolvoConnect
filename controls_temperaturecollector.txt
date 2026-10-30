@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 UPD 2026-10-28_23:33:01 61136 FHEM/50_TemperatureCollector.pm
 UPD 2026-10-30_12:22:54 300 CHANGED_temperaturecollector
+=======
+UPD 2026-10-28_23:33:01 42393 FHEM/50_TemperatureCollector.pm
+UPD 2026-10-28_22:33:09 1946 CHANGED
+>>>>>>> 38885a1f6df54ebfb5259588d343e54e5e9f9279
