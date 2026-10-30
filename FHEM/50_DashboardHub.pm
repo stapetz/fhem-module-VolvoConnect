@@ -76,8 +76,38 @@ sub DashboardHub_Get {
         return join("\n", map { sprintf('%s (%s, %s)', $_->{label}, $_->{name}, $_->{type}) } @{$items});
     }
 
-    return 'Unknown argument ' . $cmd . ', choose one of list:noArg _showDashboard:noArg '
+    if ($cmd eq 'diagnose') {
+        return DashboardHub_Diagnose($name);
+    }
+
+    return 'Unknown argument ' . $cmd . ', choose one of list:noArg diagnose:noArg _showDashboard:noArg '
         . '_dashboardURL:noArg _dashboardEmbedURL:noArg';
+}
+
+sub DashboardHub_Diagnose {
+    my ($hubName) = @_;
+    my @lines;
+    for my $name (sort keys %main::defs) {
+        my $dev = $main::defs{$name};
+        next if (ref($dev) ne 'HASH' || $name eq $hubName);
+        my $type = $dev->{TYPE} // '';
+        next if ($type eq '' || !$main::modules{$type} || !$main::modules{$type}{GetFn});
+        my $why;
+        if (AttrVal($name, 'disable', 0)) { $why = 'disable gesetzt'; }
+        else {
+            my $usage = eval { CallFn($name, 'GetFn', $dev, $name, '?') };
+            my $err = $@; $err =~ s/\s+$//;
+            if ($err ne '') { $why = 'GetFn ? Fehler: ' . $err; }
+            elsif (!defined($usage) || ref($usage)) { $why = 'GetFn ? liefert keine Zeichenkette'; }
+            elsif ($usage !~ /(?:^|\s)_dashboardEmbedURL(?::|\s|$)/) { next if ($usage !~ /_dashboard/); $why = 'kein _dashboardEmbedURL in: ' . substr($usage, 0, 120); }
+            else {
+                my $embed = eval { CallFn($name, 'GetFn', $dev, $name, '_dashboardEmbedURL') };
+                $why = (defined($embed) && !ref($embed) && $embed =~ m{^/[^\s]*$}) ? 'OK ' . $embed : 'ungueltige Embed-URL: ' . (defined($embed) ? $embed : 'undef');
+            }
+        }
+        push @lines, "$name ($type): $why";
+    }
+    return @lines ? join("\n", @lines) : 'Keine Geraete mit GetFn gefunden';
 }
 
 sub DashboardHub_ConfigKey {
@@ -420,6 +450,7 @@ sub main::DashboardHub_CGI {
 <b>Get</b>
 <ul>
     <li><code>list</code> - erkannte Dashboards in der aktuellen Reihenfolge ausgeben</li>
+    <li><code>diagnose</code> - pro Ger&auml;t anzeigen, ob und warum es als Dashboard erkannt wird</li>
     <li><code>_showDashboard</code> - Dashboard mit Navigation anzeigen; mit dem Stift lassen sich
         Anzeigenamen und Reihenfolge der Menüpunkte sowie die Überschrift der Navigation ändern</li>
     <li><code>_dashboardURL</code> - URL der eigenständigen Ansicht (nicht editierbar)</li>

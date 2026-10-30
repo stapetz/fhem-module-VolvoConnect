@@ -58,6 +58,7 @@ Weitere Zugriffswege:
 | `get <name> _dashboardURL` | vollständige URL der eigenständigen Ansicht |
 | `get <name> _dashboardEmbedURL` | relative URL des Fragments ohne html/head/body, z. B. für FTUI |
 | `get <name> list` | erkannte Dashboards in der aktuellen Reihenfolge |
+| `get <name> diagnose` | pro Gerät: wird es erkannt, und wenn nicht, warum |
 
 Eigenständige Ansicht und Fragment sind nicht editierbar; bearbeiten lässt sich nur in
 `_showDashboard`.
