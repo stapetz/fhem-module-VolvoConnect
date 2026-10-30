@@ -2,6 +2,11 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 027280a SolaxModbus: Moduldatei in 70_SolaxModbus.pm
+  umbenannt [SolaxModbus]
+  FHEM leitet den Typ aus dem Dateinamen ab. 98_ModbusSolax.pm registrierte
+  den Typ ModbusSolax, Geraete nutzen aber SolaxModbus, daher wurde die Datei
+  nie verwendet.
 - change: 2026-10-30 334e087 DashboardHub: get diagnose zeigt Erkennungsstatus
   pro Geraet [DashboardHub]
 - change: 2026-10-30 d8c805c Volvo: Standortkarte ohne iframe,
@@ -67,7 +72,7 @@
 - change: 2026-10-28 2fa0b0e ordnerstruktur und dokumentation angepasst
   [VolvoConnect, GavazziEM24, SolaxModbus]
 - change: 2026-10-28 e0e88ab initiales commit fur Gavazzi Modul und SolaxModul
-  [GavazziEM24]
+  [GavazziEM24, SolaxModbus]
 - change: 2026-10-28 01ee194 Kurze Textanpassung Readme
 - change: 2026-10-27 9fa5274 automatisierte change Eintrage, Anpassung
   Dokumentation und Readme.
@@ -78,7 +83,7 @@
 - change: 2026-10-27 2db6889 Update README to remove module references
   Removed SolaxModbus and Gavazzi Stromzahler from README.
 - change: 2026-10-27 f713b3b Nur noch VolvoModul [GavazziEM24]
-- change: 2026-10-27 b6fa30c Gavazzi aus projekt geloscht [SolaxModbus]
+- change: 2026-10-27 b6fa30c Gavazzi aus projekt geloscht
 - change: 2026-10-27 0a26e7c workflow korrigiert
 - change: 2026-10-27 e4df637 Workflow korrigiert
 - change: 2026-10-27 555d619 Workflow korrigiert
@@ -96,5 +101,5 @@
   [VolvoConnect]
 - change: 2026-10-27 82f2ae8 erster Entwurf [VolvoConnect]
 - change: 2026-10-27 5f4ee0b Initiales Modul und Controls-Datei hinzugefugt
-  [VolvoConnect, GavazziEM24, SolaxModbus]
+  [VolvoConnect, GavazziEM24]
 - change: 2026-10-27 74507f3 Initial commit
