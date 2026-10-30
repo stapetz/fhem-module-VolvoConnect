@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- feature: 2026-10-30 1a3bd7d feat(thermostatdashboard): improve temperature
+  controls [ThermostatDashboard]
+  Update Copilot coding guidance and document the new thermostat controls.
 - change: 2026-10-30 7ad7c6c Add response greeting to Copilot instructions
   Require repository agents to begin each response with the requested greeting.
 - change: 2026-10-30 663026e Clarify dev-only Copilot rules and main approval

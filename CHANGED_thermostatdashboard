@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- feature: 2026-10-30 1a3bd7d feat(thermostatdashboard): improve temperature
+  controls
+  Update Copilot coding guidance and document the new thermostat controls.
 - change: 2026-10-30 f458b29 ThermostatDashboard: remove dashboard get alias
   Keep _showDashboard as the sole dashboard display command and remove the
     redundant alias from command help and documentation.
