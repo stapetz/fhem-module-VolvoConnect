@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.0.0-dev';
+our $ThermostatDashboard_VERSION = '1.1.0-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -21,6 +21,7 @@ sub ThermostatDashboard_Initialize {
         'excludeDevices',
         'autoRefresh:0,15,30,60',
         'showDeviceType:0,1',
+        'showRoom:0,1',
         $main::readingFnAttributes,
     );
 
@@ -207,8 +208,15 @@ sub ThermostatDashboard_Discover {
         my $modeCommand = $type eq 'MAX' ? 'desiredTemperature' : 'controlMode';
         if (ThermostatDashboard_HasCommand($usage, $modeCommand)) {
             if ($type eq 'MAX') {
-                @modes = map { [$modeCommand, $_, ucfirst($_)] }
-                    qw(auto eco comfort boost);
+                my %labels = (
+                    auto => 'Auto',
+                    eco => 'Eco',
+                    comfort => 'Komfort',
+                    boost => 'Boost',
+                    manual => 'Manuell',
+                );
+                @modes = map { [$modeCommand, $_, $labels{$_}] }
+                    qw(auto eco comfort boost manual);
             } elsif ($usage =~ /\bcontrolMode\s+\(([^)]*)\)/) {
                 my %labels = (
                     auto => 'Auto',
@@ -309,9 +317,9 @@ sub ThermostatDashboard_Css {
 .td-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
 .td h1{font:500 22px/1.1 Georgia,serif;margin:3px 0}
 .td-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.td-summary{font-size:12px;color:#a9b7ac;text-align:right}
 .td-edit,.td-cancel,.td-save{padding:8px 12px;border:1px solid #52bd8b;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}
-.td-edit{font-size:18px;line-height:1;min-width:38px;min-height:36px}
+.td button.td-edit{font-size:22px;line-height:1;min-width:40px;min-height:40px;padding:0;border:0;background:transparent;color:#f4f4e9}
+.td button.td-edit:hover{background:transparent;color:#9ce2bb}
 .td-cancel{border-color:#69796f}
 .td-dialog-open{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:#0c1612b8}
 .td-dialog-open[hidden]{display:none}
@@ -330,8 +338,6 @@ sub ThermostatDashboard_Css {
 .td-dialog-footer button:disabled{opacity:.5;cursor:wait}
 .td-dialog-status{min-height:16px;color:#a9b7ac;font-size:11px}
 .td-dialog-status[data-error="1"]{color:#ef9a8b}
-.td-head-status{flex:1 0 100%;min-height:16px;text-align:right;color:#a9b7ac;font-size:11px}
-.td-head-status[data-error="1"]{color:#ef9a8b}
 .td-grid{padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:12px}
 .td-card{min-width:0;background:#202e29;border:1px solid #46544c}
 .td-card[data-hidden="1"]{display:none}
@@ -345,21 +351,25 @@ sub ThermostatDashboard_Css {
 .td-value-label{display:block;color:#9fb3a8;font-size:10px;text-transform:uppercase;letter-spacing:.8px}
 .td-value strong{display:block;margin-top:3px;font-size:24px;line-height:1.15;font-weight:600;white-space:nowrap}
 .td-value small{font-size:13px;font-weight:400;color:#a9b7ac}
+.td-target-control{display:flex;align-items:baseline;gap:5px;margin-top:3px}
+.td-target-control input{width:100%;min-width:0;padding:0;border:0;outline:0;background:transparent;color:#f4f4e9;font:600 24px/1.15 'Avenir Next','Helvetica Neue',sans-serif;font-variant-numeric:tabular-nums}
+.td-target-control input::-webkit-inner-spin-button,.td-target-control input::-webkit-outer-spin-button{opacity:.65}
+.td-target-control input:focus{color:#9ce2bb}
 .td-meta{display:flex;flex-wrap:wrap;gap:7px;padding:0 14px 12px}
 .td-badge{padding:3px 7px;border:1px solid #46544c;color:#c7d0c8;font-size:11px}
 .td-controls{padding:12px 14px;border-top:1px solid #3a463f}
-.td-set-row{display:flex;gap:7px;align-items:center}
-.td-set-row input{min-width:0;width:90px;padding:7px;background:#151f1b;color:#f4f4e9;border:1px solid #607268;font:600 14px 'Avenir Next','Helvetica Neue',sans-serif}
 .td button{min-height:34px;padding:6px 11px;background:#26342d;color:#f4f4e9;border:1px solid #52bd8b;font:600 12px 'Helvetica Neue',sans-serif;cursor:pointer}
 .td button:hover{background:#30453a}
 .td button:disabled{opacity:.5;cursor:wait}
 .td-modes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .td-modes button{min-height:30px;padding:4px 9px;border-color:#69796f}
+.td-modes button[data-active="1"]{background:#52bd8b;color:#17231e;border-color:#9ce2bb;box-shadow:0 0 0 2px #52bd8b40}
+.td-modes button[data-active="1"]:hover{background:#52bd8b;color:#17231e}
 .td-status{min-height:18px;margin-top:7px;color:#a9b7ac;font-size:11px}
 .td-status[data-error="1"]{color:#ef9a8b}
-.td-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.td-status[data-success="1"]{color:#9ce2bb}
 .td-empty{margin:12px;padding:18px;background:#202e29;border:1px solid #46544c;color:#c7d0c8}
-@media(max-width:600px){.td-head{padding:12px 15px;align-items:flex-start;flex-direction:row;gap:8px}.td-head-actions{width:auto;justify-content:flex-end;margin-left:auto}.td-head-status{text-align:left}.td-summary{text-align:right}.td-grid{padding:8px;gap:8px}.td-set-row input{width:82px}.td-dialog-open{padding:10px}.td-dialog-list{padding:6px 14px}.td-dialog-head,.td-dialog-footer{padding:13px 14px}}
+@media(max-width:600px){.td-head{padding:12px 15px;align-items:flex-start;flex-direction:row;gap:8px}.td-head-actions{width:auto;justify-content:flex-end;margin-left:auto}.td-grid{padding:8px;gap:8px}.td-dialog-open{padding:10px}.td-dialog-list{padding:6px 14px}.td-dialog-head,.td-dialog-footer{padding:13px 14px}}
 </style>
 CSS
 }
@@ -370,7 +380,6 @@ sub ThermostatDashboard_BuildDashboard {
     my $name = $hash->{NAME};
     my $devices = ThermostatDashboard_Discover($name);
     my $hidden = ThermostatDashboard_LoadHidden($name);
-    my $visibleCount = scalar(grep { !$hidden->{$_->{name}} } @{$devices});
     my $base = ThermostatDashboard_Escape(ThermostatDashboard_BasePath());
     my $csrf = $main::FW_CSRF // '';
     $csrf =~ s/^&?fwcsrf=//;
@@ -378,6 +387,7 @@ sub ThermostatDashboard_BuildDashboard {
     my $refresh = AttrVal($name, 'autoRefresh', 15);
     $refresh = 15 if ($refresh !~ /^(?:0|15|30|60)$/);
     my $showDeviceType = AttrVal($name, 'showDeviceType', 1) ? 1 : 0;
+    my $showRoom = AttrVal($name, 'showRoom', 1) ? 1 : 0;
     my $html = ThermostatDashboard_Css()
         . '<div class="td" data-base="' . $base . '" data-csrf="' . $csrf . '" data-device="'
         . ThermostatDashboard_Escape($name) . '" data-refresh="' . $refresh . '">'
@@ -387,8 +397,6 @@ sub ThermostatDashboard_BuildDashboard {
         . '<div><small>HEIZUNG / THERMOSTATE</small><h1>Thermostate</h1></div></div>'
         . '<div class="td-head-actions">'
         . ($options->{editable} ? '<button type="button" class="td-edit" title="Bearbeiten" aria-label="Thermostate bearbeiten">&#9998;</button>' : '')
-        . '<div class="td-summary"><span data-count>' . $visibleCount . '</span> von <span data-total>'
-        . scalar(@{$devices}) . '</span> Thermostaten angezeigt</div>'
         . '</div></header>';
 
     if ($options->{editable}) {
@@ -433,31 +441,30 @@ sub ThermostatDashboard_BuildDashboard {
                 . '" data-battery="' . ThermostatDashboard_Escape($device->{battery} ? $device->{battery}{name} : '')
                 . '" data-command="' . ThermostatDashboard_Escape($device->{temperatureCommand})
                 . '" data-min="' . $device->{minimum} . '" data-max="' . $device->{maximum} . '">'
-                . '<header class="td-card-head"><div><div class="td-room">'
-                . ThermostatDashboard_Escape($room) . '</div><h2 class="td-name">'
+                . '<header class="td-card-head"><div>'
+                . ($showRoom ? '<div class="td-room">' . ThermostatDashboard_Escape($room) . '</div>' : '')
+                . '<h2 class="td-name">'
                 . ThermostatDashboard_Escape($device->{alias}) . '</h2></div><div class="td-model">'
                 . ($showDeviceType ? ThermostatDashboard_Escape($device->{model}) : '') . '</div></header>'
                 . '<div class="td-values"><div class="td-value"><span class="td-value-label">Isttemperatur</span>'
                 . '<strong data-value="actual">' . (defined($actual) ? sprintf('%.1f', $actual) : '&ndash;')
                 . ' <small>&deg;C</small></strong></div><div class="td-value">'
-                . '<span class="td-value-label">Solltemperatur</span><strong data-value="target">'
-                . (defined($target) ? sprintf('%.1f', $target) : '&ndash;') . ' <small>&deg;C</small></strong></div></div>'
+                . '<span class="td-value-label">Solltemperatur</span><div class="td-target-control">'
+                . '<input data-temp type="number" min="' . $device->{minimum} . '" max="' . $device->{maximum}
+                . '" step="0.5" value="' . $targetValue . '" aria-label="Solltemperatur in Grad Celsius">'
+                . '<small>&deg;C</small></div></div></div>'
                 . '<div class="td-meta">'
                 . '<span class="td-badge" data-value="mode">' . ($mode ne '' ? ThermostatDashboard_Escape($mode) : 'Modus unbekannt') . '</span>'
                 . ($valve ne '' ? '<span class="td-badge" data-dynamic="1">Ventil ' . ThermostatDashboard_Escape($valve) . '%</span>' : '')
                 . ($battery ne '' ? '<span class="td-badge" data-dynamic="1">Batterie ' . ThermostatDashboard_Escape($battery) . '</span>' : '')
-                . '</div><div class="td-controls"><div class="td-set-row">'
-                . '<label class="td-sr-only" for="td-temp-' . ThermostatDashboard_Escape($device->{name})
-                . '">Solltemperatur</label><input id="td-temp-' . ThermostatDashboard_Escape($device->{name})
-                . '" data-temp type="number" min="' . $device->{minimum} . '" max="' . $device->{maximum}
-                . '" step="0.5" value="' . $targetValue . '" aria-label="Solltemperatur in Grad Celsius">'
-                . '<span>&deg;C</span><button type="button" data-set-temperature>Setzen</button></div>';
+                . '</div><div class="td-controls">';
             if (@{$device->{modes}}) {
                 $html .= '<div class="td-modes">';
                 for my $mode (@{$device->{modes}}) {
                     $html .= '<button type="button" data-mode-command="'
                         . ThermostatDashboard_Escape($mode->[0]) . '" data-mode-value="'
-                        . ThermostatDashboard_Escape($mode->[1]) . '">'
+                        . ThermostatDashboard_Escape($mode->[1]) . '" data-active="'
+                        . ($device->{mode} && lc($device->{mode}{value}) eq lc($mode->[1]) ? '1' : '0') . '">'
                         . ThermostatDashboard_Escape($mode->[2]) . '</button>';
                 }
                 $html .= '</div>';
@@ -480,24 +487,23 @@ if(!csrf){var match=document.cookie.match(/(?:^|;\s*)fwcsrf=([^;]+)/);csrf=match
 function request(command){var url=base+"?cmd="+encodeURIComponent(command)+"&XHR=1";if(csrf)url+="&fwcsrf="+encodeURIComponent(csrf);
 return fetch(url,{cache:"no-store",credentials:"same-origin"}).then(function(response){return response.text().then(function(text){
 if(!response.ok)throw new Error(text.trim().slice(0,160)||"HTTP "+response.status);return text;});});}
-function status(card,text,error){var node=card.querySelector(".td-status");node.textContent=text;node.setAttribute("data-error",error?"1":"0");}
+function status(card,text,error,success){var node=card.querySelector(".td-status");window.clearTimeout(card._tdStatusTimer);node.textContent=text;node.setAttribute("data-error",error?"1":"0");node.setAttribute("data-success",success?"1":"0");}
 var cards=Array.prototype.slice.call(root.querySelectorAll(".td-card")),editButton=root.querySelector(".td-edit");
 var cancelButton=root.querySelector(".td-cancel"),saveButton=root.querySelector(".td-save");
 var backdrop=root.querySelector("[data-dialog-backdrop]"),dialog=backdrop&&backdrop.querySelector('[role="dialog"]');
-var dialogStatus=root.querySelector(".td-dialog-status"),countNode=root.querySelector("[data-count]");
+var dialogStatus=root.querySelector(".td-dialog-status");
 var checkboxes=root.querySelectorAll("[data-visible]");
-function updateCount(){countNode.textContent=String(cards.filter(function(card){return card.getAttribute("data-hidden")!=="1";}).length);}
 if(editButton&&backdrop){
 var originalHidden=[];
 function updateVisibility(card,visible){card.setAttribute("data-hidden",visible?"0":"1");}
 function setEditMode(editing){root.classList.toggle("edit-mode",editing);backdrop.hidden=!editing;Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=!editing;});dialogStatus.textContent="";dialogStatus.setAttribute("data-error","0");if(editing){var first=dialog.querySelector("input");(first||cancelButton).focus();}else editButton.focus();}
-function cancelEdit(){cards.forEach(function(card,index){updateVisibility(card,!originalHidden[index]);});Array.prototype.forEach.call(checkboxes,function(checkbox,index){checkbox.checked=!originalHidden[index];});updateCount();setEditMode(false);}
+function cancelEdit(){cards.forEach(function(card,index){updateVisibility(card,!originalHidden[index]);});Array.prototype.forEach.call(checkboxes,function(checkbox,index){checkbox.checked=!originalHidden[index];});setEditMode(false);}
 function fail(text){dialogStatus.textContent=text;dialogStatus.setAttribute("data-error","1");}
 editButton.addEventListener("click",function(){originalHidden=cards.map(function(card){return card.getAttribute("data-hidden")==="1";});setEditMode(true);});
 cancelButton.addEventListener("click",cancelEdit);
 backdrop.addEventListener("click",function(event){if(event.target===backdrop)cancelEdit();});
 document.addEventListener("keydown",function(event){if(event.key==="Escape"&&!backdrop.hidden)cancelEdit();});
-Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.addEventListener("change",function(){var card=cards.filter(function(item){return item.getAttribute("data-device")===checkbox.getAttribute("data-device");})[0];if(card)updateVisibility(card,checkbox.checked);updateCount();});});
+Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.addEventListener("change",function(){var card=cards.filter(function(item){return item.getAttribute("data-device")===checkbox.getAttribute("data-device");})[0];if(card)updateVisibility(card,checkbox.checked);});});
 saveButton.addEventListener("click",function(){var hidden=cards.filter(function(card){return card.getAttribute("data-hidden")==="1";}).map(function(card){return card.getAttribute("data-device");});
 var encoded=btoa(unescape(encodeURIComponent(JSON.stringify({hidden:hidden})))),command="set "+root.getAttribute("data-device")+" saveConfig "+encoded;
 Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=true;});saveButton.disabled=true;cancelButton.disabled=true;dialogStatus.textContent="Konfiguration wird gespeichert ...";
@@ -510,25 +516,30 @@ return request(command).then(function(text){var result=JSON.parse(text),device=r
 var readings=device.Readings||{};
 function value(attr){var name=card.getAttribute(attr);return name&&readings[name]?readings[name]:null;}
 var actual=value("data-actual"),target=value("data-target"),mode=value("data-mode"),valve=value("data-valve"),battery=value("data-battery");
-var actualNode=card.querySelector('[data-value="actual"]'),targetNode=card.querySelector('[data-value="target"]'),modeNode=card.querySelector('[data-value="mode"]');
+var actualNode=card.querySelector('[data-value="actual"]'),modeNode=card.querySelector('[data-value="mode"]');
 if(actual&&actualNode){var actualNumber=Number(String(actual.Value).replace(",","."));actualNode.innerHTML=(Number.isFinite(actualNumber)?actualNumber.toFixed(1):"&ndash;")+' <small>&deg;C</small>';}
-if(target&&targetNode){var targetNumber=Number(String(target.Value).replace(",","."));targetNode.innerHTML=(Number.isFinite(targetNumber)?targetNumber.toFixed(1):"&ndash;")+' <small>&deg;C</small>';var input=card.querySelector("[data-temp]");if(document.activeElement!==input&&Number.isFinite(targetNumber))input.value=targetNumber.toFixed(1);}
-if(mode&&modeNode)modeNode.textContent=mode.Value;
+if(target){var targetNumber=Number(String(target.Value).replace(",",".")),input=card.querySelector("[data-temp]");if(input&&document.activeElement!==input&&!input._tdTimer&&!input.disabled&&Number.isFinite(targetNumber))input.value=targetNumber.toFixed(1);}
+if(mode&&modeNode){modeNode.textContent=mode.Value;var normalizedMode=String(mode.Value).toLowerCase();Array.prototype.forEach.call(card.querySelectorAll("[data-mode-value]"),function(button){button.setAttribute("data-active",String(button.getAttribute("data-mode-value")).toLowerCase()===normalizedMode?"1":"0");});}
 var badges=card.querySelector(".td-meta"),dynamic=badges.querySelectorAll("[data-dynamic]");
 Array.prototype.forEach.call(dynamic,function(node){node.parentNode.removeChild(node);});
 [[valve,"Ventil ","%"],[battery,"Batterie ",""]].forEach(function(item){if(!item[0])return;var badge=document.createElement("span");badge.className="td-badge";badge.setAttribute("data-dynamic","1");badge.textContent=item[1]+item[0].Value+item[2];badges.appendChild(badge);});
 })
 .catch(function(error){status(card,"Aktualisierung fehlgeschlagen: "+error.message,true);});}
-root.addEventListener("click",function(event){var button=event.target.closest("button");if(!button)return;var card=button.closest(".td-card");if(!card)return;
-if(root.classList.contains("edit-mode"))return;
-var command="",input=card.querySelector("[data-temp]");
-if(button.hasAttribute("data-set-temperature")){var value=Number(input.value),minimum=Number(card.getAttribute("data-min")),maximum=Number(card.getAttribute("data-max"));
+function sendTemperature(card,input){if(root.classList.contains("edit-mode"))return;
+var value=Number(input.value),minimum=Number(card.getAttribute("data-min")),maximum=Number(card.getAttribute("data-max"));
 if(!Number.isFinite(value)||value<minimum||value>maximum){status(card,"Temperatur muss zwischen "+minimum.toFixed(1)+" und "+maximum.toFixed(1)+" \u00b0C liegen.",true);return;}
 var halfStep=Math.round(value*2)/2;if(Math.abs(value-halfStep)>0.001){status(card,"Bitte die Temperatur in 0,5-Grad-Schritten angeben.",true);return;}
-value=halfStep;command="set "+card.getAttribute("data-device")+" "+card.getAttribute("data-command")+" "+value.toFixed(1);
-}else if(button.hasAttribute("data-mode-command")){command="set "+card.getAttribute("data-device")+" "+button.getAttribute("data-mode-command")+" "+button.getAttribute("data-mode-value");}
-if(!command)return;var buttons=card.querySelectorAll("button");Array.prototype.forEach.call(buttons,function(item){item.disabled=true;});status(card,"Befehl wird gesendet ...",false);
-request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed/i.test(text))throw new Error(text.trim().slice(0,160));status(card,"Befehl an FHEM gesendet.",false);window.setTimeout(function(){refreshCard(card);},1500);})
+value=halfStep;input.value=value.toFixed(1);var command="set "+card.getAttribute("data-device")+" "+card.getAttribute("data-command")+" "+value.toFixed(1);
+input.disabled=true;status(card,"Befehl wird gesendet ...",false);
+request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));status(card,"Wert gesendet",false,true);card._tdStatusTimer=window.setTimeout(function(){status(card,"",false);},3000);window.setTimeout(function(){refreshCard(card);},1000);})
+.catch(function(error){status(card,"Befehl fehlgeschlagen: "+error.message,true);})
+.then(function(){input.disabled=false;});}
+root.addEventListener("input",function(event){var input=event.target;if(!input.matches("[data-temp]")||root.classList.contains("edit-mode"))return;
+var card=input.closest(".td-card");if(!card)return;window.clearTimeout(input._tdTimer);status(card,"",false);input._tdTimer=window.setTimeout(function(){input._tdTimer=null;sendTemperature(card,input);},1500);});
+root.addEventListener("click",function(event){var button=event.target.closest("button");if(!button||!button.hasAttribute("data-mode-command"))return;var card=button.closest(".td-card");if(!card||root.classList.contains("edit-mode"))return;
+var command="set "+card.getAttribute("data-device")+" "+button.getAttribute("data-mode-command")+" "+button.getAttribute("data-mode-value"),buttons=card.querySelectorAll("button");
+Array.prototype.forEach.call(buttons,function(item){item.disabled=true;});status(card,"Befehl wird gesendet ...",false);
+request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));status(card,"Befehl an FHEM gesendet.",false);window.setTimeout(function(){refreshCard(card);},1000);})
 .catch(function(error){status(card,"Befehl fehlgeschlagen: "+error.message,true);})
 .then(function(){Array.prototype.forEach.call(buttons,function(item){item.disabled=false;});});});
 function refreshAll(){if(document.hidden)return;Array.prototype.forEach.call(cards,function(card){if(card.getAttribute("data-hidden")!=="1")refreshCard(card);});}
@@ -598,6 +609,7 @@ Betriebsarten lassen sich direkt einstellen.</p>
 <ul>
     <li><code>includeDevices</code>, <code>excludeDevices</code> - Regex auf Ger&auml;tenamen</li>
     <li><code>autoRefresh</code> - Aktualisierung in Sekunden: 0 (aus), 15, 30 oder 60</li>
+    <li><code>showDeviceType</code>, <code>showRoom</code> - Typzeile bzw. Raum ein-/ausblenden</li>
 </ul>
 
 =end html
