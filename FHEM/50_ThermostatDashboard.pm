@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.2.3-dev';
+our $ThermostatDashboard_VERSION = '1.3.0-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -59,13 +59,32 @@ sub ThermostatDashboard_ConfigKey {
     return 'ThermostatDashboard_config_' . $name;
 }
 
-sub ThermostatDashboard_LoadHidden {
+sub ThermostatDashboard_LoadConfig {
     my ($name) = @_;
     my ($error, $value) = getKeyValue(ThermostatDashboard_ConfigKey($name));
-    return {} if ($error || !defined($value) || $value eq '');
+    return {hidden => {}, order => [], aliases => {}} if ($error || !defined($value) || $value eq '');
     my $config = eval { decode_json($value) };
-    return {} if (ref($config) ne 'HASH' || ref($config->{hidden}) ne 'ARRAY');
-    return {map { defined($_) && !ref($_) && $_ ne '' ? ($_ => 1) : () } @{$config->{hidden}}};
+    return {hidden => {}, order => [], aliases => {}}
+        if (ref($config) ne 'HASH' || ref($config->{hidden}) ne 'ARRAY');
+    my %hidden = map { defined($_) && !ref($_) && $_ ne '' ? ($_ => 1) : () } @{$config->{hidden}};
+    my %seen;
+    my @order = grep { defined($_) && !ref($_) && $_ ne '' && !$seen{$_}++ }
+        ref($config->{order}) eq 'ARRAY' ? @{$config->{order}} : ();
+    my %aliases;
+    if (ref($config->{aliases}) eq 'HASH') {
+        for my $device (keys %{$config->{aliases}}) {
+            my $alias = $config->{aliases}{$device};
+            next if (!defined($device) || $device eq '' || !defined($alias) || ref($alias));
+            $alias =~ s/^\s+|\s+$//g;
+            $aliases{$device} = $alias if ($alias ne '' && length($alias) <= 80);
+        }
+    }
+    return {hidden => \%hidden, order => \@order, aliases => \%aliases};
+}
+
+sub ThermostatDashboard_LoadHidden {
+    my ($name) = @_;
+    return ThermostatDashboard_LoadConfig($name)->{hidden};
 }
 
 sub ThermostatDashboard_SaveConfig {
@@ -73,10 +92,25 @@ sub ThermostatDashboard_SaveConfig {
     my $config = eval { decode_json($json || '') };
     return 'Ungueltige Konfiguration'
         if (ref($config) ne 'HASH' || ref($config->{hidden}) ne 'ARRAY'
-            || grep { !defined($_) || ref($_) || $_ eq '' } @{$config->{hidden}});
-    my %seen;
-    my @hidden = grep { !$seen{$_}++ } @{$config->{hidden}};
-    my $error = setKeyValue(ThermostatDashboard_ConfigKey($name), encode_json({hidden => \@hidden}));
+            || grep { !defined($_) || ref($_) || $_ eq '' } @{$config->{hidden}}
+            || (exists($config->{order}) && (ref($config->{order}) ne 'ARRAY'
+                || grep { !defined($_) || ref($_) || $_ eq '' } @{$config->{order}}))
+            || (exists($config->{aliases}) && ref($config->{aliases}) ne 'HASH'));
+    my (%hiddenSeen, %orderSeen, %aliases);
+    my @hidden = grep { !$hiddenSeen{$_}++ } @{$config->{hidden}};
+    my @order = grep { !$orderSeen{$_}++ }
+        ref($config->{order}) eq 'ARRAY' ? @{$config->{order}} : ();
+    if (ref($config->{aliases}) eq 'HASH') {
+        for my $device (keys %{$config->{aliases}}) {
+            my $alias = $config->{aliases}{$device};
+            return 'Ungueltige Konfiguration' if (!defined($device) || $device eq '' || !defined($alias) || ref($alias));
+            $alias =~ s/^\s+|\s+$//g;
+            return 'Ungueltige Konfiguration' if (length($alias) > 80);
+            $aliases{$device} = $alias if ($alias ne '');
+        }
+    }
+    my $error = setKeyValue(ThermostatDashboard_ConfigKey($name),
+        encode_json({hidden => \@hidden, order => \@order, aliases => \%aliases}));
     if (defined($error) && $error ne '') {
         Log3($name, 1, "ThermostatDashboard ($name): setKeyValue failed: $error");
         return 'Speichern fehlgeschlagen: ' . $error;
@@ -348,11 +382,14 @@ sub ThermostatDashboard_Css {
 .td-dialog-head h2{margin:0;font:500 20px Georgia,serif}
 .td-dialog-head p{margin:5px 0 0;color:#a9b7ac;font-size:12px}
 .td-dialog-list{min-height:0;overflow:auto;padding:8px 20px}
-.td-edit-row{display:flex;align-items:center;gap:11px;padding:10px 4px;border-bottom:1px solid #cfddcf14;cursor:pointer}
-.td-edit-row input{width:18px;height:18px;flex:0 0 18px;margin:0;accent-color:#52bd8b}
-.td-edit-row span{min-width:0;display:flex;flex-direction:column;gap:2px}
-.td-edit-row strong{font-weight:600;overflow-wrap:anywhere}
-.td-edit-row small{color:#9fac9f;font-size:11px}
+.td-edit-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #cfddcf14}
+.td-edit-row.td-dragging{opacity:.45}
+.td-drag-handle{flex:0 0 30px;width:30px;min-height:34px!important;padding:4px!important;border-color:#526459!important;color:#a9b7ac!important;cursor:grab!important;font-size:18px!important;touch-action:none}
+.td-drag-handle:active{cursor:grabbing!important}
+.td-edit-visible{width:18px;height:18px;flex:0 0 18px;margin:0;accent-color:#52bd8b}
+.td-edit-details{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.td-edit-name{width:100%;min-width:0;padding:6px 8px;border:1px solid #526459;border-radius:0;background:#17211d;color:#f4f4e9;font:13px 'Helvetica Neue',sans-serif}
+.td-edit-details small{color:#9fac9f;font-size:11px}
 .td-dialog-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;border-top:1px solid #405149;background:#202e29}
 .td-dialog-actions{display:flex;justify-content:flex-end;gap:8px}
 .td-dialog-footer button:disabled{opacity:.5;cursor:wait}
@@ -405,7 +442,22 @@ sub ThermostatDashboard_BuildDashboard {
     $options ||= {};
     my $name = $hash->{NAME};
     my $devices = ThermostatDashboard_Discover($name);
-    my $hidden = ThermostatDashboard_LoadHidden($name);
+    my $config = ThermostatDashboard_LoadConfig($name);
+    my $hidden = $config->{hidden};
+    my %deviceByName = map { $_->{name} => $_ } @{$devices};
+    my @orderedDevices;
+    for my $deviceName (@{$config->{order}}) {
+        push @orderedDevices, delete($deviceByName{$deviceName})
+            if (exists($deviceByName{$deviceName}));
+    }
+    push @orderedDevices, map { $deviceByName{$_->{name}} }
+        grep { exists($deviceByName{$_->{name}}) } @{$devices};
+    $devices = \@orderedDevices;
+    for my $device (@{$devices}) {
+        $device->{defaultAlias} = $device->{alias};
+        $device->{alias} = $config->{aliases}{$device->{name}}
+            if (exists($config->{aliases}{$device->{name}}));
+    }
     my $base = ThermostatDashboard_Escape(ThermostatDashboard_BasePath());
     my $csrf = $main::FW_CSRF // '';
     $csrf =~ s/^&?fwcsrf=//;
@@ -428,16 +480,27 @@ sub ThermostatDashboard_BuildDashboard {
     if ($options->{editable}) {
         $html .= '<div class="td-dialog-open" data-dialog-backdrop hidden><section class="td-edit-dialog" role="dialog" '
         . 'aria-modal="true" aria-labelledby="td-dialog-title"><header class="td-dialog-head">'
-        . '<h2 id="td-dialog-title">Thermostate anzeigen</h2><p>W&auml;hle aus, welche Ger&auml;te im Dashboard erscheinen.</p></header>'
+        . '<h2 id="td-dialog-title">Thermostate bearbeiten</h2><p>Reihenfolge, Anzeigenamen und Sichtbarkeit festlegen. Namen leer lassen, um den FHEM-Alias zu verwenden.</p></header>'
         . '<div class="td-dialog-list">';
         for my $device (@{$devices}) {
             my $isHidden = $hidden->{$device->{name}} ? 1 : 0;
             my $room = $device->{room} ne '' ? $device->{room} : 'Ohne Raum';
-            $html .= '<label class="td-edit-row"><input type="checkbox" data-visible data-device="'
-                . ThermostatDashboard_Escape($device->{name}) . '"' . ($isHidden ? '' : ' checked') . '>'
-                . '<span><strong>' . ThermostatDashboard_Escape($device->{alias}) . '</strong><small>'
+            my $defaultAlias = $device->{defaultAlias};
+            my $customAlias = $config->{aliases}{$device->{name}} // '';
+            $html .= '<div class="td-edit-row" data-edit-row data-device="'
+                . ThermostatDashboard_Escape($device->{name}) . '">'
+                . '<button type="button" class="td-drag-handle" data-drag-handle draggable="true" '
+                . 'aria-label="Reihenfolge von ' . ThermostatDashboard_Escape($defaultAlias) . ' ändern">&#9776;</button>'
+                . '<input class="td-edit-visible" type="checkbox" data-visible data-device="'
+                . ThermostatDashboard_Escape($device->{name}) . '" aria-label="'
+                . ThermostatDashboard_Escape($defaultAlias) . ' im Dashboard anzeigen"' . ($isHidden ? '' : ' checked') . '>'
+                . '<div class="td-edit-details"><input class="td-edit-name" type="text" data-alias data-device="'
+                . ThermostatDashboard_Escape($device->{name}) . '" maxlength="80" placeholder="'
+                . ThermostatDashboard_Escape($defaultAlias) . '" value="'
+                . ThermostatDashboard_Escape($customAlias) . '" aria-label="Anzeigename f&uuml;r '
+                . ThermostatDashboard_Escape($defaultAlias) . '"><small>'
                 . ThermostatDashboard_Escape($room) . ' &middot; ' . ThermostatDashboard_Escape($device->{model})
-                . '</small></span></label>';
+                . '</small></div></div>';
         }
         $html .= '</div><footer class="td-dialog-footer"><span class="td-dialog-status" aria-live="polite"></span>'
             . '<div class="td-dialog-actions"><button type="button" class="td-cancel">Abbrechen</button>'
@@ -473,7 +536,7 @@ sub ThermostatDashboard_BuildDashboard {
                 . '" data-min="' . $device->{minimum} . '" data-max="' . $device->{maximum} . '">'
                 . '<header class="td-card-head"><div>'
                 . ($showRoom ? '<div class="td-room">' . ThermostatDashboard_Escape($room) . '</div>' : '')
-                . '<h2 class="td-name">'
+                . '<h2 class="td-name" data-default-alias="' . ThermostatDashboard_Escape($device->{defaultAlias}) . '">'
                 . ThermostatDashboard_Escape($device->{alias}) . '</h2></div><div class="td-model">'
                 . ($showDeviceType ? ThermostatDashboard_Escape($device->{model}) : '') . '</div></header>'
                 . '<div class="td-values"><div class="td-value"><span class="td-value-label">Isttemperatur</span>'
@@ -567,23 +630,42 @@ var cards=Array.prototype.slice.call(root.querySelectorAll(".td-card")),editButt
 var cancelButton=root.querySelector(".td-cancel"),saveButton=root.querySelector(".td-save");
 var backdrop=root.querySelector("[data-dialog-backdrop]"),dialog=backdrop&&backdrop.querySelector('[role="dialog"]');
 var dialogStatus=root.querySelector(".td-dialog-status");
-var checkboxes=root.querySelectorAll("[data-visible]");
+var checkboxes=root.querySelectorAll("[data-visible]"),aliasInputs=root.querySelectorAll("[data-alias]");
+var rows=Array.prototype.slice.call(root.querySelectorAll("[data-edit-row]")),draggedRow=null,touchRow=null;
 if(editButton&&backdrop){
-var originalHidden=[];
+var originalHidden={},originalOrder=[],originalAliases={};
 function updateVisibility(card,visible){card.setAttribute("data-hidden",visible?"0":"1");}
-function setEditMode(editing){root.classList.toggle("edit-mode",editing);backdrop.hidden=!editing;Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=!editing;});dialogStatus.textContent="";dialogStatus.setAttribute("data-error","0");if(editing){var first=dialog.querySelector("input");(first||cancelButton).focus();}else editButton.focus();}
-function cancelEdit(){cards.forEach(function(card,index){updateVisibility(card,!originalHidden[index]);});Array.prototype.forEach.call(checkboxes,function(checkbox,index){checkbox.checked=!originalHidden[index];});setEditMode(false);}
+function cardFor(name){return cards.filter(function(card){return card.getAttribute("data-device")===name;})[0];}
+function rowNames(){return Array.prototype.map.call(dialog.querySelectorAll("[data-edit-row]"),function(row){return row.getAttribute("data-device");});}
+function syncCardOrder(){var grid=root.querySelector(".td-grid");if(!grid)return;rowNames().forEach(function(name){var card=cardFor(name);if(card)grid.appendChild(card);});}
+function setRowOrder(order){var list=dialog.querySelector(".td-dialog-list");order.forEach(function(name){var row=rows.filter(function(item){return item.getAttribute("data-device")===name;})[0];if(row)list.appendChild(row);});syncCardOrder();}
+function moveRow(row,target,after){if(!row||!target||row===target)return;var list=row.parentNode;list.insertBefore(row,after?target.nextSibling:target);syncCardOrder();}
+function updateAlias(input){var card=cardFor(input.getAttribute("data-device")),heading=card&&card.querySelector(".td-name");if(heading)heading.textContent=input.value.trim()||heading.getAttribute("data-default-alias");}
+function setEditMode(editing){root.classList.toggle("edit-mode",editing);backdrop.hidden=!editing;Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=!editing;});Array.prototype.forEach.call(aliasInputs,function(input){input.disabled=!editing;});Array.prototype.forEach.call(dialog.querySelectorAll("[data-drag-handle]"),function(handle){handle.disabled=!editing;handle.draggable=editing;});dialogStatus.textContent="";dialogStatus.setAttribute("data-error","0");if(editing){var first=dialog.querySelector("input");(first||cancelButton).focus();}else editButton.focus();}
+function cancelEdit(){cards.forEach(function(card){var name=card.getAttribute("data-device");updateVisibility(card,!originalHidden[name]);});Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.checked=!originalHidden[checkbox.getAttribute("data-device")];});Array.prototype.forEach.call(aliasInputs,function(input){input.value=originalAliases[input.getAttribute("data-device")]||"";updateAlias(input);});setRowOrder(originalOrder);setEditMode(false);}
 function fail(text){dialogStatus.textContent=text;dialogStatus.setAttribute("data-error","1");}
-editButton.addEventListener("click",function(){originalHidden=cards.map(function(card){return card.getAttribute("data-hidden")==="1";});setEditMode(true);});
+editButton.addEventListener("click",function(){originalHidden={};originalAliases={};cards.forEach(function(card){originalHidden[card.getAttribute("data-device")]=card.getAttribute("data-hidden")==="1";});originalOrder=rowNames();Array.prototype.forEach.call(aliasInputs,function(input){originalAliases[input.getAttribute("data-device")]=input.value;});setEditMode(true);});
 cancelButton.addEventListener("click",cancelEdit);
 backdrop.addEventListener("click",function(event){if(event.target===backdrop)cancelEdit();});
 document.addEventListener("keydown",function(event){if(event.key==="Escape"&&!backdrop.hidden)cancelEdit();});
 Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.addEventListener("change",function(){var card=cards.filter(function(item){return item.getAttribute("data-device")===checkbox.getAttribute("data-device");})[0];if(card)updateVisibility(card,checkbox.checked);});});
-saveButton.addEventListener("click",function(){var hidden=cards.filter(function(card){return card.getAttribute("data-hidden")==="1";}).map(function(card){return card.getAttribute("data-device");});
-var encoded=btoa(unescape(encodeURIComponent(JSON.stringify({hidden:hidden})))),command="set "+root.getAttribute("data-device")+" saveConfig "+encoded;
-Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=true;});saveButton.disabled=true;cancelButton.disabled=true;dialogStatus.textContent="Konfiguration wird gespeichert ...";
+Array.prototype.forEach.call(aliasInputs,function(input){input.addEventListener("input",function(){updateAlias(input);});});
+Array.prototype.forEach.call(dialog.querySelectorAll("[data-drag-handle]"),function(handle){
+handle.addEventListener("dragstart",function(event){draggedRow=handle.closest("[data-edit-row]");if(!draggedRow)return;draggedRow.classList.add("td-dragging");event.dataTransfer.effectAllowed="move";event.dataTransfer.setData("text/plain",draggedRow.getAttribute("data-device"));});
+handle.addEventListener("dragend",function(){if(draggedRow)draggedRow.classList.remove("td-dragging");draggedRow=null;});
+handle.addEventListener("pointerdown",function(event){if(event.pointerType==="mouse")return;touchRow=handle.closest("[data-edit-row]");if(touchRow){touchRow.classList.add("td-dragging");handle.setPointerCapture(event.pointerId);event.preventDefault();}});
+handle.addEventListener("pointermove",function(event){if(!touchRow)return;var target=document.elementFromPoint(event.clientX,event.clientY),row=target&&target.closest("[data-edit-row]");if(row&&row!==touchRow){var rect=row.getBoundingClientRect();moveRow(touchRow,row,event.clientY>rect.top+rect.height/2);}});
+function endTouchDrag(){if(touchRow)touchRow.classList.remove("td-dragging");touchRow=null;}
+handle.addEventListener("pointerup",endTouchDrag);handle.addEventListener("pointercancel",endTouchDrag);
+handle.addEventListener("keydown",function(event){if(event.key!=="ArrowUp"&&event.key!=="ArrowDown")return;var row=handle.closest("[data-edit-row]"),target=event.key==="ArrowUp"?row.previousElementSibling:row.nextElementSibling;if(target){event.preventDefault();moveRow(row,target,event.key==="ArrowDown");handle.focus();}});
+});
+rows.forEach(function(row){row.addEventListener("dragover",function(event){if(!draggedRow||draggedRow===row)return;event.preventDefault();var rect=row.getBoundingClientRect();moveRow(draggedRow,row,event.clientY>rect.top+rect.height/2);});row.addEventListener("drop",function(event){if(draggedRow){event.preventDefault();moveRow(draggedRow,row,event.clientY>row.getBoundingClientRect().top+row.offsetHeight/2);}});});
+saveButton.addEventListener("click",function(){var hidden=Array.prototype.filter.call(checkboxes,function(checkbox){return !checkbox.checked;}).map(function(checkbox){return checkbox.getAttribute("data-device");}),aliases={};
+Array.prototype.forEach.call(aliasInputs,function(input){var value=input.value.trim();if(value)aliases[input.getAttribute("data-device")]=value;});
+var config={hidden:hidden,order:rowNames(),aliases:aliases},encoded=btoa(unescape(encodeURIComponent(JSON.stringify(config)))),command="set "+root.getAttribute("data-device")+" saveConfig "+encoded;
+Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=true;});Array.prototype.forEach.call(aliasInputs,function(input){input.disabled=true;});Array.prototype.forEach.call(dialog.querySelectorAll("[data-drag-handle]"),function(handle){handle.disabled=true;});saveButton.disabled=true;cancelButton.disabled=true;dialogStatus.textContent="Konfiguration wird gespeichert ...";
 request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));setEditMode(false);})
-.catch(function(error){fail("Speichern fehlgeschlagen: "+error.message);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=false;});})
+.catch(function(error){fail("Speichern fehlgeschlagen: "+error.message);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=false;});Array.prototype.forEach.call(aliasInputs,function(input){input.disabled=false;});Array.prototype.forEach.call(dialog.querySelectorAll("[data-drag-handle]"),function(handle){handle.disabled=false;handle.draggable=true;});})
 .then(function(){saveButton.disabled=false;cancelButton.disabled=false;});});
 }
 Array.prototype.forEach.call(root.querySelectorAll("[data-battery-indicator]"),function(node){updateBattery(node,node.getAttribute("data-battery-value"));});
@@ -672,7 +754,9 @@ sub main::ThermostatDashboard_CGI {
 <p>Zeigt kompatible Homematic- (CUL_HM) und eQ-3 MAX-Heizkörperthermostate in einem
 Dashboard. Ist- und Solltemperatur, Betriebsart, Ventilstellung und Batteriestatus
 werden angezeigt. Die Solltemperatur wird &uuml;ber einen Schieberegler eingestellt;
-die Betriebsart l&auml;sst sich &uuml;ber ein Auswahlfeld direkt wechseln.</p>
+die Betriebsart l&auml;sst sich &uuml;ber ein Auswahlfeld direkt wechseln. Im Bearbeitungsmodus
+k&ouml;nnen Thermostate sortiert, ein- und ausgeblendet und mit einem eigenen Anzeigenamen
+versehen werden. Ein leerer Name verwendet den FHEM-Alias.</p>
 <a id="ThermostatDashboard-define"></a>
 <b>Define</b>
 <ul><code>define &lt;name&gt; ThermostatDashboard</code></ul>

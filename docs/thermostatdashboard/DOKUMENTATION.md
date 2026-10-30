@@ -54,11 +54,15 @@ Solltemperatur angezeigt. Wenn vorhanden, zeigt das Dashboard außerdem Betriebs
 Ventilstellung und Batteriestatus. Die Daten werden standardmäßig alle 15 Sekunden aus FHEM
 aktualisiert.
 
-Über das Stiftsymbol kann der Bearbeitungsmodus geöffnet werden. Dort lässt sich für jedes
-erkannte Thermostat per **Anzeigen**-Kontrollkästchen festlegen, ob es im Dashboard erscheint.
-Ausgeblendete Thermostate bleiben während der Bearbeitung sichtbar und sind abgedunkelt.
-**Speichern** übernimmt die Auswahl dauerhaft für dieses ThermostatDashboard-Gerät;
-**Abbrechen** verwirft alle Änderungen der aktuellen Bearbeitung.
+Über das Stiftsymbol kann der Bearbeitungsmodus geöffnet werden. Dort kann die Reihenfolge der
+Thermostate am Griff mit den drei waagerechten Strichen per Drag-and-drop geändert werden.
+Alternativ lässt sich ein fokussierter Griff mit den Pfeiltasten nach oben oder unten bewegen.
+Das Namensfeld überschreibt den FHEM-Alias; bleibt es leer, wird wieder der aktuelle Alias aus
+FHEM angezeigt. Per **Anzeigen**-Kontrollkästchen wird festgelegt, ob das Thermostat im
+Dashboard erscheint. Ausgeblendete Thermostate bleiben während der Bearbeitung sichtbar und
+sind abgedunkelt. **Speichern** übernimmt Reihenfolge, Namen und Sichtbarkeit dauerhaft für
+dieses ThermostatDashboard-Gerät; **Abbrechen** verwirft alle Änderungen der aktuellen
+Bearbeitung.
 
 Die Solltemperatur lässt sich direkt in ihrer Kachel über den Schieberegler in 0,5-Grad-Schritten
 einstellen. Der Regler reicht vom Geräteminimum bis maximal 25 °C. Nach 1,5 Sekunden ohne
@@ -96,8 +100,9 @@ dafür bei Bedarf auch das Batterie-Reading des zugehörigen Hauptgeräts verwen
 | `showDeviceType` | Modell-/Typzeile unter dem Thermostatnamen anzeigen (`0` oder `1`); Standard `1` |
 | `showRoom` | Raum über dem Thermostatnamen anzeigen (`0` oder `1`); Standard `1` |
 
-Geräte mit `disable 1` werden ausgelassen. Die manuell ausgeblendete Auswahl wird getrennt
-je ThermostatDashboard-Gerät gespeichert. Die Anzeige wird nach Raum und Alias sortiert.
+Geräte mit `disable 1` werden ausgelassen. Sichtbarkeit, Reihenfolge und eigene Anzeigenamen
+werden getrennt je ThermostatDashboard-Gerät gespeichert. Neu erkannte Thermostate werden
+hinter den manuell sortierten Einträgen entsprechend ihrer Standardreihenfolge ergänzt.
 
 ## Sicherheit und Datenschutz
 

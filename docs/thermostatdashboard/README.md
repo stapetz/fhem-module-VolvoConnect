@@ -12,6 +12,8 @@ Die Solltemperatur wird über einen Schieberegler (Geräteminimum bis maximal 25
 und nach 1,5 Sekunden ohne weitere Eingabe automatisch gesendet. Die Betriebsart kann direkt
 über das Auswahlfeld geändert werden; Ventilstellung und Batteriestatus werden grafisch
 dargestellt.
+Im Bearbeitungsmodus lassen sich Thermostate außerdem per Drag-and-drop sortieren und mit
+einem eigenen Anzeigenamen versehen. Ein geleertes Namensfeld verwendet wieder den FHEM-Alias.
 
 ## Installation
 
