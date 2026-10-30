@@ -2,6 +2,10 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- feature: 2026-10-30 9d17c7a feat(thermostatdashboard): compact thermostat
+  controls
+  Add temperature sliders, mode dropdowns, valve gauges, and battery
+    indicators.
 - bugfix: 2026-10-30 fa410fb fix(thermostatdashboard): parse CUL_HM mode
   options
   Handle the comma-separated mode list returned by CUL_HM SetFn.
