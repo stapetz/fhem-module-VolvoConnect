@@ -2,6 +2,12 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 8aed2bc DashboardHub: Speichern ueber set-Befehl wie in
+  den anderen Dashboards
+  Speichern per /fhem?cmd=set <name> saveConfig mit CSRF-Token (wie Volvo)
+  Fehler werden per Alert und Statuszeile angezeigt
+  SetFn quittiert mit "Dashboard-Konfiguration gespeichert."
+  Log-Level der Speichermeldungen auf 2
 - change: 2026-10-30 d59d21f DashboardHub: Logging beim Speichern der
   Konfiguration
 - change: 2026-10-30 666ae89 DashboardHub: Speichern von Namen und Reihenfolge
