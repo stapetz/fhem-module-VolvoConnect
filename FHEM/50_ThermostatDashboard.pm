@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.1.0-dev';
+our $ThermostatDashboard_VERSION = '1.1.1-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -217,7 +217,7 @@ sub ThermostatDashboard_Discover {
                 );
                 @modes = map { [$modeCommand, $_, $labels{$_}] }
                     qw(auto eco comfort boost manual);
-            } elsif ($usage =~ /\bcontrolMode\s+\(([^)]*)\)/) {
+            } elsif ($usage =~ /\bcontrolMode(?:\s+\(([^)]*)\)|:([A-Za-z0-9_|,-]+))/) {
                 my %labels = (
                     auto => 'Auto',
                     manual => 'Manuell',
@@ -225,8 +225,9 @@ sub ThermostatDashboard_Discover {
                     day => 'Tag',
                     night => 'Nacht',
                 );
+                my $modeOptions = defined($1) ? $1 : $2;
                 @modes = map { [$modeCommand, $_, $labels{$_} // $_] }
-                    grep { exists($labels{$_}) } split(/\|/, $1);
+                    grep { exists($labels{$_}) } split(/[|,]/, $modeOptions);
             }
         }
 
