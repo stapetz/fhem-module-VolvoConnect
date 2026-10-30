@@ -35,4 +35,4 @@ Danach ein FHEM-Update ausführen. Die ausführliche Einrichtung steht in der
 
 ## Modul
 
-Die Moduldatei ist [`FHEM/98_ModbusSolax.pm`](../../FHEM/98_ModbusSolax.pm).
+Die Moduldatei ist [`FHEM/70_SolaxModbus.pm`](../../FHEM/70_SolaxModbus.pm).

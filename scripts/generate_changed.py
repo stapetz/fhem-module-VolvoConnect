@@ -17,7 +17,7 @@ MODULES = {
         ["FHEM/50_TemperatureCollector.pm", "docs/temperaturecollector"],
     ),
     "gavazzi": ("GavazziEM24", ["FHEM/70_GavazziEM24.pm", "docs/gavazzi"]),
-    "solax": ("SolaxModbus", ["FHEM/98_ModbusSolax.pm", "docs/solax"]),
+    "solax": ("SolaxModbus", ["FHEM/70_SolaxModbus.pm", "docs/solax"]),
     "dashboardhub": (
         "DashboardHub",
         ["FHEM/50_DashboardHub.pm", "docs/dashboardhub"],

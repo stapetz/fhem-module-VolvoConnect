@@ -24,8 +24,12 @@ Das Modul kann über die Controls-Datei installiert werden:
 update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt
 ```
 
-Alternativ kann [`98_ModbusSolax.pm`](../../FHEM/98_ModbusSolax.pm) in das
+Alternativ kann [`70_SolaxModbus.pm`](../../FHEM/70_SolaxModbus.pm) in das
 FHEM-Modulverzeichnis kopiert werden.
+
+Früher hieß die Datei `98_ModbusSolax.pm`. FHEM leitet den Typ aus dem Dateinamen ab, daher
+muss sie `70_SolaxModbus.pm` heißen, damit `define … SolaxModbus` funktioniert. Eine alte
+`98_ModbusSolax.pm` im Verzeichnis `FHEM` bitte löschen.
 
 ## Verbindung und Gerät anlegen
 

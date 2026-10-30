@@ -34,7 +34,7 @@ jobs:
               "controls_volvo.txt": "FHEM/50_VolvoConnect.pm",
               "controls_temperaturecollector.txt": "FHEM/50_TemperatureCollector.pm",
               "controls_gavazzi.txt": "FHEM/70_GavazziEM24.pm",
-              "controls_solax.txt": "FHEM/98_ModbusSolax.pm",
+              "controls_solax.txt": "FHEM/70_SolaxModbus.pm",
               "controls_dashboardhub.txt": "FHEM/50_DashboardHub.pm",
           }
           changed_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H:%M:%S")

@@ -9,7 +9,7 @@ Dieses Repository enthält FHEM-Module und die zugehörigen Controls-Dateien.
 | VolvoConnect | [`FHEM/50_VolvoConnect.pm`](FHEM/50_VolvoConnect.pm) | [`docs/volvo/README.md`](docs/volvo/README.md) | [`controls_volvo.txt`](controls_volvo.txt) |
 | TemperatureCollector | [`FHEM/50_TemperatureCollector.pm`](FHEM/50_TemperatureCollector.pm) | [`docs/temperaturecollector/README.md`](docs/temperaturecollector/README.md) | [`controls_temperaturecollector.txt`](controls_temperaturecollector.txt) |
 | GavazziEM24 | [`FHEM/70_GavazziEM24.pm`](FHEM/70_GavazziEM24.pm) | [`docs/gavazzi/README.md`](docs/gavazzi/README.md) | [`controls_gavazzi.txt`](controls_gavazzi.txt) |
-| SolaxModbus | [`FHEM/98_ModbusSolax.pm`](FHEM/98_ModbusSolax.pm) | [`docs/solax/README.md`](docs/solax/README.md) | [`controls_solax.txt`](controls_solax.txt) |
+| SolaxModbus | [`FHEM/70_SolaxModbus.pm`](FHEM/70_SolaxModbus.pm) | [`docs/solax/README.md`](docs/solax/README.md) | [`controls_solax.txt`](controls_solax.txt) |
 | DashboardHub (Meta-Modul für alle Dashboards) | [`FHEM/50_DashboardHub.pm`](FHEM/50_DashboardHub.pm) | [`docs/dashboardhub/README.md`](docs/dashboardhub/README.md) | [`controls_dashboardhub.txt`](controls_dashboardhub.txt) |
 
 DashboardHub erkennt automatisch alle vorhandenen Dashboard-Geräte (TemperatureCollector,
