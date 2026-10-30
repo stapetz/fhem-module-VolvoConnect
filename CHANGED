@@ -2,6 +2,8 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 334e087 DashboardHub: get diagnose zeigt Erkennungsstatus
+  pro Geraet [DashboardHub]
 - change: 2026-10-30 d8c805c Volvo: Standortkarte ohne iframe,
   TemperatureCollector: Kopfzeile 76px [VolvoConnect, TemperatureCollector]
   OSM-Kacheln statt eingebettetem iframe
