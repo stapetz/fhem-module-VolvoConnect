@@ -2,6 +2,11 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 30b747e Einheitliche Abstaende in den Dashboards,
+  Statusmeldung blendet aus
+  TemperatureCollector: @media-Regeln nach die Basisregeln verschoben, damit
+  die schmalen Innenabstaende wie bei Volvo, Gavazzi und Solax greifen
+  DashboardHub: Statusmeldung "Gespeichert" verschwindet nach 4 Sekunden
 - change: 2026-10-30 3cbafe5 DashboardHub: Speichern ueber den Stift, Pfeile
   und Buttons entfernt
   Erneuter Klick auf den Stift speichert (nur bei Aenderungen)
