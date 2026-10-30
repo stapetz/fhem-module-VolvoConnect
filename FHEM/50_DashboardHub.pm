@@ -7,6 +7,7 @@ use MIME::Base64 qw(decode_base64);
 
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
+our $DashboardHub_VERSION = '1.0.0-dev';
 
 sub DashboardHub_Initialize {
     my ($modHash) = @_;
@@ -31,6 +32,7 @@ sub DashboardHub_Define {
     my ($hash, $def) = @_;
     my @args = split(/\s+/, $def);
     return 'Usage: define <name> DashboardHub' if (@args != 2);
+    $hash->{VERSION} = $DashboardHub_VERSION;
     $hash->{STATE} = 'defined';
     return undef;
 }

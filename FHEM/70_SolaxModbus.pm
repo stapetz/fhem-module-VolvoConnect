@@ -117,6 +117,8 @@ package SolaxModbus;
 
 use strict;
 use warnings;
+
+our $VERSION = '1.0.0-dev';
 use GPUtils qw(:all);
 
 BEGIN {
@@ -362,6 +364,7 @@ sub DefineFn {
     my ($hash, $def) = @_;
     $def .= ' TCP' if ($def !~ /\s(?:RTU|ASCII|TCP)\s*$/);
     my $ret = Modbus::DefineLDFn($hash, $def);
+    $hash->{VERSION} = $VERSION;
     EnsureStateFormat($hash->{NAME}) if (!defined($ret) || $ret eq '');
     return $ret;
 }

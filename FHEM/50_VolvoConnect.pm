@@ -2,6 +2,8 @@ package main;
 
 use strict;
 use warnings;
+
+our $VolvoConnect_VERSION = '1.0.0-dev';
 use utf8;
 use HttpUtils;
 use JSON;
@@ -426,6 +428,7 @@ sub VolvoConnect_Define($$) {
     if (@a < 2) {
         return "Usage: define <name> VolvoConnect";
     }
+    $hash->{VERSION} = $VolvoConnect_VERSION;
 
     my $name = $a[0];
     $hash->{NOTIFYDEV} = "global";

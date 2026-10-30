@@ -9,6 +9,8 @@ package GavazziEM24;
 
 use strict;
 use warnings;
+
+our $VERSION = '1.0.0-dev';
 use GPUtils qw(:all);
 
 BEGIN {
@@ -291,6 +293,7 @@ sub DefineFn {
     $hash->{parseInfo} = { map { $_ => { %{$GavazziEM24_parseInfo{$_}} } } keys %GavazziEM24_parseInfo };
     ApplyPollRegisters($hash);
     my $ret = Modbus::DefineLDFn($hash, $def);
+    $hash->{VERSION} = $VERSION;
     RemoveLegacyPollAttributes($hash->{NAME});
     EnsureStateFormat($hash->{NAME}) if (!defined($ret) || $ret eq '');
     return $ret;
