@@ -2,6 +2,12 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 3cb0bfa DashboardHub: Umlaute in Namen korrigiert,
+  einheitliche Raender [DashboardHub]
+  Gespeicherte Namen und Titel beim Laden in UTF-8-Bytes wandeln
+  (decode_json lieferte Zeichen, Alias der Geraete Bytes)
+  Eingebettete Dashboards erhalten einheitlich 12 px Rand und volle Breite
+  Dokumentation angepasst
 - change: 2026-10-30 30b747e Einheitliche Abstaende in den Dashboards,
   Statusmeldung blendet aus [TemperatureCollector, DashboardHub]
   TemperatureCollector: @media-Regeln nach die Basisregeln verschoben, damit
