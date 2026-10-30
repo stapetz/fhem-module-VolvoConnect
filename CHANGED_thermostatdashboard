@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 9e02d80 ThermostatDashboard: remove measurement timestamp
+  Remove the redundant measurement timestamp from thermostat cards and update
+    troubleshooting guidance to check FHEM reading timestamps.
 - change: 2026-10-30 3d39216 ThermostatDashboard: restrict editor to FHEMWEB
   view
   Render the visibility editor only for get _showDashboard; keep the standalone
