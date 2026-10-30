@@ -2,6 +2,12 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 3cbafe5 DashboardHub: Speichern ueber den Stift, Pfeile
+  und Buttons entfernt [DashboardHub]
+  Erneuter Klick auf den Stift speichert (nur bei Aenderungen)
+  Buttons Speichern/Abbrechen und Auf/Ab-Pfeile entfernt, Sortieren per Ziehen
+  Statuszeile unter der Ueberschrift der Navigation
+  Dokumentation angepasst
 - change: 2026-10-30 8aed2bc DashboardHub: Speichern ueber set-Befehl wie in
   den anderen Dashboards [DashboardHub]
   Speichern per /fhem?cmd=set <name> saveConfig mit CSRF-Token (wie Volvo)
