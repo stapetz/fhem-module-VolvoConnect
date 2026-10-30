@@ -2,6 +2,8 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 ccaee3e DashboardHub: Abstaende rundum vereinheitlichen
+  [DashboardHub]
 - change: 2026-10-30 a655754 Alle Modulversionen auf 1.0.1-dev setzen
   [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus, DashboardHub]
 - change: 2026-10-30 e052282 Doku: Versionen und Release einzelner Module
