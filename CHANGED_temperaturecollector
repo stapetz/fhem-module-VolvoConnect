@@ -2,6 +2,7 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 5646d27 Entwicklung TemperatureCollector 1.0.4-dev
 - bugfix: 2026-10-30 41d2646 fix(dashboards): remove sensor status dot and
   align Volvo indicator
 - bugfix: 2026-10-30 d30def4 fix(dashboards): align status indicators and

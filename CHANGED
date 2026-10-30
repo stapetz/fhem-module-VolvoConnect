@@ -2,6 +2,12 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 031c8e8 Entwicklung SolaxModbus 1.0.3-dev [SolaxModbus]
+- change: 2026-10-30 ffde6b2 Entwicklung GavazziEM24 1.0.3-dev [GavazziEM24]
+- change: 2026-10-30 16db398 Entwicklung VolvoConnect 1.0.3-dev [VolvoConnect]
+- change: 2026-10-30 5646d27 Entwicklung TemperatureCollector 1.0.4-dev
+  [TemperatureCollector]
+- change: 2026-10-30 06d28a8 Entwicklung DashboardHub 1.0.2-dev [DashboardHub]
 - bugfix: 2026-10-30 41d2646 fix(dashboards): remove sensor status dot and
   align Volvo indicator [VolvoConnect, TemperatureCollector]
 - bugfix: 2026-10-30 d30def4 fix(dashboards): align status indicators and
