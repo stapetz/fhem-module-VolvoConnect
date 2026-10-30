@@ -2,6 +2,10 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 d8c805c Volvo: Standortkarte ohne iframe,
+  TemperatureCollector: Kopfzeile 76px
+  OSM-Kacheln statt eingebettetem iframe
+  TC-Kopfzeile feste Hoehe wie bei den anderen Dashboards
 - change: 2026-10-30 30b747e Einheitliche Abstaende in den Dashboards,
   Statusmeldung blendet aus
   TemperatureCollector: @media-Regeln nach die Basisregeln verschoben, damit
