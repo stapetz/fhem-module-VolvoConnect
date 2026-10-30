@@ -29,6 +29,27 @@ Generierte Dateien (`controls_*.txt`, `CHANGED*`) nie von Hand ändern.
   und gibt danach `main` ausdrücklich frei. Ohne Freigabe nie nach `main` pushen.
 - Nutzer verwenden `.../main/controls_all.txt` bzw. `controls_<modul>.txt`.
 
+### Update-Befehle in FHEM
+
+Entwicklungsstand (nur für den Entwickler, alle Module):
+
+```
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/dev/controls_all.txt
+shutdown restart
+```
+
+Freigegebener Stand (Nutzer, alle Module):
+
+```
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_all.txt
+shutdown restart
+```
+
+Ein einzelnes Modul wird mit `controls_<modul>.txt` statt `controls_all.txt` geholt, z. B.
+`.../dev/controls_dashboardhub.txt`. Wer zwischen `dev` und `main` wechselt, bekommt eine Datei
+nur, wenn der Zeitstempel in der controls-Datei neuer ist als der lokale Dateistand; sonst die
+Datei vorher löschen oder mit `touch -t 202001010000 FHEM/<datei>` zurücksetzen.
+
 ### Freigabe nach `main`
 
 1. `git fetch`, dann `git checkout main && git pull`.
