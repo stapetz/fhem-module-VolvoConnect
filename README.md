@@ -32,6 +32,9 @@ Commit-Beschreibung als Zusammenfassung. Die Dateien der Module enthalten nur Co
 das jeweilige Modul oder dessen Dokumentation betreffen. Aussagekräftige Commit-Texte
 (Betreff plus Stichpunkte im Text) ergeben daher ein gutes Änderungsprotokoll.
 
+Jedes Modul hat eine eigene Versionsnummer. Die installierte Version steht im Internal
+`VERSION` des Geräts (`list <gerät>`).
+
 ## Gesamtes Repository in FHEM abonnieren
 
 Alle Module auf einmal:

@@ -50,7 +50,50 @@ Ein einzelnes Modul wird mit `controls_<modul>.txt` statt `controls_all.txt` geh
 nur, wenn der Zeitstempel in der controls-Datei neuer ist als der lokale Dateistand; sonst die
 Datei vorher löschen oder mit `touch -t 202001010000 FHEM/<datei>` zurücksetzen.
 
-### Freigabe nach `main`
+### Versionen und Freigabe einzelner Module
+
+Jedes Modul hat eine eigene Version nach Semantic Versioning (`X.Y.Z`: Fehlerbehebung = Z,
+neue Funktion = Y, inkompatible Änderung = X). Die Version steht im Quelltext in einer Zeile
+`our $VERSION = '1.0.0-dev';` (in den Paketen `GavazziEM24`/`SolaxModbus`) bzw.
+`our $<Modul>_VERSION = ...;` (DashboardHub, TemperatureCollector, VolvoConnect). Im Gerät
+erscheint sie als Internal `VERSION` (sichtbar in `list <gerät>`, gesetzt beim `define` bzw.
+beim FHEM-Start).
+
+- Auf `dev` trägt jede Version das Suffix `-dev`, z. B. `1.1.0-dev`. Daran erkennt man in FHEM,
+  dass ein Entwicklungsstand läuft.
+- Auf `main` steht nur die freigegebene Version ohne Suffix.
+- Module werden **einzeln** freigegeben. `main` bekommt dabei nur die Moduldatei und
+  `docs/<modul>/` aus `dev`; andere Module auf `main` bleiben unverändert.
+- Der Git-Tag heißt `<modul>-v<version>`, z. B. `dashboardhub-v1.0.0`.
+
+Freigabe (vom Branch `dev` aus, Arbeitsverzeichnis sauber, alles committet und gepusht):
+
+```
+python3 scripts/release.py <modul> <version> -m "Zeile 1" -m "Zeile 2" --push
+```
+
+`<modul>` ist der Schlüssel aus `MODULES` in `scripts/generate_changed.py` (`volvo`,
+`temperaturecollector`, `gavazzi`, `solax`, `dashboardhub`). Die `-m`-Zeilen erscheinen in
+`CHANGED`/`CHANGED_<modul>`. Das Skript
+
+1. wechselt auf `main`, übernimmt Moduldatei und Doku aus `dev`, setzt die Version ohne `-dev`,
+   committet `Release <Modul> <Version>` und setzt den Tag,
+2. wechselt zurück auf `dev` und setzt dort die nächste Entwicklungsversion
+   (`<Patch+1>-dev`), z. B. nach `1.0.0` dann `1.0.1-dev`,
+3. pusht mit `--push` `main`, den Tag und `dev`. Ohne `--push` bleibt alles lokal.
+
+Der Workflow erzeugt danach auf `main` die controls-Dateien. Gemeinsame Dateien wie die
+Hauptzeile in `README.md` müssen bei Bedarf separat nach `main` (z. B. beim ersten Release eines
+neuen Moduls), das Skript übernimmt nur Moduldatei und `docs/<modul>/`.
+
+Ablauf bei Freigabe auf Zuruf des Entwicklers („gib <Modul> frei"): Version festlegen (Z, Y
+oder X erhöhen), 2–4 Änderungszeilen formulieren, Skript mit `--push` ausführen und dem
+Entwickler den passenden `update`-Befehl für `main` nennen.
+
+### Freigabe nach `main` (ganzer Stand, nur in Ausnahmen)
+
+Achtung: Dabei kommen die `-dev`-Versionen nach `main`. Danach pro Modul die Version von Hand
+ohne Suffix setzen und Tags anlegen. Normalerweise stattdessen `scripts/release.py` nutzen.
 
 1. `git fetch`, dann `git checkout main && git pull`.
 2. `git merge --no-ff dev`. Bei Konflikten in generierten Dateien (`controls_*.txt`,
