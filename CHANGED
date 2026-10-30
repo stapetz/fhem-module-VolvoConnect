@@ -2,6 +2,12 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 5a61a13 Dashboards: einheitliche Zeilenhoehe und
+  Ueberschriften-Stile [VolvoConnect, TemperatureCollector, GavazziEM24,
+  SolaxModbus, DashboardHub]
+  line-height 1.4 im Wurzelelement aller Dashboards und im Hub, h1 mit 1.1,
+  damit FHEMWEB-Werte die Kopfzeilen nicht mehr unterschiedlich hoch machen
+  Gavazzi/Solax: Kicker-Stil gilt jetzt auch fuer small in Abschnittskoepfen
 - change: 2026-10-30 027280a SolaxModbus: Moduldatei in 70_SolaxModbus.pm
   umbenannt [SolaxModbus]
   FHEM leitet den Typ aus dem Dateinamen ab. 98_ModbusSolax.pm registrierte
