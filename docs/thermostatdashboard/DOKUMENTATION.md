@@ -83,7 +83,8 @@ Thermostaten kann es erforderlich sein, den Befehl für jedes Gerät einzeln zu 
 
 Die Ventilstellung erscheint als farbiger Balken von Blau nach Dunkelrot; Marker und Prozentwert
 zeigen die aktuelle Position. Der Batteriestatus wird als Batteriesymbol dargestellt: `ok` und
-hohe Prozentwerte erscheinen grün, niedrige Werte und `nok` rot.
+hohe Prozentwerte erscheinen grün, niedrige Werte und `nok` rot. Bei Homematic-Kanälen wird
+dafür bei Bedarf auch das Batterie-Reading des zugehörigen Hauptgeräts verwendet.
 
 ## Attribute
 

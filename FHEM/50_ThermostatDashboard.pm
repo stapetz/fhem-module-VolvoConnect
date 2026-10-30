@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.2.1-dev';
+our $ThermostatDashboard_VERSION = '1.2.2-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -261,12 +261,21 @@ sub ThermostatDashboard_Discover {
             target => $target,
             mode => ThermostatDashboard_Reading($device, 'controlMode', 'mode'),
             valve => ThermostatDashboard_Reading($device, 'ValvePosition', 'valveposition'),
-            battery => ThermostatDashboard_Reading($device, 'batteryPercent', 'batteryLevel', 'batteryState', 'battery'),
+            battery => ThermostatDashboard_Reading($device, 'batteryPercent', 'batteryState', 'battery', 'batteryLevel'),
+            batteryDevice => $name,
             modes => \@modes,
             temperatureCommand => $temperatureCommand,
             minimum => $minimum,
             maximum => $maximum,
         };
+        if (!$found[-1]{battery} && defined($device->{device}) && $device->{device} ne '') {
+            my $parent = $main::defs{$device->{device}};
+            if (ref($parent) eq 'HASH') {
+                $found[-1]{battery} = ThermostatDashboard_Reading(
+                    $parent, 'batteryPercent', 'batteryState', 'battery', 'batteryLevel');
+                $found[-1]{batteryDevice} = $device->{device} if ($found[-1]{battery});
+            }
+        }
     }
 
     return [sort {
@@ -459,6 +468,7 @@ sub ThermostatDashboard_BuildDashboard {
                 . '" data-mode="' . ThermostatDashboard_Escape($device->{mode} ? $device->{mode}{name} : '')
                 . '" data-valve="' . ThermostatDashboard_Escape($device->{valve} ? $device->{valve}{name} : '')
                 . '" data-battery="' . ThermostatDashboard_Escape($device->{battery} ? $device->{battery}{name} : '')
+                . '" data-battery-device="' . ThermostatDashboard_Escape($device->{battery} ? $device->{batteryDevice} : '')
                 . '" data-command="' . ThermostatDashboard_Escape($device->{temperatureCommand})
                 . '" data-min="' . $device->{minimum} . '" data-max="' . $device->{maximum} . '">'
                 . '<header class="td-card-head"><div>'
@@ -532,11 +542,12 @@ if(!response.ok)throw new Error(text.trim().slice(0,160)||"HTTP "+response.statu
 function status(card,text,error,success){var node=card.querySelector(".td-status");window.clearTimeout(card._tdStatusTimer);node.textContent=text;node.setAttribute("data-error",error?"1":"0");node.setAttribute("data-success",success?"1":"0");}
 function formatTemperature(value){return value.toFixed(1).replace(".",",");}
 function updateBattery(node,raw){var text=String(raw==null?"":raw).trim(),normalized=text.toLowerCase(),level="unknown",filled=0;
-var numeric=normalized.match(/^(\d+(?:[.,]\d+)?)\s*%?$/);
-if(numeric){var percent=Number(numeric[1].replace(",","."));if(Number.isFinite(percent)){filled=percent>=66?3:percent>=33?2:percent>0?1:0;level=percent>60?"good":percent>25?"medium":"low";}}
+var numeric=normalized.match(/^(\d+(?:[.,]\d+)?)\s*(%|v)?$/i),displayText=text;
+if(numeric){var amount=Number(numeric[1].replace(",",".")),isVoltage=numeric[2]&&numeric[2].toLowerCase()==="v";
+if(isVoltage||(!numeric[2]&&amount<5&&numeric[1].indexOf(".")>=0)){displayText=text+" V";}
+else if(Number.isFinite(amount)){var percent=Math.max(0,Math.min(100,amount));filled=percent>=66?3:percent>=33?2:percent>0?1:0;level=percent>60?"good":percent>25?"medium":"low";if(!numeric[2])displayText=text+"%";}}
 else if(/\b(nok|not ok|low|empty|critical|replace|error|weak|bad)\b/.test(normalized)){filled=/\b(low|weak)\b/.test(normalized)?1:0;level="low";}
 else if(/\b(ok|good|full|charged)\b/.test(normalized)){filled=3;level="good";}
-var displayText=numeric&&text.indexOf("%")<0?text+"%":text;
 node.setAttribute("data-level",level);node.setAttribute("data-battery-value",text);node.setAttribute("aria-label","Batterie "+displayText);
 var label=node.querySelector("[data-battery-text]");if(label)label.textContent=displayText;
 Array.prototype.forEach.call(node.querySelectorAll("[data-battery-bar]"),function(bar,index){bar.style.display=index<filled?"":"none";});}
@@ -572,14 +583,17 @@ function refreshCard(card){var command="jsonlist2 "+card.getAttribute("data-devi
 return request(command).then(function(text){var result=JSON.parse(text),device=result.Results&&result.Results[0];if(!device)throw new Error("Geraet nicht gefunden");
 var readings=device.Readings||{};
 function value(attr){var name=card.getAttribute(attr);return name&&readings[name]?readings[name]:null;}
-var actual=value("data-actual"),target=value("data-target"),mode=value("data-mode"),valve=value("data-valve"),battery=value("data-battery");
+var actual=value("data-actual"),target=value("data-target"),mode=value("data-mode"),valve=value("data-valve");
 var actualNode=card.querySelector('[data-value="actual"]'),targetNode=card.querySelector("[data-target-value]"),input=card.querySelector("[data-temp]");
 if(actual&&actualNode){var actualNumber=Number(String(actual.Value).replace(",","."));actualNode.innerHTML=(Number.isFinite(actualNumber)?actualNumber.toFixed(1):"&ndash;")+' <small>&deg;C</small>';}
 if(target){var targetNumber=Number(String(target.Value).replace(",","."));if(Number.isFinite(targetNumber)&&targetNode)targetNode.textContent=formatTemperature(targetNumber);
 if(input&&document.activeElement!==input&&!input._tdTimer&&!input.disabled&&Number.isFinite(targetNumber)){var sliderMin=Number(input.min),sliderMax=Number(input.max);input.value=Math.max(sliderMin,Math.min(sliderMax,targetNumber));}}
 if(mode){var select=card.querySelector("[data-mode-select]");if(select&&!select.disabled){var normalizedMode=String(mode.Value).toLowerCase();if(Array.prototype.some.call(select.options,function(option){return option.value.toLowerCase()===normalizedMode;}))select.value=normalizedMode;}}
 if(valve){var valveNode=card.querySelector("[data-valvebar]");if(valveNode)updateValve(valveNode,valve.Value);}
-if(battery){var batteryNode=card.querySelector("[data-battery-indicator]");if(batteryNode)updateBattery(batteryNode,battery.Value);}
+var batteryDevice=card.getAttribute("data-battery-device"),batteryName=card.getAttribute("data-battery");
+if(batteryDevice===card.getAttribute("data-device")){var battery=readings[batteryName];if(battery){var batteryNode=card.querySelector("[data-battery-indicator]");if(batteryNode)updateBattery(batteryNode,battery.Value);}}
+else if(batteryDevice&&batteryName){return request("jsonlist2 "+batteryDevice).then(function(parentText){var parentResult=JSON.parse(parentText),parent=parentResult.Results&&parentResult.Results[0];if(!parent)throw new Error("Batteriegeraet nicht gefunden");
+var parentBattery=parent.Readings&&parent.Readings[batteryName];if(parentBattery){var parentBatteryNode=card.querySelector("[data-battery-indicator]");if(parentBatteryNode)updateBattery(parentBatteryNode,parentBattery.Value);}});}
 })
 .catch(function(error){status(card,"Aktualisierung fehlgeschlagen: "+error.message,true);});}
 function sendTemperature(card,input){if(root.classList.contains("edit-mode"))return;
