@@ -1,2 +1,2 @@
 UPD 2026-10-30_18:46:47 64366 FHEM/50_TemperatureCollector.pm
-UPD 2026-10-30_18:00:33 1756 CHANGED_temperaturecollector
+UPD 2026-10-30_18:07:24 1756 CHANGED_temperaturecollector
