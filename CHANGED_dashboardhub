@@ -2,3 +2,5 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 13d47bf Neues Modul Dashboard HUB zur Verwaltung und
+  Integration aller Module, die ein Dashboard innehaben
