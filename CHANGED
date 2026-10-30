@@ -2,6 +2,11 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 6bbd079 ThermostatDashboard: add modal editing and type
+  option [ThermostatDashboard]
+  Use a modal visibility editor with save and cancel controls, add a thermostat
+    mark beside the heading, and allow the device model/type label to be hidden
+    with showDeviceType.
 - change: 2026-10-30 3be2e32 ThermostatDashboard: hide devices and detect MAX
   Plus [ThermostatDashboard]
   Add persistent per-dashboard visibility controls and include
