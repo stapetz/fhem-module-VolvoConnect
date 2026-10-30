@@ -7,7 +7,7 @@ use MIME::Base64 qw(decode_base64);
 
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
-our $DashboardHub_VERSION = '1.0.0';
+our $DashboardHub_VERSION = '1.0.1';
 
 sub DashboardHub_Initialize {
     my ($modHash) = @_;
@@ -239,8 +239,8 @@ sub DashboardHub_Css {
     return <<'CSS';
 <style>
 .dh,.dh *{box-sizing:border-box;letter-spacing:normal;text-transform:none;text-shadow:none}
-.dh{display:flex;width:100%;min-height:__HEIGHT__;background:#151f1b;color:#f4f4e9;border:1px solid #46544c;font:14px 'Avenir Next','Helvetica Neue',sans-serif!important;text-align:left;line-height:1.4}
-.dh-nav{flex:0 0 __NAVWIDTH__;display:flex;flex-direction:column;align-self:flex-start;margin:6px 0 6px 6px;background:#26342d;border:1px solid #46544c;padding:10px 0}
+.dh{display:flex;gap:6px;padding:6px;width:100%;min-height:__HEIGHT__;background:#151f1b;color:#f4f4e9;border:1px solid #46544c;font:14px 'Avenir Next','Helvetica Neue',sans-serif!important;text-align:left;line-height:1.4}
+.dh-nav{flex:0 0 __NAVWIDTH__;display:flex;flex-direction:column;align-self:stretch;margin:0;background:#26342d;border:1px solid #46544c;padding:10px 0}
 .dh-brand{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 12px;font:500 18px Georgia,serif}
 .dh-list{flex:1;overflow-y:auto}
 .dh-item{display:flex;align-items:center;gap:6px;padding:10px 14px;cursor:pointer;border-left:3px solid transparent;color:#f4f4e9;font-size:14px;user-select:none}
@@ -256,13 +256,13 @@ sub DashboardHub_Css {
 .dh-grip{cursor:grab;color:#9fb3a8}
 .dh-status{padding:0 12px 6px;font-size:12px;color:#9fb3a8}.dh-status:empty{display:none}
 .dh-main{flex:1;min-width:0;background:#151f1b}
-.dh-content{padding:6px 12px 12px;min-height:__HEIGHT__;line-height:1.4}
+.dh-content{padding:0;min-height:__HEIGHT__;line-height:1.4}
 .dh-content .tc-dashboard,.dh-content .wrap,.dh-content .gavazzi-dashboard,.dh-content .solax-dashboard,.dh-content .vcc-embed{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
 .dh-content>.vcc-embed>.wrap{margin:0!important}
 .dh-content .vcc-embed{padding:0!important}
 .dh-loading{padding:24px;color:#9fb3a8}
 .dh-empty{padding:24px;color:#9fb3a8}
-@media (max-width:700px){.dh{flex-direction:column}.dh-nav{flex:none;align-self:stretch;margin:6px 6px 0}.dh-list{display:flex;overflow-x:auto}.dh-item{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}.dh-item.dh-active{border-bottom-color:#52bd8b}.dh-editing .dh-list{display:block}}
+@media (max-width:700px){.dh{flex-direction:column}.dh-nav{flex:none}.dh-list{display:flex;overflow-x:auto}.dh-item{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}.dh-item.dh-active{border-bottom-color:#52bd8b}.dh-editing .dh-list{display:block}}
 </style>
 CSS
 }
@@ -443,8 +443,8 @@ sub main::DashboardHub_CGI {
 <p>
     DashboardHub ist ein Meta-Modul. Es erkennt automatisch alle FHEM-Geräte, die ein
     Dashboard anbieten (Get-Befehl <code>_dashboardEmbedURL</code>, z.B.
-    TemperatureCollector, GavazziEM24, SolaxModbus und VolvoConnect), zeigt sie links als
-    Navigation an und stellt rechts das gewählte Dashboard dar.
+    TemperatureCollector, GavazziEM24, SolaxModbus, VolvoConnect und ThermostatDashboard),
+    zeigt sie links als Navigation an und stellt rechts das gewählte Dashboard dar.
 </p>
 <a id="DashboardHub-define"></a>
 <b>Define</b>

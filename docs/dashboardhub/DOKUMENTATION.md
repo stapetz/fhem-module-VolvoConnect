@@ -6,7 +6,7 @@ Diese Anleitung beschreibt Installation und Betrieb des Meta-Moduls `DashboardHu
 
 - FHEM mit FHEMWEB
 - Mindestens ein Gerät mit Dashboard, z. B. `TemperatureCollector`, `GavazziEM24`,
-  `SolaxModbus` oder `VolvoConnect`
+  `SolaxModbus`, `VolvoConnect` oder `ThermostatDashboard`
 
 ## Installation
 
