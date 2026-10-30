@@ -732,8 +732,6 @@ sub TemperatureCollector_BuildDashboard {
 .tc-header{position:relative;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:space-between;align-items:center;gap:12px;min-height:76px;margin:0;padding:15px 24px;background:#202e29;border-bottom:1px solid #405149}
 .tc-header-actions{display:flex!important;flex:0 0 auto;margin-left:auto;align-items:center;gap:8px}.tc-edit{width:40px;height:40px;padding:0;border:0;border-radius:0;background:none;color:#f4f4e9;cursor:pointer;font:600 28px 'Helvetica Neue',sans-serif;line-height:1}.tc-edit:hover{color:#9ce2bb}.tc-save{display:none;padding:8px 12px;border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}.tc-save:hover{background:#34463c}.tc-reorder-mode .tc-save{display:inline-block}
 .tc-clock{position:absolute;left:56%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;color:#c9d8cd}.tc-clock-face{width:44px;height:44px}.tc-clock-face circle{fill:#1d2825;stroke:#52bd8b;stroke-width:1.5}.tc-clock-face line{stroke:#a9b7ac;stroke-width:1}.tc-clock-face .tc-tick-major{stroke:#f4f4e9;stroke-width:1.8}.tc-clock-face .tc-hand-hour{stroke:#f4f4e9;stroke-width:2}.tc-clock-face .tc-hand-minute{stroke:#52bd8b;stroke-width:1.5}.tc-clock-face .tc-hand-second{stroke:#e07b65;stroke-width:1}.tc-clock-date{font-size:11px;white-space:nowrap;color:#a9b7ac}
-@media(max-width:760px){.tc-header{padding:13px 15px}.tc-grid{padding:16px 15px 18px}}
-@media(max-width:640px){.tc-clock{display:none}}
 .tc-brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}.tc-brand-mark{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;background:transparent;color:#52bd8b;font:700 22px Georgia,serif}
 .tc-brand small{display:block;color:#a9b7ac;font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px}.tc-brand h1{margin:3px 0;font:500 22px Georgia,serif;letter-spacing:0;line-height:1.1}
 .tc-live{display:flex;align-items:center;gap:8px;color:#a9b7ac}.tc-led{width:9px;height:9px;border-radius:50%;background:#52bd8b;box-shadow:0 0 8px #52bd8b;animation:tc-live-pulse 4s ease-in-out infinite}@keyframes tc-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #52bd8b}50%{opacity:1;box-shadow:0 0 10px #52bd8b}}
@@ -750,6 +748,8 @@ sub TemperatureCollector_BuildDashboard {
 .tc-error{padding:12px;border:1px solid #a45b5b;background:#321f1f;color:#ffd9d9}
 .tc-reorder-mode .tc-card{cursor:move;outline:1px dashed #52bd8b;outline-offset:3px}.tc-reorder-mode .tc-card summary{pointer-events:none}.tc-card.tc-dragging{opacity:.45}
 .tc-list-view .tc-grid{grid-template-columns:1fr}.tc-list-view .tc-card summary{align-items:center}
+@media(max-width:760px){.tc-header{padding:13px 15px}.tc-grid{padding:16px 15px}}
+@media(max-width:640px){.tc-clock{display:none}}
 </style>
 <div class="tc-dashboard">
 HTML
