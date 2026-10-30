@@ -7,7 +7,7 @@ use MIME::Base64 qw(decode_base64);
 
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
-our $DashboardHub_VERSION = '1.0.1-dev';
+our $DashboardHub_VERSION = '1.0.2-dev';
 
 sub DashboardHub_Initialize {
     my ($modHash) = @_;
