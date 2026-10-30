@@ -93,6 +93,13 @@ sub DashboardHub_LoadConfig {
     $config->{order} = [] if (ref($config->{order}) ne 'ARRAY');
     $config->{names} = {} if (ref($config->{names}) ne 'HASH');
     $config->{title} = '' if (!defined($config->{title}) || ref($config->{title}));
+    # decode_json yields characters; FHEM and the attribute values (alias) use UTF-8 bytes
+    utf8::encode($config->{title});
+    for my $device (keys %{$config->{names}}) {
+        my $label = $config->{names}{$device};
+        if (defined($label) && !ref($label)) { utf8::encode($label); $config->{names}{$device} = $label; }
+        else { delete $config->{names}{$device}; }
+    }
     return $config;
 }
 
@@ -243,6 +250,8 @@ try{localStorage.setItem(storeKey,el.getAttribute("data-dev"));}catch(e){}}
 function initial(){var dev=null;try{dev=localStorage.getItem(storeKey);}catch(e){}
 var m=/[?&]hubSel=([^&]*)/.exec(window.location.search);if(m)dev=decodeURIComponent(m[1]);
 var f=items().filter(function(n){return n.getAttribute("data-dev")===dev;})[0];select(f);}
+var FRAMECSS="html,body{margin:0!important;padding:0!important;background:#151f1b!important}body{padding:12px!important;box-sizing:border-box}.tc-dashboard,.wrap,.gavazzi-dashboard,.solax-dashboard,.gec{width:100%!important;max-width:none!important;margin:0!important}";
+if(frame)frame.addEventListener("load",function(){try{var d=frame.contentDocument;if(!d||!d.head)return;var st=d.getElementById("dh-frame-css");if(!st){st=d.createElement("style");st.id="dh-frame-css";d.head.appendChild(st);}st.textContent=FRAMECSS;}catch(e){}});
 list.addEventListener("click",function(e){if(editing)return;var el=e.target.closest(".dh-item");if(el)select(el);});
 function decorate(el){var label=el.querySelector(".dh-label"),type=el.querySelector(".dh-type");
 var grip=document.createElement("span");grip.className="dh-grip";grip.textContent="\u2630";grip.title="Ziehen zum Sortieren";
