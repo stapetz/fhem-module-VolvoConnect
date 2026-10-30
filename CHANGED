@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- bugfix: 2026-10-30 d30def4 fix(dashboards): align status indicators and
+  dialog layout [TemperatureCollector, GavazziEM24, SolaxModbus,
+  ThermostatDashboard]
 - feature: 2026-10-30 fea34e2 feat(thermostatdashboard): add ordering and
   custom labels [ThermostatDashboard]
 - bugfix: 2026-10-30 dd30a41 fix(thermostatdashboard): simplify server error
