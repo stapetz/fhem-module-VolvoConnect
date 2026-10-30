@@ -1002,8 +1002,11 @@ sub VolvoConnect_BuildDashboard {
         . "body.edit-mode .tile .row.row-hidden{display:flex;opacity:0.5;}"
         . ".tile .key{color:#9fac9f;word-break:normal;min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;}"
         . ".tile .val{font-weight:600;color:#edf0e6;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:flex-end;flex:0 1 42%;min-width:24px;max-width:42%;}"
-        . ".location-map{width:100%;height:220px;margin-top:10px;border:1px solid #536054;background:#202e29;}"
-        . ".location-map iframe{width:100%;height:100%;border:0;}"
+        . ".location-map{position:relative;width:100%;height:220px;margin-top:10px;border:1px solid #536054;background:#202e29;overflow:hidden;}"
+        . ".location-map-canvas{position:absolute;width:768px;height:768px;}"
+        . ".location-map-canvas img{position:absolute;width:256px;height:256px;max-width:none;}"
+        . ".location-marker{position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#e5484d;border:3px solid #fff;box-shadow:0 0 6px #000a;box-sizing:border-box;}"
+        . ".location-attr{position:absolute;right:0;bottom:0;padding:1px 5px;background:#fffc;color:#333;font-size:10px;text-decoration:none;}"
         . ".vehicle-image-tile{column-span:all;text-align:center;break-inside:avoid;}"
         . ".vehicle-image-gallery{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}"
         . ".vehicle-image{display:block;max-width:calc(50% - 6px);max-height:420px;width:auto;height:auto;margin:0;}"
@@ -1247,14 +1250,24 @@ sub VolvoConnect_BuildDashboard {
             && $hash->{READINGS}{location_longitude}{VAL} =~ /^-?\d+(?:\.\d+)?$/) {
             my $latitude = $hash->{READINGS}{location_latitude}{VAL};
             my $longitude = $hash->{READINGS}{location_longitude}{VAL};
-            my $bbox = sprintf("%.6f,%.6f,%.6f,%.6f",
-                $longitude - 0.01, $latitude - 0.006,
-                $longitude + 0.01, $latitude + 0.006);
-            my $mapUrl = "https://www.openstreetmap.org/export/embed.html"
-                . "?bbox=" . urlEncode($bbox)
-                . "&layer=mapnik&marker=" . urlEncode($latitude . "," . $longitude);
-            $html .= "<div class='location-map'><iframe loading='lazy' title='Fahrzeugstandort' src='"
-                . VolvoConnect_HtmlEscape($mapUrl) . "'></iframe></div>";
+            my $zoom = 15;
+            my $n = 2 ** $zoom;
+            my $latRad = $latitude * 3.14159265358979 / 180;
+            my $fx = ($longitude + 180) / 360 * $n;
+            my $fy = (1 - log(sin($latRad) / cos($latRad) + 1 / cos($latRad)) / 3.14159265358979) / 2 * $n;
+            my ($x0, $y0) = (int($fx) - 1, int($fy) - 1);
+            my $offX = sprintf('%.1f', ($fx - $x0) * 256);
+            my $offY = sprintf('%.1f', ($fy - $y0) * 256);
+            my $tiles = '';
+            for my $row (0 .. 2) {
+                for my $col (0 .. 2) {
+                    $tiles .= "<img alt='' loading='lazy' src='https://tile.openstreetmap.org/$zoom/" . ($x0 + $col) . "/" . ($y0 + $row) . ".png'"
+                        . " style='left:" . ($col * 256) . "px;top:" . ($row * 256) . "px'>";
+                }
+            }
+            $html .= "<div class='location-map'><div class='location-map-canvas' style='left:calc(50% - ${offX}px);top:calc(50% - ${offY}px)'>"
+                . $tiles . "</div><span class='location-marker'></span>"
+                . "<a class='location-attr' target='_blank' rel='noopener' href='https://www.openstreetmap.org/?mlat=$latitude&amp;mlon=$longitude#map=$zoom/$latitude/$longitude'>&copy; OpenStreetMap</a></div>";
         }
         $html .= "</div>";
     }
