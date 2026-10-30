@@ -118,7 +118,7 @@ package SolaxModbus;
 use strict;
 use warnings;
 
-our $VERSION = '1.0.1-dev';
+our $VERSION = '1.0.2-dev';
 use GPUtils qw(:all);
 
 BEGIN {
@@ -714,7 +714,7 @@ __DATA__
 <section class="solax-dashboard" data-device="__DEVICE__" data-fhem-base="__FHEM_BASE__" aria-label="SolaX Solardashboard">
     <header class="sx-header">
         <div class="sx-brand"><span class="sx-brand-mark" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"/><path d="m5 10 12-1.5 2 7.5H7zM8 16v2m4-2v2m4-2v2M4 21h16M4 6l1-2m-3 5h2"/></svg></span><div><small>SOLAX / X-HYBRID</small><h1>Energiefluss</h1></div></div>
-        <div class="sx-live"><i class="sx-led" data-connection data-state="unknown" aria-label="Modbus-Verbindungsstatus" title="Modbus-Verbindungsstatus"></i><small data-updated>Warte auf Messwerte</small></div>
+        <div class="sx-live"><i class="sx-led" data-connection data-state="unknown" aria-label="Modbus-Verbindungsstatus" title="Modbus-Verbindungsstatus"></i></div>
     </header>
     <main class="sx-main">
         <section class="sx-hero">
@@ -741,10 +741,9 @@ __DATA__
 .sx-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid var(--mint);border-radius:50%;color:var(--mint);display:grid;place-items:center}
 .sx-header small,.sx-card-head,.sx-section-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
 .sx-header h1,.sx-section h2,.sx-section-head h2{font:500 22px Georgia,serif;margin:3px 0;letter-spacing:0;line-height:1.1}
-.sx-live{display:grid;grid-template-columns:12px auto;gap:2px 8px;align-items:center;font-size:12px}
-.sx-live small{grid-column:2;font-size:10px;color:#a9b7ac}
-.sx-led{grid-row:1/3;width:10px;height:10px;border:1px solid #17231f;border-radius:50%;background:#879088}
-.sx-led[data-state="online"]{background:var(--mint);box-shadow:0 0 0 3px #52bd8b40;animation:sx-live-pulse 4s ease-in-out infinite}
+.sx-live{display:flex;align-items:center;gap:8px}
+.sx-led{display:block;width:12px;height:12px;border-radius:50%;background:#879088}
+.sx-led[data-state="online"]{background:#52bd8b;animation:sx-live-pulse 4s ease-in-out infinite}
 .sx-led[data-state="error"]{background:var(--red);box-shadow:0 0 0 3px #d45b4540}
 @keyframes sx-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #52bd8b}50%{opacity:1;box-shadow:0 0 10px #52bd8b}}
 .sx-main{padding:22px 24px 16px;background:linear-gradient(155deg,#26352e,#1b2823 62%,#202c27)}
@@ -835,14 +834,10 @@ __DATA__
         if(batteryFlow)batteryFlow.textContent=batteryPower===null?'BATTERIE':batteryPower>0?'LAEDT':batteryPower<0?'ENTLAEDT':'BEREIT';
         var inverterStatus=root.querySelector('.sx-inverter-state');
         if(inverterStatus)inverterStatus.textContent=value(readings,'inverterStatus')||'Status unbekannt';
-        var state=result.Internals&&result.Internals.STATE||'';
-        var isOnline=/^(?:opened|connected|ok)$/i.test(state);
+        var state=value(readings,'state')||result.Internals&&result.Internals.STATE||'';
+        var isOnline=/^(?:opened|connected|ok|active)$/i.test(state);
         var isError=/^(?:closed|disconnected|offline|error|timeout)$/i.test(state);
         if(connection){var connectionState=isOnline?'online':isError?'error':'unknown';connection.setAttribute('data-state',connectionState);connection.title=state||'Status unbekannt';connection.setAttribute('aria-label',isOnline?'Modbus verbunden':isError?'Keine Verbindung':'Status unbekannt');}
-        var newest=0;
-        Object.keys(readings).forEach(function(key){var time=Date.parse(String(readings[key].Time||'').replace(' ','T'));if(!isNaN(time)&&time>newest)newest=time;});
-        var updated=root.querySelector('[data-updated]');
-        if(updated)updated.textContent=newest?'Letzte Messung '+new Date(newest).toLocaleTimeString():'Messwerte noch nicht aktualisiert';
     }
     function refresh(){
         fetch(base+'?cmd='+encodeURIComponent('jsonlist2 '+device)+'&XHR=1',{cache:'no-store',credentials:'same-origin'})

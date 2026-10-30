@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.3.0-dev';
+our $ThermostatDashboard_VERSION = '1.3.1-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -377,10 +377,10 @@ sub ThermostatDashboard_Css {
 .td-cancel{border-color:#69796f}
 .td-dialog-open{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:#0c1612b8}
 .td-dialog-open[hidden]{display:none}
-.td-edit-dialog{width:min(560px,100%);max-height:min(80vh,720px);display:flex;flex-direction:column;background:#1d2825;border:1px solid #526459;box-shadow:0 16px 44px #0c161280;color:#f4f4e9}
-.td-dialog-head{padding:16px 20px;border-bottom:1px solid #405149;background:#202e29}
+.td-edit-dialog{width:560px;max-width:calc(100vw - 40px);max-height:80vh;display:flex;flex-direction:column;background:#1d2825;border:1px solid #526459;box-shadow:0 16px 44px #0c161280;color:#f4f4e9}
+.td-dialog-head{min-width:0;padding:16px 20px;border-bottom:1px solid #405149;background:#202e29;overflow-wrap:anywhere}
 .td-dialog-head h2{margin:0;font:500 20px Georgia,serif}
-.td-dialog-head p{margin:5px 0 0;color:#a9b7ac;font-size:12px}
+.td-dialog-head p{max-width:100%;margin:5px 0 0;color:#a9b7ac;font-size:12px;white-space:normal;overflow-wrap:anywhere}
 .td-dialog-list{min-height:0;overflow:auto;padding:8px 20px}
 .td-edit-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #cfddcf14}
 .td-edit-row.td-dragging{opacity:.45}
