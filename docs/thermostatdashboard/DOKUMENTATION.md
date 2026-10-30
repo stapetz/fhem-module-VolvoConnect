@@ -82,6 +82,7 @@ Thermostaten kann es erforderlich sein, den Befehl für jedes Gerät einzeln zu 
 | `includeDevices` | Regex; nur passende Gerätenamen berücksichtigen |
 | `excludeDevices` | Regex; passende Gerätenamen ausblenden |
 | `autoRefresh` | Aktualisierung in Sekunden: `0`, `15`, `30` oder `60`; Standard `15` |
+| `showDeviceType` | Modell-/Typzeile unter dem Thermostatnamen anzeigen (`0` oder `1`); Standard `1` |
 
 Geräte mit `disable 1` werden ausgelassen. Die manuell ausgeblendete Auswahl wird getrennt
 je ThermostatDashboard-Gerät gespeichert. Die Anzeige wird nach Raum und Alias sortiert.

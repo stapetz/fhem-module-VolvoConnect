@@ -5,7 +5,8 @@ ThermostatDashboard stellt kompatible Homematic- und eQ-3 MAX-Heizkörperthermos
 Ventilstellung und Batteriestatus werden angezeigt. Solltemperatur und unterstützte
 Betriebsarten können direkt bedient werden. MAX-Geräte vom Typ `HeatingThermostatPlus`
 werden ebenfalls erkannt. Im Bearbeitungsmodus können einzelne Thermostate dauerhaft
-ein- oder ausgeblendet werden.
+ein- oder ausgeblendet werden. Die Modell-/Typzeile lässt sich mit
+`attr <Name> showDeviceType 0` ausblenden; mit `1` wird sie wieder angezeigt.
 
 ## Installation
 

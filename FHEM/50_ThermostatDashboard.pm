@@ -20,6 +20,7 @@ sub ThermostatDashboard_Initialize {
         'includeDevices',
         'excludeDevices',
         'autoRefresh:0,15,30,60',
+        'showDeviceType:0,1',
         $main::readingFnAttributes,
     );
 
@@ -302,26 +303,39 @@ sub ThermostatDashboard_Css {
 .td,.td *{box-sizing:border-box;letter-spacing:normal;text-transform:none;text-shadow:none}
 .td{font:14px 'Avenir Next','Helvetica Neue',sans-serif!important;line-height:1.4;color:#f4f4e9;max-width:1120px;min-height:100vh;margin:0 auto;background:#1d2825;border:1px solid #46544c}
 .td-head{min-height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#202e29;border-bottom:1px solid #405149}
+.td-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.td-brand-mark{width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;display:grid;place-items:center;color:#52bd8b}
+.td-brand-mark svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .td-head small{font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px;color:#a9b7ac}
 .td h1{font:500 22px/1.1 Georgia,serif;margin:3px 0}
 .td-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .td-summary{font-size:12px;color:#a9b7ac;text-align:right}
-.td-edit-actions{display:none;align-items:center;gap:8px}
 .td-edit,.td-cancel,.td-save{padding:8px 12px;border:1px solid #52bd8b;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}
 .td-edit{font-size:18px;line-height:1;min-width:38px;min-height:36px}
 .td-cancel{border-color:#69796f}
-.td-edit-actions button:disabled{opacity:.5;cursor:wait}
-.td.edit-mode .td-edit{display:none}
-.td.edit-mode .td-edit-actions{display:flex}
+.td-dialog-open{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:#0c1612b8}
+.td-dialog-open[hidden]{display:none}
+.td-edit-dialog{width:min(560px,100%);max-height:min(80vh,720px);display:flex;flex-direction:column;background:#1d2825;border:1px solid #526459;box-shadow:0 16px 44px #0c161280;color:#f4f4e9}
+.td-dialog-head{padding:16px 20px;border-bottom:1px solid #405149;background:#202e29}
+.td-dialog-head h2{margin:0;font:500 20px Georgia,serif}
+.td-dialog-head p{margin:5px 0 0;color:#a9b7ac;font-size:12px}
+.td-dialog-list{min-height:0;overflow:auto;padding:8px 20px}
+.td-edit-row{display:flex;align-items:center;gap:11px;padding:10px 4px;border-bottom:1px solid #cfddcf14;cursor:pointer}
+.td-edit-row input{width:18px;height:18px;flex:0 0 18px;margin:0;accent-color:#52bd8b}
+.td-edit-row span{min-width:0;display:flex;flex-direction:column;gap:2px}
+.td-edit-row strong{font-weight:600;overflow-wrap:anywhere}
+.td-edit-row small{color:#9fac9f;font-size:11px}
+.td-dialog-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;border-top:1px solid #405149;background:#202e29}
+.td-dialog-actions{display:flex;justify-content:flex-end;gap:8px}
+.td-dialog-footer button:disabled{opacity:.5;cursor:wait}
+.td-dialog-status{min-height:16px;color:#a9b7ac;font-size:11px}
+.td-dialog-status[data-error="1"]{color:#ef9a8b}
 .td-head-status{flex:1 0 100%;min-height:16px;text-align:right;color:#a9b7ac;font-size:11px}
 .td-head-status[data-error="1"]{color:#ef9a8b}
 .td-grid{padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:12px}
 .td-card{min-width:0;background:#202e29;border:1px solid #46544c}
 .td-card[data-hidden="1"]{display:none}
 .td.edit-mode .td-card[data-hidden="1"]{display:block;opacity:.55;border-style:dashed}
-.td-visibility{display:none;align-items:center;gap:6px;color:#c7d0c8;font-size:11px;white-space:nowrap}
-.td-visibility input{width:16px;height:16px;margin:0;accent-color:#52bd8b}
-.td.edit-mode .td-visibility{display:flex}
 .td-card-head{padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1px solid #3a463f}
 .td-room{font-size:10px;font-weight:700;letter-spacing:1px;color:#9fb3a8;text-transform:uppercase}
 .td-name{font:500 18px Georgia,serif;margin:2px 0 0;overflow-wrap:anywhere}
@@ -347,7 +361,7 @@ sub ThermostatDashboard_Css {
 .td-updated[data-stale="1"]{color:#ef9a8b}
 .td-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .td-empty{margin:12px;padding:18px;background:#202e29;border:1px solid #46544c;color:#c7d0c8}
-@media(max-width:600px){.td-head{padding:12px 15px;align-items:flex-start;flex-direction:column;justify-content:center;gap:4px}.td-head-actions{width:100%;justify-content:flex-start}.td-head-status{text-align:left}.td-summary{text-align:left}.td-grid{padding:8px;gap:8px}.td-set-row input{width:82px}}
+@media(max-width:600px){.td-head{padding:12px 15px;align-items:flex-start;flex-direction:row;gap:8px}.td-head-actions{width:auto;justify-content:flex-end;margin-left:auto}.td-head-status{text-align:left}.td-summary{text-align:right}.td-grid{padding:8px;gap:8px}.td-set-row input{width:82px}.td-dialog-open{padding:10px}.td-dialog-list{padding:6px 14px}.td-dialog-head,.td-dialog-footer{padding:13px 14px}}
 </style>
 CSS
 }
@@ -364,16 +378,35 @@ sub ThermostatDashboard_BuildDashboard {
     $csrf = ThermostatDashboard_Escape($csrf);
     my $refresh = AttrVal($name, 'autoRefresh', 15);
     $refresh = 15 if ($refresh !~ /^(?:0|15|30|60)$/);
+    my $showDeviceType = AttrVal($name, 'showDeviceType', 1) ? 1 : 0;
     my $html = ThermostatDashboard_Css()
         . '<div class="td" data-base="' . $base . '" data-csrf="' . $csrf . '" data-device="'
         . ThermostatDashboard_Escape($name) . '" data-refresh="' . $refresh . '">'
-        . '<header class="td-head"><div><small>HEIZUNG / THERMOSTATE</small><h1>Thermostate</h1></div>'
+        . '<header class="td-head"><div class="td-brand"><span class="td-brand-mark" aria-hidden="true">'
+        . '<svg viewBox="0 0 24 24"><path d="M9 14.5V5a3 3 0 0 1 6 0v9.5a5 5 0 1 1-6 0Z"/>'
+        . '<path d="M12 8v9"/><circle cx="12" cy="18" r="1.5"/></svg></span>'
+        . '<div><small>HEIZUNG / THERMOSTATE</small><h1>Thermostate</h1></div></div>'
         . '<div class="td-head-actions"><button type="button" class="td-edit" title="Bearbeiten" aria-label="Thermostate bearbeiten">&#9998;</button>'
-        . '<div class="td-edit-actions"><button type="button" class="td-cancel">Abbrechen</button>'
-        . '<button type="button" class="td-save">Speichern</button></div>'
         . '<div class="td-summary"><span data-count>' . $visibleCount . '</span> von <span data-total>'
         . scalar(@{$devices}) . '</span> Thermostaten angezeigt</div>'
-        . '<span class="td-head-status" aria-live="polite"></span></div></header>';
+        . '</div></header>';
+
+    $html .= '<div class="td-dialog-open" data-dialog-backdrop hidden><section class="td-edit-dialog" role="dialog" '
+        . 'aria-modal="true" aria-labelledby="td-dialog-title"><header class="td-dialog-head">'
+        . '<h2 id="td-dialog-title">Thermostate anzeigen</h2><p>W&auml;hle aus, welche Ger&auml;te im Dashboard erscheinen.</p></header>'
+        . '<div class="td-dialog-list">';
+    for my $device (@{$devices}) {
+        my $isHidden = $hidden->{$device->{name}} ? 1 : 0;
+        my $room = $device->{room} ne '' ? $device->{room} : 'Ohne Raum';
+        $html .= '<label class="td-edit-row"><input type="checkbox" data-visible data-device="'
+            . ThermostatDashboard_Escape($device->{name}) . '"' . ($isHidden ? '' : ' checked') . '>'
+            . '<span><strong>' . ThermostatDashboard_Escape($device->{alias}) . '</strong><small>'
+            . ThermostatDashboard_Escape($room) . ' &middot; ' . ThermostatDashboard_Escape($device->{model})
+            . '</small></span></label>';
+    }
+    $html .= '</div><footer class="td-dialog-footer"><span class="td-dialog-status" aria-live="polite"></span>'
+        . '<div class="td-dialog-actions"><button type="button" class="td-cancel">Abbrechen</button>'
+        . '<button type="button" class="td-save">Speichern</button></div></footer></section></div>';
 
     if (!@{$devices}) {
         $html .= '<div class="td-empty">Keine kompatiblen Thermostate gefunden. Unterst&uuml;tzt werden '
@@ -402,8 +435,7 @@ sub ThermostatDashboard_BuildDashboard {
                 . '<header class="td-card-head"><div><div class="td-room">'
                 . ThermostatDashboard_Escape($room) . '</div><h2 class="td-name">'
                 . ThermostatDashboard_Escape($device->{alias}) . '</h2></div><div class="td-model">'
-                . ThermostatDashboard_Escape($device->{model}) . '<label class="td-visibility"><input type="checkbox" data-visible'
-                . ($isHidden ? '' : ' checked') . ' disabled> Anzeigen</label></div></header>'
+                . ($showDeviceType ? ThermostatDashboard_Escape($device->{model}) : '') . '</div></header>'
                 . '<div class="td-values"><div class="td-value"><span class="td-value-label">Isttemperatur</span>'
                 . '<strong data-value="actual">' . (defined($actual) ? sprintf('%.1f', $actual) : '&ndash;')
                 . ' <small>&deg;C</small></strong></div><div class="td-value">'
@@ -452,18 +484,22 @@ if(!response.ok)throw new Error(text.trim().slice(0,160)||"HTTP "+response.statu
 function status(card,text,error){var node=card.querySelector(".td-status");node.textContent=text;node.setAttribute("data-error",error?"1":"0");}
 var cards=Array.prototype.slice.call(root.querySelectorAll(".td-card")),editButton=root.querySelector(".td-edit");
 var cancelButton=root.querySelector(".td-cancel"),saveButton=root.querySelector(".td-save");
-var headStatus=root.querySelector(".td-head-status"),countNode=root.querySelector("[data-count]");
+var backdrop=root.querySelector("[data-dialog-backdrop]"),dialog=backdrop.querySelector('[role="dialog"]');
+var dialogStatus=root.querySelector(".td-dialog-status"),countNode=root.querySelector("[data-count]");
 var checkboxes=root.querySelectorAll("[data-visible]"),originalHidden=[];
 function updateVisibility(card,visible){card.setAttribute("data-hidden",visible?"0":"1");}
 function updateCount(){countNode.textContent=String(cards.filter(function(card){return card.getAttribute("data-hidden")!=="1";}).length);}
-function setEditMode(editing){root.classList.toggle("edit-mode",editing);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=!editing;});headStatus.textContent="";headStatus.setAttribute("data-error","0");}
-function fail(text){headStatus.textContent=text;headStatus.setAttribute("data-error","1");}
+function setEditMode(editing){root.classList.toggle("edit-mode",editing);backdrop.hidden=!editing;Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=!editing;});dialogStatus.textContent="";dialogStatus.setAttribute("data-error","0");if(editing){var first=dialog.querySelector("input");(first||cancelButton).focus();}else editButton.focus();}
+function cancelEdit(){cards.forEach(function(card,index){updateVisibility(card,!originalHidden[index]);});Array.prototype.forEach.call(checkboxes,function(checkbox,index){checkbox.checked=!originalHidden[index];});updateCount();setEditMode(false);}
+function fail(text){dialogStatus.textContent=text;dialogStatus.setAttribute("data-error","1");}
 editButton.addEventListener("click",function(){originalHidden=cards.map(function(card){return card.getAttribute("data-hidden")==="1";});setEditMode(true);});
-cancelButton.addEventListener("click",function(){cards.forEach(function(card,index){updateVisibility(card,!originalHidden[index]);});Array.prototype.forEach.call(checkboxes,function(checkbox,index){checkbox.checked=!originalHidden[index];});updateCount();setEditMode(false);});
-Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.addEventListener("change",function(){updateVisibility(checkbox.closest(".td-card"),checkbox.checked);updateCount();});});
+cancelButton.addEventListener("click",cancelEdit);
+backdrop.addEventListener("click",function(event){if(event.target===backdrop)cancelEdit();});
+document.addEventListener("keydown",function(event){if(event.key==="Escape"&&!backdrop.hidden)cancelEdit();});
+Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.addEventListener("change",function(){var card=cards.filter(function(item){return item.getAttribute("data-device")===checkbox.getAttribute("data-device");})[0];if(card)updateVisibility(card,checkbox.checked);updateCount();});});
 saveButton.addEventListener("click",function(){var hidden=cards.filter(function(card){return card.getAttribute("data-hidden")==="1";}).map(function(card){return card.getAttribute("data-device");});
 var encoded=btoa(unescape(encodeURIComponent(JSON.stringify({hidden:hidden})))),command="set "+root.getAttribute("data-device")+" saveConfig "+encoded;
-Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=true;});saveButton.disabled=true;cancelButton.disabled=true;headStatus.textContent="Konfiguration wird gespeichert ...";
+Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=true;});saveButton.disabled=true;cancelButton.disabled=true;dialogStatus.textContent="Konfiguration wird gespeichert ...";
 request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));setEditMode(false);})
 .catch(function(error){fail("Speichern fehlgeschlagen: "+error.message);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=false;});})
 .then(function(){saveButton.disabled=false;cancelButton.disabled=false;});});
