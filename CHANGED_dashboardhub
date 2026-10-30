@@ -2,5 +2,11 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 666ae89 DashboardHub: Speichern von Namen und Reihenfolge
+  korrigiert
+  Speichern wertet Antwort "gespeichert" aus (wie TemperatureCollector)
+  Fallback ueber set saveConfig sendet CSRF-Token
+  Ueberschrift der Navigation im Editiermodus umbenennbar
+  Dokumentation angepasst
 - change: 2026-10-30 13d47bf Neues Modul Dashboard HUB zur Verwaltung und
   Integration aller Module, die ein Dashboard innehaben
