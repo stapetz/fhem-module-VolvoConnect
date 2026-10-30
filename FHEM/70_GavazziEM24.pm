@@ -10,7 +10,7 @@ package GavazziEM24;
 use strict;
 use warnings;
 
-our $VERSION = '1.0.2-dev';
+our $VERSION = '1.0.3-dev';
 use GPUtils qw(:all);
 
 BEGIN {
