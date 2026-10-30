@@ -69,9 +69,10 @@ ein:
   wieder her.
 - **Überschrift:** Die Überschrift der Navigation („Dashboards“) lässt sich ebenfalls
   umbenennen; ein leeres Feld stellt den Standard wieder her.
-- **Reihenfolge:** Menüpunkte lassen sich mit den Pfeilen ▲ ▼ oder per Ziehen am
-  Symbol ☰ verschieben.
-- **Speichern** übernimmt die Änderungen serverseitig, **Abbrechen** verwirft sie.
+- **Reihenfolge:** Menüpunkte lassen sich per Ziehen am Symbol ☰ verschieben.
+- **Speichern:** Ein erneuter Klick auf den Stift speichert die Änderungen serverseitig
+  und beendet den Bearbeitungsmodus. Ohne Änderungen wird nichts gespeichert. Das
+  Ergebnis steht unter der Überschrift der Navigation („Gespeichert" bzw. „Fehler: …").
 
 Die Konfiguration wird mit `setKeyValue` gespeichert (nicht in `fhem.cfg`) und gilt
 für alle Browser. Neu erkannte Dashboards werden alphabetisch am Ende angefügt.

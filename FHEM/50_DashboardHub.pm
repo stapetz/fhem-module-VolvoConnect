@@ -214,12 +214,10 @@ sub DashboardHub_Css {
 .dh-editing .dh-item{cursor:default;padding:6px 8px}
 .dh.dh-editing .dh-item.dh-dragover{outline:1px dashed #52bd8b}
 .dh .dh-btn{height:26px!important;min-width:26px!important;padding:0 8px!important;margin:0!important;font-size:12px!important;background:#26342d!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important;cursor:pointer;width:auto!important;float:none!important}
-.dh .dh-btn:disabled{opacity:.35;cursor:default}
 .dh .dh-edit{width:32px!important;height:32px!important;font-size:20px!important;background:none!important;border:0!important;padding:0!important}
 .dh input.dh-name{flex:1;min-width:0;height:26px!important;margin:0!important;padding:0 6px!important;font-size:13px!important;background:#1d2825!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important;width:auto!important}
 .dh-grip{cursor:grab;color:#9fb3a8}
-.dh-actions{display:flex;gap:8px;padding:10px 12px 0}
-.dh-status{padding:6px 12px;font-size:12px;color:#9fb3a8;min-height:24px}
+.dh-status{padding:0 12px 6px;font-size:12px;color:#9fb3a8}.dh-status:empty{display:none}
 .dh-main{flex:1;min-width:0;display:flex}
 .dh-frame{flex:1;width:100%;border:0;background:#151f1b;min-height:__HEIGHT__}
 .dh-empty{padding:24px;color:#9fb3a8}
@@ -233,9 +231,9 @@ sub DashboardHub_Js {
 <script>(function(){
 var root=document.getElementById("__ID__");if(!root)return;
 var list=root.querySelector(".dh-list"),frame=root.querySelector(".dh-frame"),status=root.querySelector(".dh-status");
-var editBtn=root.querySelector(".dh-edit"),actions=root.querySelector(".dh-actions");
+var editBtn=root.querySelector(".dh-edit");
 var editable=__EDITABLE__,cp=__CP__,hub=__HUB__,csrf=__CSRF__,storeKey="dashboardHub_"+hub;
-var editing=false,saved=null,titleEl=root.querySelector(".dh-title"),titleInput=null,DEFTITLE="Dashboards";
+var editing=false,sig0="",busy=false,titleEl=root.querySelector(".dh-title"),titleInput=null,DEFTITLE="Dashboards";
 function items(){return Array.prototype.slice.call(list.querySelectorAll(".dh-item"));}
 function say(t){if(status)status.textContent=t||"";}
 function select(el,force){var all=items();if(!el)el=all[0];if(!el){if(frame)frame.removeAttribute("src");return;}
@@ -246,11 +244,6 @@ function initial(){var dev=null;try{dev=localStorage.getItem(storeKey);}catch(e)
 var m=/[?&]hubSel=([^&]*)/.exec(window.location.search);if(m)dev=decodeURIComponent(m[1]);
 var f=items().filter(function(n){return n.getAttribute("data-dev")===dev;})[0];select(f);}
 list.addEventListener("click",function(e){if(editing)return;var el=e.target.closest(".dh-item");if(el)select(el);});
-function move(el,dir){var sib=dir<0?el.previousElementSibling:el.nextElementSibling;if(!sib)return;
-if(dir<0)list.insertBefore(el,sib);else list.insertBefore(sib,el);refreshButtons();}
-function refreshButtons(){var all=items();all.forEach(function(n,i){var u=n.querySelector(".dh-up"),d=n.querySelector(".dh-down");
-if(u)u.disabled=i===0;if(d)d.disabled=i===all.length-1;});}
-function mkBtn(txt,cls,title,fn){var b=document.createElement("button");b.type="button";b.className="dh-btn "+cls;b.textContent=txt;b.title=title;b.addEventListener("click",function(ev){ev.stopPropagation();fn(b);});return b;}
 function decorate(el){var label=el.querySelector(".dh-label"),type=el.querySelector(".dh-type");
 var grip=document.createElement("span");grip.className="dh-grip";grip.textContent="\u2630";grip.title="Ziehen zum Sortieren";
 var input=document.createElement("input");input.type="text";input.className="dh-name";input.maxLength=80;
@@ -258,10 +251,8 @@ input.value=el.getAttribute("data-custom")||"";input.placeholder=el.getAttribute
 input.addEventListener("click",function(e){e.stopPropagation();});
 label.style.display="none";if(type)type.style.display="none";
 el.insertBefore(grip,label);el.insertBefore(input,label);
-el.appendChild(mkBtn("\u25B2","dh-up","Nach oben",function(){move(el,-1);}));
-el.appendChild(mkBtn("\u25BC","dh-down","Nach unten",function(){move(el,1);}));
 el.draggable=true;}
-function undecorate(el){Array.prototype.slice.call(el.querySelectorAll(".dh-grip,.dh-name,.dh-up,.dh-down")).forEach(function(n){el.removeChild(n);});
+function undecorate(el){Array.prototype.slice.call(el.querySelectorAll(".dh-grip,.dh-name")).forEach(function(n){el.removeChild(n);});
 var label=el.querySelector(".dh-label"),type=el.querySelector(".dh-type");label.style.display="";if(type)type.style.display="";el.draggable=false;}
 var dragged=null;
 list.addEventListener("dragstart",function(e){if(!editing)return;dragged=e.target.closest(".dh-item");if(e.dataTransfer){e.dataTransfer.effectAllowed="move";try{e.dataTransfer.setData("text/plain","");}catch(x){}}});
@@ -269,26 +260,24 @@ list.addEventListener("dragover",function(e){if(!editing||!dragged)return;e.prev
 items().forEach(function(n){n.classList.toggle("dh-dragover",n===t&&n!==dragged);});});
 list.addEventListener("drop",function(e){if(!editing||!dragged)return;e.preventDefault();var t=e.target.closest(".dh-item");
 if(t&&t!==dragged){var after=items().indexOf(dragged)<items().indexOf(t);list.insertBefore(dragged,after?t.nextElementSibling:t);}
-dragged=null;items().forEach(function(n){n.classList.remove("dh-dragover");});refreshButtons();});
+dragged=null;items().forEach(function(n){n.classList.remove("dh-dragover");});});
 list.addEventListener("dragend",function(){dragged=null;items().forEach(function(n){n.classList.remove("dh-dragover");});});
-function startEdit(){editing=true;root.classList.add("dh-editing");saved=items().map(function(n){return n.getAttribute("data-dev");});
+function startEdit(){editing=true;root.classList.add("dh-editing");
 items().forEach(decorate);
 titleInput=document.createElement("input");titleInput.type="text";titleInput.className="dh-name";titleInput.maxLength=80;titleInput.value=titleEl.getAttribute("data-custom")||"";titleInput.placeholder=DEFTITLE;titleInput.title="\u00dcberschrift (leer = "+DEFTITLE+")";titleEl.style.display="none";titleEl.parentNode.insertBefore(titleInput,titleEl);
-actions.style.display="flex";refreshButtons();say("Reihenfolge und Namen bearbeiten");}
-function stopEdit(){if(titleInput){titleInput.parentNode.removeChild(titleInput);titleInput=null;titleEl.style.display="";}editing=false;root.classList.remove("dh-editing");items().forEach(undecorate);actions.style.display="none";}
-function cancelEdit(){var byDev={};items().forEach(function(n){byDev[n.getAttribute("data-dev")]=n;});
-saved.forEach(function(d){if(byDev[d])list.appendChild(byDev[d]);});stopEdit();say("");}
+sig0=sig();say("Bearbeiten: Namen \u00e4ndern, Eintr\u00e4ge ziehen. Erneut auf den Stift klicken zum Speichern");}
+function stopEdit(){if(titleInput){titleInput.parentNode.removeChild(titleInput);titleInput=null;titleEl.style.display="";}editing=false;root.classList.remove("dh-editing");items().forEach(undecorate);}
+function sig(){return JSON.stringify([items().map(function(n){var i=n.querySelector(".dh-name");return [n.getAttribute("data-dev"),i?i.value.trim():""];}),titleInput?titleInput.value.trim():""]);}
 function ck(r){return r.text().then(function(t){if(!r.ok)throw new Error("HTTP "+r.status);if(/error|unknown|ungueltig|fehlgeschlagen/i.test(t))throw new Error(t.trim().slice(0,160));});}
 function post(b64){var tok=csrf;if(!tok){var m=document.cookie.match(/(?:^|;\s*)fwcsrf=([^;]+)/);tok=m?decodeURIComponent(m[1]):"";}
 var url=cp+"?cmd="+encodeURIComponent("set "+hub+" saveConfig "+b64)+"&XHR=1"+(tok?"&fwcsrf="+encodeURIComponent(tok):"");
 return fetch(url,{credentials:"same-origin",cache:"no-store"}).then(ck);}
 function save(){var order=[],names={};items().forEach(function(n){var d=n.getAttribute("data-dev");order.push(d);
 var v=n.querySelector(".dh-name").value.trim();if(v!==""&&v!==n.getAttribute("data-alias"))names[d]=v;});
-var ttl=titleInput?titleInput.value.trim():"";var json=JSON.stringify({order:order,names:names,title:ttl});var b64=btoa(unescape(encodeURIComponent(json)));say("Speichere ...");
+var ttl=titleInput?titleInput.value.trim():"";var json=JSON.stringify({order:order,names:names,title:ttl});var b64=btoa(unescape(encodeURIComponent(json)));busy=true;say("Speichere ...");
 post(b64).then(function(){items().forEach(function(n){var d=n.getAttribute("data-dev"),v=names[d]||"";n.setAttribute("data-custom",v);
-n.querySelector(".dh-label").textContent=v||n.getAttribute("data-alias");});titleEl.setAttribute("data-custom",ttl);titleEl.textContent=ttl||DEFTITLE;stopEdit();say("Gespeichert");}).catch(function(err){say("Fehler: "+err.message);window.alert("Speichern fehlgeschlagen: "+err.message);});}
-if(editable&&editBtn){editBtn.addEventListener("click",function(){if(editing)cancelEdit();else startEdit();});
-root.querySelector(".dh-save").addEventListener("click",save);root.querySelector(".dh-cancel").addEventListener("click",cancelEdit);}
+n.querySelector(".dh-label").textContent=v||n.getAttribute("data-alias");});titleEl.setAttribute("data-custom",ttl);titleEl.textContent=ttl||DEFTITLE;stopEdit();busy=false;say("Gespeichert");}).catch(function(err){busy=false;say("Fehler: "+err.message);window.alert("Speichern fehlgeschlagen: "+err.message);});}
+if(editable&&editBtn){editBtn.addEventListener("click",function(){if(busy)return;if(!editing)startEdit();else if(sig()===sig0){stopEdit();say("");}else save();});}
 initial();
 })();</script>
 JS
@@ -323,7 +312,7 @@ sub DashboardHub_BuildDashboard {
         . ($editable && @{$items}
             ? '<button type="button" class="dh-btn dh-edit" title="Reihenfolge und Namen bearbeiten">&#9998;</button>'
             : '')
-        . '</div><div class="dh-list">';
+        . '</div><div class="dh-status"></div><div class="dh-list">';
     for my $item (@{$items}) {
         $html .= '<div class="dh-item" data-dev="' . DashboardHub_Escape($item->{name})
             . '" data-url="' . DashboardHub_Escape($item->{url})
@@ -331,10 +320,7 @@ sub DashboardHub_BuildDashboard {
             . '" data-custom="' . DashboardHub_Escape($item->{custom})
             . '"><span class="dh-label">' . DashboardHub_Escape($item->{label}) . '</span></div>';
     }
-    $html .= '</div><div class="dh-actions" style="display:none">'
-        . '<button type="button" class="dh-btn dh-save">Speichern</button>'
-        . '<button type="button" class="dh-btn dh-cancel">Abbrechen</button></div>'
-        . '<div class="dh-status"></div></div><div class="dh-main">'
+    $html .= '</div></div><div class="dh-main">'
         . (@{$items}
             ? '<iframe class="dh-frame" title="Dashboard" loading="lazy"></iframe>'
             : '<div class="dh-empty">Keine Dashboards gefunden. Es werden Ger&auml;te erkannt, die '
