@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 e052282 Doku: Versionen und Release einzelner Module
+- change: 2026-10-30 a156270 Versionsnummern je Modul und Release-Skript
+  [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus, DashboardHub]
 - change: 2026-10-30 e1836a3 DashboardHub: Navigation als eigener Kasten mit
   dunklem Abstand [DashboardHub]
 - change: 2026-10-30 5f0404f DashboardHub: oberer Abstand von Inhalt und
