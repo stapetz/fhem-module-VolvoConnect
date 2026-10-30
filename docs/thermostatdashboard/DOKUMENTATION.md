@@ -112,5 +112,7 @@ Gerätekonfiguration oder Wochenprofile.
 - **Temperatur lässt sich nicht setzen:** Prüfen, ob das Gerät `desired-temp` (CUL_HM)
   oder `desiredTemperature` (MAX) anbietet. Die Antwort wird im Dashboard neben dem
   jeweiligen Thermostat angezeigt.
+- **FHEM-Webserver ist nicht erreichbar:** Das Dashboard zeigt eine kurze Meldung anstelle
+  der HTML-Fehlerseite eines Reverse Proxys. FHEM- und Proxy-Verbindung prüfen.
 - **Messwert wirkt veraltet:** Zeitstempel der Readings in FHEM prüfen. MAX-Geräte übertragen
   Messwerte abhängig von Funk- und Gateway-Aktivität.

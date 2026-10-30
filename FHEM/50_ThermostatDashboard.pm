@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our $ThermostatDashboard_VERSION = '1.2.2-dev';
+our $ThermostatDashboard_VERSION = '1.2.3-dev';
 our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
@@ -390,7 +390,7 @@ sub ThermostatDashboard_Css {
 .td button{min-height:34px;padding:6px 11px;background:#26342d;color:#f4f4e9;border:1px solid #52bd8b;font:600 12px 'Helvetica Neue',sans-serif;cursor:pointer}
 .td button:hover{background:#30453a}
 .td button:disabled{opacity:.5;cursor:wait}
-.td-status{margin:0 14px 10px;color:#a9b7ac;font-size:11px}
+.td-status{margin:0 14px 10px;color:#a9b7ac;font-size:11px;overflow-wrap:anywhere}
 .td-status:empty{display:none}
 .td-status[data-error="1"]{color:#ef9a8b}
 .td-status[data-success="1"]{color:#9ce2bb}
@@ -536,9 +536,17 @@ sub ThermostatDashboard_Javascript {
 var root=document.querySelector(".td");if(!root)return;
 var base=root.getAttribute("data-base").replace(/\/$/,""),csrf=root.getAttribute("data-csrf")||"";
 if(!csrf){var match=document.cookie.match(/(?:^|;\s*)fwcsrf=([^;]+)/);csrf=match?decodeURIComponent(match[1]):"";}
+function responseError(response,text){var isHtml=/<(?:!doctype|html|head|body)\b/i.test(text),message;
+if(response.status===502)message="FHEM-Webserver nicht erreichbar (HTTP 502 Bad Gateway).";
+else if(response.status===503)message="FHEM-Webserver vorübergehend nicht verfügbar (HTTP 503).";
+else if(response.status===504)message="Zeitüberschreitung beim Aufruf von FHEM (HTTP 504).";
+else if(isHtml)message="Der Server hat eine HTML-Fehlerseite zurückgegeben (HTTP "+response.status+(response.statusText?" "+response.statusText:"")+").";
+else message=text.trim().slice(0,160)||("HTTP "+response.status+(response.statusText?" "+response.statusText:""));
+return new Error(message);}
 function request(command){var url=base+"?cmd="+encodeURIComponent(command)+"&XHR=1";if(csrf)url+="&fwcsrf="+encodeURIComponent(csrf);
 return fetch(url,{cache:"no-store",credentials:"same-origin"}).then(function(response){return response.text().then(function(text){
-if(!response.ok)throw new Error(text.trim().slice(0,160)||"HTTP "+response.status);return text;});});}
+if(!response.ok||/<(?:!doctype|html|head|body)\b/i.test(text))throw responseError(response,text);
+return text;});}).catch(function(error){if(error instanceof TypeError)throw new Error("Verbindung zum FHEM-Webserver fehlgeschlagen. Netzwerk oder Proxy prüfen.");throw error;});}
 function status(card,text,error,success){var node=card.querySelector(".td-status");window.clearTimeout(card._tdStatusTimer);node.textContent=text;node.setAttribute("data-error",error?"1":"0");node.setAttribute("data-success",success?"1":"0");}
 function formatTemperature(value){return value.toFixed(1).replace(".",",");}
 function updateBattery(node,raw){var text=String(raw==null?"":raw).trim(),normalized=text.toLowerCase(),level="unknown",filled=0;
