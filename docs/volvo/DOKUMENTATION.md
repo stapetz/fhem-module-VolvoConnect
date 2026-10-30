@@ -340,10 +340,22 @@ lautet zum Beispiel `/fhem/VolvoConnect/MeinVolvo?embed=1`.
 Im Embed-Modus ist das Dashboard nicht editierbar. Stil und Skript sind auf das Fragment begrenzt, die Aktualisierung läuft über diese Adresse und nicht über die der einbettenden Seite.
 
 Das Fragment enthält ein Skript. Ein einfaches HTML-Widget, das den Inhalt nur
-per `innerHTML` setzt, führt dieses Skript nicht aus. Die folgende Variante
-in reinem JavaScript funktioniert in FTUI 1 und FTUI 2, weil sie kein jQuery
-benötigt. Sie setzt voraus, dass FTUI und FHEMWEB über denselben Host und Port
-erreichbar sind (sonst ist CORS nötig):
+per `innerHTML` setzt, führt dieses Skript nicht aus. Die folgenden Beispiele setzen voraus, dass FTUI und FHEMWEB über denselben Host und Port
+erreichbar sind (sonst ist CORS nötig).
+
+### FTUI 1 (fhem-tablet-ui, mit jQuery)
+
+Ein Container, in den das Fragment per jQuery geladen wird. Eingebundene Skripte werden dabei
+ausgeführt:
+
+```html
+<div id="fhem-dashboard"></div>
+<script>
+  $('#fhem-dashboard').load('/fhem/VolvoConnect/MeinVolvo?embed=1');
+</script>
+```
+
+Alternativ ohne jQuery, auch in FTUI 1 lauffähig:
 
 ```html
 <div id="fhem-dashboard"></div>
@@ -358,13 +370,30 @@ erreichbar sind (sonst ist CORS nötig):
 </script>
 ```
 
-`createContextualFragment` führt die enthaltenen Skripte aus. In FTUI 1 kann
-alternativ `$('#fhem-dashboard').load('<URL>')` verwendet werden. Ein `iframe`
-mit der normalen `_dashboardURL` funktioniert ebenfalls, benötigt aber eine
-feste Höhe und Breite im FTUI-Layout.
+Der Code kann direkt in die FTUI-Seite oder in das FTUI-HTML-Widget kopiert werden, sofern
+dieses Skripte ausführt. Ein Widget, das den Inhalt nur per `innerHTML` setzt, führt sie nicht
+aus, dann bleibt nur der `iframe`:
 
-Ob die Einbettung in der eigenen FTUI-Installation sauber läuft, hängt vom
-verwendeten Widget und Layout ab und sollte dort geprüft werden.
+```html
+<iframe src="/fhem/VolvoConnect/MeinVolvo" style="width:100%;height:900px;border:0"></iframe>
+```
+
+### FTUI 2 (ohne jQuery)
+
+```html
+<div id="fhem-dashboard"></div>
+<script type="module">
+  const response = await fetch('/fhem/VolvoConnect/MeinVolvo?embed=1', {credentials: 'same-origin'});
+  const target = document.getElementById('fhem-dashboard');
+  target.replaceChildren(document.createRange().createContextualFragment(await response.text()));
+</script>
+```
+
+Der `iframe` aus dem FTUI-1-Beispiel funktioniert auch in FTUI 2.
+
+Die Beispiele wurden nicht in einer FTUI-Installation getestet. Passen Sie die Adresse bei
+abweichendem FHEMWEB-Pfad oder Port an; `get MeinVolvo _dashboardEmbedURL` liefert den
+richtigen relativen Pfad.
 
 ## 10. Readings und Status
 

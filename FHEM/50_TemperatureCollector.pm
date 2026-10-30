@@ -711,8 +711,8 @@ sub TemperatureCollector_BuildDashboard {
     my $html = <<'HTML';
 <style>
 .tc-dashboard{font:14px 'Avenir Next','Helvetica Neue',sans-serif;color:#f4f4e9;background:#1d2825;width:100%;max-width:1120px;margin:0 auto;border:1px solid #46544c;box-shadow:0 16px 44px #0c16124a;overflow:hidden}
-.tc-header{position:relative;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:76px;margin:0;padding:15px 24px;background:#202e29;border-bottom:1px solid #405149}
-.tc-header-actions{display:flex;align-items:center;gap:8px}.tc-edit{width:40px;height:40px;padding:0;border:0;border-radius:0;background:none;color:#f4f4e9;cursor:pointer;font:600 28px 'Helvetica Neue',sans-serif;line-height:1}.tc-edit:hover{color:#9ce2bb}.tc-save{display:none;padding:8px 12px;border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}.tc-save:hover{background:#34463c}.tc-reorder-mode .tc-save{display:inline-block}
+.tc-header{position:relative;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:space-between;align-items:center;gap:12px;min-height:76px;margin:0;padding:15px 24px;background:#202e29;border-bottom:1px solid #405149}
+.tc-header-actions{display:flex!important;flex:0 0 auto;margin-left:auto;align-items:center;gap:8px}.tc-edit{width:40px;height:40px;padding:0;border:0;border-radius:0;background:none;color:#f4f4e9;cursor:pointer;font:600 28px 'Helvetica Neue',sans-serif;line-height:1}.tc-edit:hover{color:#9ce2bb}.tc-save{display:none;padding:8px 12px;border:1px solid #52bd8b;border-radius:0;background:#26342d;color:#f4f4e9;cursor:pointer;font:600 12px 'Helvetica Neue',sans-serif}.tc-save:hover{background:#34463c}.tc-reorder-mode .tc-save{display:inline-block}
 .tc-clock{position:absolute;left:56%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;color:#c9d8cd}.tc-clock-face{width:44px;height:44px}.tc-clock-face circle{fill:#1d2825;stroke:#52bd8b;stroke-width:1.5}.tc-clock-face line{stroke:#a9b7ac;stroke-width:1}.tc-clock-face .tc-tick-major{stroke:#f4f4e9;stroke-width:1.8}.tc-clock-face .tc-hand-hour{stroke:#f4f4e9;stroke-width:2}.tc-clock-face .tc-hand-minute{stroke:#52bd8b;stroke-width:1.5}.tc-clock-face .tc-hand-second{stroke:#e07b65;stroke-width:1}.tc-clock-date{font-size:11px;white-space:nowrap;color:#a9b7ac}
 @media(max-width:760px){.tc-header{padding:13px 15px}.tc-grid{padding:16px 15px 18px}}
 @media(max-width:640px){.tc-clock{display:none}}
@@ -735,10 +735,11 @@ sub TemperatureCollector_BuildDashboard {
 </style>
 <div class="tc-dashboard">
 HTML
-    $html .= '<header class="tc-header"><div class="tc-brand">'
+    $html .= '<div class="tc-header"><div class="tc-brand">'
         . '<span class="tc-brand-mark">T</span><div><small>FHEM / TEMPERATURE COLLECTOR</small>'
         . '<h1>Temperaturübersicht</h1></div></div>'
-        . '<div class="tc-clock" aria-label="Aktuelle Uhrzeit und Datum">'
+        . ($options->{embed} ? '' : (
+            '<div class="tc-clock" aria-label="Aktuelle Uhrzeit und Datum">'
         . '<svg class="tc-clock-face" viewBox="0 0 44 44" role="img" aria-hidden="true">'
         . '<circle cx="22" cy="22" r="20"/>'
         . '<line class="tc-tick-major" x1="22" y1="3" x2="22" y2="8"/>'
@@ -758,6 +759,7 @@ HTML
         . '<line class="tc-hand-second" x1="22" y1="22" x2="22" y2="6"/>'
         . '<circle cx="22" cy="22" r="1.5" fill="#e07b65" stroke="none"/></svg>'
         . '<span class="tc-clock-date"></span></div>'
+        ))
         . '<div class="tc-header-actions"><div class="tc-live"><i class="tc-led" title="Aktuelle Sensorwerte"></i></div>'
         . '<button type="button" class="tc-edit" title="Listenansicht/Kachelansicht wechseln" aria-label="Listenansicht/Kachelansicht wechseln"'
         . ' onclick="tcToggleView(this)">☷</button>'
@@ -766,7 +768,7 @@ HTML
                 . ' onclick="tcToggleEdit(this)">✎</button>'
                 . '<button type="button" class="tc-save" onclick="tcSaveClick()">💾 Speichern</button>'
             : '')
-        . '</div></header><div class="tc-grid">';
+        . '</div></div><div class="tc-grid">';
 
     if (!@{$devices}) {
         return $html . '<div class="tc-error">Keine numerischen Temperatur-Readings gefunden.</div></div></div>';

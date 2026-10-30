@@ -35,17 +35,48 @@ update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_
 ```
 
 Danach `shutdown restart` ausführen. Einzelne Module lassen sich weiterhin über die
-folgenden URLs abonnieren.
+folgenden Befehle abonnieren.
 
-## FHEM-Update-URLs
+## FHEM-Update-Befehle
+
+Je Modul bzw. für alle Module:
+
+**Alle Module**
 
 ```text
-https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_all.txt
-https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_volvo.txt
-https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_temperaturecollector.txt
-https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_gavazzi.txt
-https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_all.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_all.txt
 ```
+
+**VolvoConnect**
+
+```text
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_volvo.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_volvo.txt
+```
+
+**TemperatureCollector**
+
+```text
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_temperaturecollector.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_temperaturecollector.txt
+```
+
+**GavazziEM24**
+
+```text
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_gavazzi.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_gavazzi.txt
+```
+
+**SolaxModbus**
+
+```text
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt
+```
+
+Danach `shutdown restart` ausführen.
 
 Die ausführlichen Anleitungen stehen in den jeweiligen Dokumentationsordnern:
 
