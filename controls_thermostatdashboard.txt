@@ -1,0 +1,2 @@
+UPD 2026-10-30_19:35:11 25483 FHEM/50_ThermostatDashboard.pm
+UPD 2026-10-30_18:35:19 481 CHANGED_thermostatdashboard

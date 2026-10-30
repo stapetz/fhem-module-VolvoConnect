@@ -2,6 +2,12 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 add4da3 ThermostatDashboard fuer Homematic und MAX
+  [DashboardHub, ThermostatDashboard]
+  CUL_HM- und MAX-Thermostate automatisch erkennen\n- Ist-/Solltemperatur,
+    Modus, Ventil und Batterie anzeigen\n- Solltemperatur sowie verfuegbare
+    Betriebsarten steuern\n- Dokumentation, README und Controls-Workflow
+    erweitern
 - change: 2026-10-30 f83a74a TODO: sicheren FHEM-Zugriff klaeren
 - change: 2026-10-30 252f34e TODO: Controls-Dateinamen eindeutiger machen
 - change: 2026-10-30 ccaee3e DashboardHub: Abstaende rundum vereinheitlichen
