@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 c8be507 Dokumentation und Layoutanpassungen fur die
+  embedded URL fur ftui [VolvoConnect, TemperatureCollector, GavazziEM24,
+  SolaxModbus]
 - change: 2026-10-30 5ef24ee Hilfen und Kontaktinformationen angepasst.
   [VolvoConnect, TemperatureCollector, GavazziEM24, SolaxModbus]
 - change: 2026-10-30 0739b5e - grafische Anpassungen in den Dashboards -
