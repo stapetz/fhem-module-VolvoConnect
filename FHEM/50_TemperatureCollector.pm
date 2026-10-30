@@ -3,7 +3,7 @@ package main;
 use strict;
 use warnings;
 
-our $TemperatureCollector_VERSION = '1.0.2-dev';
+our $TemperatureCollector_VERSION = '1.0.3-dev';
 use POSIX qw(strftime);
 use Time::Local qw(timelocal);
 use JSON qw(encode_json decode_json);
@@ -737,7 +737,6 @@ sub TemperatureCollector_BuildDashboard {
 .tc-clock{position:absolute;left:56%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;color:#c9d8cd}.tc-clock-face{width:44px;height:44px}.tc-clock-face circle{fill:#1d2825;stroke:#52bd8b;stroke-width:1.5}.tc-clock-face line{stroke:#a9b7ac;stroke-width:1}.tc-clock-face .tc-tick-major{stroke:#f4f4e9;stroke-width:1.8}.tc-clock-face .tc-hand-hour{stroke:#f4f4e9;stroke-width:2}.tc-clock-face .tc-hand-minute{stroke:#52bd8b;stroke-width:1.5}.tc-clock-face .tc-hand-second{stroke:#e07b65;stroke-width:1}.tc-clock-date{font-size:11px;white-space:nowrap;color:#a9b7ac}
 .tc-brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}.tc-brand-mark{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border:2px solid #52bd8b;border-radius:50%;background:transparent;color:#52bd8b}.tc-brand-mark svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .tc-brand small{display:block;color:#a9b7ac;font:700 10px 'Helvetica Neue',sans-serif;letter-spacing:1.2px}.tc-brand h1{margin:3px 0;font:500 22px Georgia,serif;letter-spacing:0;line-height:1.1}
-.tc-live{display:flex;align-items:center;gap:8px;color:#a9b7ac}.tc-led{width:12px;height:12px;border-radius:50%;background:#52bd8b;animation:tc-live-pulse 4s ease-in-out infinite}@keyframes tc-live-pulse{0%,100%{opacity:.35;box-shadow:0 0 3px #52bd8b}50%{opacity:1;box-shadow:0 0 10px #52bd8b}}
 .tc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:22px 24px 24px;background:linear-gradient(155deg,#26352e,#1b2823 62%,#202c27)}
 .tc-card{border:0;border-top:1px solid #46544c;border-radius:0;background:#26342d;overflow:hidden;box-shadow:none;padding:0 15px 0}
 .tc-card summary{cursor:pointer;list-style:none;padding:14px 0;display:flex;justify-content:space-between;gap:12px}
@@ -783,7 +782,7 @@ HTML
         . '<circle cx="22" cy="22" r="1.5" fill="#e07b65" stroke="none"/></svg>'
         . '<span class="tc-clock-date"></span></div>'
         ))
-        . '<div class="tc-header-actions"><div class="tc-live"><i class="tc-led" title="Aktuelle Sensorwerte"></i></div>'
+        . '<div class="tc-header-actions">'
         . '<button type="button" class="tc-edit" title="Listenansicht/Kachelansicht wechseln" aria-label="Listenansicht/Kachelansicht wechseln"'
         . ' onclick="tcToggleView(this)">☷</button>'
         . ($options->{editable}

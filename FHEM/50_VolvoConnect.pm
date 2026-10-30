@@ -3,7 +3,7 @@ package main;
 use strict;
 use warnings;
 
-our $VolvoConnect_VERSION = '1.0.1-dev';
+our $VolvoConnect_VERSION = '1.0.2-dev';
 use utf8;
 use HttpUtils;
 use JSON;
@@ -1054,21 +1054,21 @@ sub VolvoConnect_BuildDashboard {
         . ".save-btn{display:none;}"
         . "body.edit-mode .save-btn{display:inline-block;}"
         . "\@media(max-width:760px){body{padding:8px}.grid{padding:16px 15px 18px}.actions{padding:14px 15px}.toolbar{padding:13px 15px}}"
-        . "\@media(max-width:500px){.toolbar{align-items:flex-start;flex-wrap:wrap;gap:10px}.brand{flex:1 1 100%}.toolbar-controls{width:100%;justify-content:flex-start}.grid{gap:7px;padding:14px 12px}.actions{padding:13px 12px}.actions .btn{font-size:11px;padding:7px 8px}.vehicle-image-gallery .vehicle-image{max-width:100%;}}"
+        . "\@media(max-width:500px){.toolbar{align-items:flex-start;flex-wrap:wrap;gap:10px}.brand{flex:1 1 100%}.toolbar-controls{width:100%;justify-content:flex-start}.auth-indicator{margin-left:auto}.grid{gap:7px;padding:14px 12px}.actions{padding:13px 12px}.actions .btn{font-size:11px;padding:7px 8px}.vehicle-image-gallery .vehicle-image{max-width:100%;}}"
         . "</style></head><body><div class='wrap' data-device='" . VolvoConnect_HtmlEscape($name)
         . "' data-fhem-path='" . VolvoConnect_HtmlEscape($fhemPath)
         . "' data-csrf='$csrf'>"
         . "<div class='toolbar'><div class='brand'><span class='brand-mark' aria-hidden='true'><svg viewBox='0 0 24 24'><path d='M3 14.5 4.5 9h15l1.5 5.5V19h-2v-2H5v2H3z'/><path d='M5 9l2-4h10l2 4M3 13h18'/><circle cx='7' cy='14' r='1'/><circle cx='17' cy='14' r='1'/></svg></span><div><small>VOLVO CONNECT / FAHRZEUG</small><h1>$name</h1></div></div>"
-        . "<span class='auth-indicator' role='img' aria-label='" . VolvoConnect_HtmlEscape($authStatusTitle)
-        . "' title='" . VolvoConnect_HtmlEscape($authStatusTitle) . "'><span class='auth-dot "
-        . ($tokenValid ? "auth-dot-valid" : "auth-dot-invalid") . "'></span></span><div class='toolbar-controls'>"
+        . "<div class='toolbar-controls'>"
         . ($options->{editable}
             ? "<button type='button' class='btn icon-btn' title='Bearbeiten' aria-label='Bearbeiten' onclick='toggleEdit()'>&#9998;</button>"
             : "")
         . ($options->{editable}
             ? "<button type='button' class='btn save-btn' onclick='saveDashboardConfig()'>&#128190; Speichern</button>"
             : "")
-        . "</div></div>";
+        . "</div><span class='auth-indicator' role='img' aria-label='" . VolvoConnect_HtmlEscape($authStatusTitle)
+        . "' title='" . VolvoConnect_HtmlEscape($authStatusTitle) . "'><span class='auth-dot "
+        . ($tokenValid ? "auth-dot-valid" : "auth-dot-invalid") . "'></span></span></div>";
 
     my @actions = (
         ["lock",          "&#128274; Verriegeln"],
