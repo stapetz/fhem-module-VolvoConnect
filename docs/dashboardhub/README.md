@@ -10,7 +10,7 @@ stellt rechts das gewählte Dashboard dar.
 - Automatische Erkennung aller Geräte mit Dashboard (`_dashboardEmbedURL`)
 - Navigation links, Dashboard-Inhalt rechts
 - Menüname standardmäßig der `alias` des Geräts, ersatzweise der Gerätename
-- Bearbeitungsmodus (Stift) zum Umbenennen und Umsortieren der Menüpunkte
+- Bearbeitungsmodus (Stift) zum Umbenennen und Umsortieren der Menüpunkte sowie zum Umbenennen der Überschrift
 - Serverseitige Speicherung, dadurch auf allen Browsern und Geräten gleich
 - Neue Dashboards erscheinen automatisch am Ende der Navigation
 

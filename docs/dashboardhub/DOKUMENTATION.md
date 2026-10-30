@@ -67,6 +67,8 @@ ein:
 - **Name:** Der Standardname ist der `alias` des Geräts (ohne Alias der Gerätename). Im
   Eingabefeld lässt sich ein eigener Name setzen. Ein leeres Feld stellt den Alias
   wieder her.
+- **Überschrift:** Die Überschrift der Navigation („Dashboards“) lässt sich ebenfalls
+  umbenennen; ein leeres Feld stellt den Standard wieder her.
 - **Reihenfolge:** Menüpunkte lassen sich mit den Pfeilen ▲ ▼ oder per Ziehen am
   Symbol ☰ verschieben.
 - **Speichern** übernimmt die Änderungen serverseitig, **Abbrechen** verwirft sie.

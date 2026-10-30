@@ -5,7 +5,7 @@ use warnings;
 use JSON qw(encode_json decode_json);
 use MIME::Base64 qw(decode_base64);
 
-our ($readingFnAttributes, $FW_wname, $FW_ME);
+our ($readingFnAttributes, $FW_wname, $FW_ME, $FW_CSRF);
 our (%data, %defs, %modules, %FW_httpheader);
 
 sub DashboardHub_Initialize {
@@ -89,6 +89,7 @@ sub DashboardHub_LoadConfig {
     $config = {} if (ref($config) ne 'HASH');
     $config->{order} = [] if (ref($config->{order}) ne 'ARRAY');
     $config->{names} = {} if (ref($config->{names}) ne 'HASH');
+    $config->{title} = '' if (!defined($config->{title}) || ref($config->{title}));
     return $config;
 }
 
@@ -107,7 +108,12 @@ sub DashboardHub_SaveConfig {
         $label =~ s/^\s+|\s+$//g;
         $names{$device} = substr($label, 0, 80) if ($label ne '');
     }
-    my $error = setKeyValue(DashboardHub_ConfigKey($name), encode_json({order => \@order, names => \%names}));
+    my $title = $config->{title};
+    $title = '' if (!defined($title) || ref($title));
+    $title =~ s/^\s+|\s+$//g;
+    $title = substr($title, 0, 80);
+    my $error = setKeyValue(DashboardHub_ConfigKey($name),
+        encode_json({order => \@order, names => \%names, title => $title}));
     return 'Speichern fehlgeschlagen: ' . $error if (defined($error) && $error ne '');
     return undef;
 }
@@ -220,8 +226,8 @@ sub DashboardHub_Js {
 var root=document.getElementById("__ID__");if(!root)return;
 var list=root.querySelector(".dh-list"),frame=root.querySelector(".dh-frame"),status=root.querySelector(".dh-status");
 var editBtn=root.querySelector(".dh-edit"),actions=root.querySelector(".dh-actions");
-var editable=__EDITABLE__,cp=__CP__,hub=__HUB__,storeKey="dashboardHub_"+hub;
-var editing=false,saved=null;
+var editable=__EDITABLE__,cp=__CP__,hub=__HUB__,csrf=__CSRF__,storeKey="dashboardHub_"+hub;
+var editing=false,saved=null,titleEl=root.querySelector(".dh-title"),titleInput=null,DEFTITLE="Dashboards";
 function items(){return Array.prototype.slice.call(list.querySelectorAll(".dh-item"));}
 function say(t){if(status)status.textContent=t||"";}
 function select(el,force){var all=items();if(!el)el=all[0];if(!el){if(frame)frame.removeAttribute("src");return;}
@@ -258,18 +264,22 @@ if(t&&t!==dragged){var after=items().indexOf(dragged)<items().indexOf(t);list.in
 dragged=null;items().forEach(function(n){n.classList.remove("dh-dragover");});refreshButtons();});
 list.addEventListener("dragend",function(){dragged=null;items().forEach(function(n){n.classList.remove("dh-dragover");});});
 function startEdit(){editing=true;root.classList.add("dh-editing");saved=items().map(function(n){return n.getAttribute("data-dev");});
-items().forEach(decorate);actions.style.display="flex";refreshButtons();say("Reihenfolge und Namen bearbeiten");}
-function stopEdit(){editing=false;root.classList.remove("dh-editing");items().forEach(undecorate);actions.style.display="none";}
+items().forEach(decorate);
+titleInput=document.createElement("input");titleInput.type="text";titleInput.className="dh-name";titleInput.maxLength=80;titleInput.value=titleEl.getAttribute("data-custom")||"";titleInput.placeholder=DEFTITLE;titleInput.title="\u00dcberschrift (leer = "+DEFTITLE+")";titleEl.style.display="none";titleEl.parentNode.insertBefore(titleInput,titleEl);
+actions.style.display="flex";refreshButtons();say("Reihenfolge und Namen bearbeiten");}
+function stopEdit(){if(titleInput){titleInput.parentNode.removeChild(titleInput);titleInput=null;titleEl.style.display="";}editing=false;root.classList.remove("dh-editing");items().forEach(undecorate);actions.style.display="none";}
 function cancelEdit(){var byDev={};items().forEach(function(n){byDev[n.getAttribute("data-dev")]=n;});
 saved.forEach(function(d){if(byDev[d])list.appendChild(byDev[d]);});stopEdit();say("");}
-function post(b64){return fetch(cp+"/DashboardHub/"+encodeURIComponent(hub)+"?hubSave="+encodeURIComponent(b64),{credentials:"same-origin"}).then(function(r){return r.text();}).then(function(t){
-if(t!=="OK")throw new Error(t);}).catch(function(){return fetch(cp+"?cmd=set%20"+encodeURIComponent(hub)+"%20saveConfig%20"+encodeURIComponent(b64)+"&XHR=1",{credentials:"same-origin"}).then(function(r){
-if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(function(t){if(t&&t.trim()!=="")throw new Error(t);});});}
+function ck(r){return r.text().then(function(t){if(!r.ok||t.indexOf("gespeichert")<0)throw new Error((t||"HTTP "+r.status).trim().slice(0,120));});}
+function post(b64){var tok=csrf;if(!tok){var m=document.cookie.match(/(?:^|;\s*)fwcsrf=([^;]+)/);tok=m?decodeURIComponent(m[1]):"";}
+return fetch(cp+"/DashboardHub/"+encodeURIComponent(hub)+"?hubSave="+encodeURIComponent(b64),{credentials:"same-origin",cache:"no-store"}).then(ck).catch(function(){
+return fetch(cp+"?cmd=set%20"+encodeURIComponent(hub)+"%20saveConfig%20"+encodeURIComponent(b64)+"&XHR=1"+(tok?"&fwcsrf="+encodeURIComponent(tok):""),{credentials:"same-origin",cache:"no-store"}).then(function(r){
+if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(function(t){if(t&&t.trim()!==""&&t.indexOf("gespeichert")<0)throw new Error(t.trim().slice(0,120));});});}
 function save(){var order=[],names={};items().forEach(function(n){var d=n.getAttribute("data-dev");order.push(d);
 var v=n.querySelector(".dh-name").value.trim();if(v!==""&&v!==n.getAttribute("data-alias"))names[d]=v;});
-var json=JSON.stringify({order:order,names:names});var b64=btoa(unescape(encodeURIComponent(json)));say("Speichere ...");
+var ttl=titleInput?titleInput.value.trim():"";var json=JSON.stringify({order:order,names:names,title:ttl});var b64=btoa(unescape(encodeURIComponent(json)));say("Speichere ...");
 post(b64).then(function(){items().forEach(function(n){var d=n.getAttribute("data-dev"),v=names[d]||"";n.setAttribute("data-custom",v);
-n.querySelector(".dh-label").textContent=v||n.getAttribute("data-alias");});stopEdit();say("Gespeichert");}).catch(function(err){say("Fehler: "+err.message);});}
+n.querySelector(".dh-label").textContent=v||n.getAttribute("data-alias");});titleEl.setAttribute("data-custom",ttl);titleEl.textContent=ttl||DEFTITLE;stopEdit();say("Gespeichert");}).catch(function(err){say("Fehler: "+err.message);});}
 if(editable&&editBtn){editBtn.addEventListener("click",function(){if(editing)cancelEdit();else startEdit();});
 root.querySelector(".dh-save").addEventListener("click",save);root.querySelector(".dh-cancel").addEventListener("click",cancelEdit);}
 initial();
@@ -291,12 +301,18 @@ sub DashboardHub_BuildDashboard {
     my $height = AttrVal($name, 'frameHeight', 800);
     $height = 800 if ($height !~ /^\d+$/ || $height < 300 || $height > 3000);
 
+    my $config = DashboardHub_LoadConfig($name);
+    my $title = $config->{title} ne '' ? $config->{title} : 'Dashboards';
+    my $csrf = $main::FW_CSRF // '';
+    $csrf =~ s/^&?fwcsrf=//;
+
     my $css = DashboardHub_Css();
     $css =~ s/__NAVWIDTH__/${navWidth}px/g;
     $css =~ s/__HEIGHT__/${height}px/g;
 
     my $html = $css . '<div class="dh" id="' . DashboardHub_Escape($id) . '"><div class="dh-nav">'
-        . '<div class="dh-brand"><span>Dashboards</span>'
+        . '<div class="dh-brand"><span class="dh-title" data-custom="'
+        . DashboardHub_Escape($config->{title}) . '">' . DashboardHub_Escape($title) . '</span>'
         . ($editable && @{$items}
             ? '<button type="button" class="dh-btn dh-edit" title="Reihenfolge und Namen bearbeiten">&#9998;</button>'
             : '')
@@ -322,6 +338,9 @@ sub DashboardHub_BuildDashboard {
     my $cp = DashboardHub_BasePath();
     $js =~ s/__ID__/$id/g;
     $js =~ s/__EDITABLE__/$editable/g;
+    my $csrfJson = encode_json([$csrf]);
+    $csrfJson =~ s/^\[|\]$//g;
+    $js =~ s/__CSRF__/$csrfJson/g;
     my $cpJson = encode_json([$cp]);
     my $hubJson = encode_json([$name]);
     $cpJson =~ s/^\[|\]$//g;
@@ -356,7 +375,7 @@ sub main::DashboardHub_CGI {
     my $encoded = DashboardHub_QueryValue($request, 'hubSave', undef);
     if (defined($encoded)) {
         my $error = DashboardHub_SaveConfig($name, decode_base64($encoded));
-        return ('text/plain; charset=utf-8', defined($error) ? $error : 'OK');
+        return ('text/plain; charset=utf-8', defined($error) ? $error : 'gespeichert');
     }
 
     my $html = DashboardHub_BuildDashboard($hash, {editable => 0});
@@ -393,7 +412,7 @@ sub main::DashboardHub_CGI {
 <ul>
     <li><code>list</code> - erkannte Dashboards in der aktuellen Reihenfolge ausgeben</li>
     <li><code>_showDashboard</code> - Dashboard mit Navigation anzeigen; mit dem Stift lassen sich
-        Anzeigenamen und Reihenfolge der Menüpunkte ändern</li>
+        Anzeigenamen und Reihenfolge der Menüpunkte sowie die Überschrift der Navigation ändern</li>
     <li><code>_dashboardURL</code> - URL der eigenständigen Ansicht (nicht editierbar)</li>
     <li><code>_dashboardEmbedURL</code> - relative URL des Fragments ohne html/head/body, z.B. für FTUI</li>
 </ul>
