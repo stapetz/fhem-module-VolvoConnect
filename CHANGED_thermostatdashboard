@@ -2,6 +2,8 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- feature: 2026-10-30 fea34e2 feat(thermostatdashboard): add ordering and
+  custom labels
 - bugfix: 2026-10-30 dd30a41 fix(thermostatdashboard): simplify server error
   messages
   Show readable connection and gateway errors instead of proxy HTML pages.
