@@ -95,6 +95,7 @@ sub DashboardHub_LoadConfig {
 
 sub DashboardHub_SaveConfig {
     my ($name, $json) = @_;
+    Log3($name, 3, "DashboardHub ($name): saveConfig " . length($json // '') . ' bytes');
     my $config = eval { decode_json($json || '') };
     return 'Ungueltige Konfiguration'
         if (ref($config) ne 'HASH' || ref($config->{order}) ne 'ARRAY' || ref($config->{names}) ne 'HASH'
@@ -114,7 +115,11 @@ sub DashboardHub_SaveConfig {
     $title = substr($title, 0, 80);
     my $error = setKeyValue(DashboardHub_ConfigKey($name),
         encode_json({order => \@order, names => \%names, title => $title}));
-    return 'Speichern fehlgeschlagen: ' . $error if (defined($error) && $error ne '');
+    if (defined($error) && $error ne '') {
+        Log3($name, 1, "DashboardHub ($name): setKeyValue failed: $error");
+        return 'Speichern fehlgeschlagen: ' . $error;
+    }
+    Log3($name, 3, "DashboardHub ($name): config saved");
     return undef;
 }
 
