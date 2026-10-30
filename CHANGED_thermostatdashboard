@@ -2,6 +2,8 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 3808d46 style(thermostatdashboard): align valve gauge
+  height
 - feature: 2026-10-30 9d17c7a feat(thermostatdashboard): compact thermostat
   controls
   Add temperature sliders, mode dropdowns, valve gauges, and battery
