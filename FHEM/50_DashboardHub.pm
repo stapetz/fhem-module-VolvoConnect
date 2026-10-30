@@ -238,8 +238,8 @@ sub DashboardHub_Css {
 <style>
 .dh,.dh *{box-sizing:border-box;letter-spacing:normal;text-transform:none;text-shadow:none}
 .dh{display:flex;width:100%;min-height:__HEIGHT__;background:#1d2825;color:#f4f4e9;border:1px solid #46544c;font:14px 'Avenir Next','Helvetica Neue',sans-serif!important;text-align:left;line-height:1.4}
-.dh-nav{flex:0 0 __NAVWIDTH__;display:flex;flex-direction:column;background:#26342d;border-right:1px solid #46544c;padding:10px 0}
-.dh-brand{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 12px;font:500 18px Georgia,serif}
+.dh-nav{flex:0 0 __NAVWIDTH__;display:flex;flex-direction:column;background:#26342d;border-right:1px solid #46544c;padding:6px 0 10px}
+.dh-brand{display:flex;align-items:center;justify-content:space-between;padding:0 12px 12px;font:500 18px Georgia,serif}
 .dh-list{flex:1;overflow-y:auto}
 .dh-item{display:flex;align-items:center;gap:6px;padding:10px 14px;cursor:pointer;border-left:3px solid transparent;color:#f4f4e9;font-size:14px;user-select:none}
 .dh-item:hover{background:#2f4037}
@@ -254,7 +254,7 @@ sub DashboardHub_Css {
 .dh-grip{cursor:grab;color:#9fb3a8}
 .dh-status{padding:0 12px 6px;font-size:12px;color:#9fb3a8}.dh-status:empty{display:none}
 .dh-main{flex:1;min-width:0;background:#151f1b}
-.dh-content{padding:12px;min-height:__HEIGHT__;line-height:1.4}
+.dh-content{padding:6px 12px 12px;min-height:__HEIGHT__;line-height:1.4}
 .dh-content .tc-dashboard,.dh-content .wrap,.dh-content .gavazzi-dashboard,.dh-content .solax-dashboard,.dh-content .vcc-embed{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
 .dh-content>.vcc-embed>.wrap{margin:0!important}
 .dh-content .vcc-embed{padding:0!important}
