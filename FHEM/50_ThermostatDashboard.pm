@@ -93,7 +93,8 @@ sub ThermostatDashboard_Get {
     my ($hash, $name, $cmd, @args) = @_;
     $cmd = '' if (!defined($cmd));
 
-    return ThermostatDashboard_BuildDashboard($hash) if ($cmd eq '_showDashboard' || $cmd eq 'dashboard');
+    return ThermostatDashboard_BuildDashboard($hash, {editable => 1}) if ($cmd eq '_showDashboard');
+    return ThermostatDashboard_BuildDashboard($hash) if ($cmd eq 'dashboard');
     if ($cmd eq '_dashboardEmbedURL') {
         return ThermostatDashboard_BasePath() . '/ThermostatDashboard/' . urlEncode($name) . '?embed=1';
     }
@@ -367,7 +368,8 @@ CSS
 }
 
 sub ThermostatDashboard_BuildDashboard {
-    my ($hash) = @_;
+    my ($hash, $options) = @_;
+    $options ||= {};
     my $name = $hash->{NAME};
     my $devices = ThermostatDashboard_Discover($name);
     my $hidden = ThermostatDashboard_LoadHidden($name);
@@ -386,27 +388,30 @@ sub ThermostatDashboard_BuildDashboard {
         . '<svg viewBox="0 0 24 24"><path d="M9 14.5V5a3 3 0 0 1 6 0v9.5a5 5 0 1 1-6 0Z"/>'
         . '<path d="M12 8v9"/><circle cx="12" cy="18" r="1.5"/></svg></span>'
         . '<div><small>HEIZUNG / THERMOSTATE</small><h1>Thermostate</h1></div></div>'
-        . '<div class="td-head-actions"><button type="button" class="td-edit" title="Bearbeiten" aria-label="Thermostate bearbeiten">&#9998;</button>'
+        . '<div class="td-head-actions">'
+        . ($options->{editable} ? '<button type="button" class="td-edit" title="Bearbeiten" aria-label="Thermostate bearbeiten">&#9998;</button>' : '')
         . '<div class="td-summary"><span data-count>' . $visibleCount . '</span> von <span data-total>'
         . scalar(@{$devices}) . '</span> Thermostaten angezeigt</div>'
         . '</div></header>';
 
-    $html .= '<div class="td-dialog-open" data-dialog-backdrop hidden><section class="td-edit-dialog" role="dialog" '
+    if ($options->{editable}) {
+        $html .= '<div class="td-dialog-open" data-dialog-backdrop hidden><section class="td-edit-dialog" role="dialog" '
         . 'aria-modal="true" aria-labelledby="td-dialog-title"><header class="td-dialog-head">'
         . '<h2 id="td-dialog-title">Thermostate anzeigen</h2><p>W&auml;hle aus, welche Ger&auml;te im Dashboard erscheinen.</p></header>'
         . '<div class="td-dialog-list">';
-    for my $device (@{$devices}) {
-        my $isHidden = $hidden->{$device->{name}} ? 1 : 0;
-        my $room = $device->{room} ne '' ? $device->{room} : 'Ohne Raum';
-        $html .= '<label class="td-edit-row"><input type="checkbox" data-visible data-device="'
-            . ThermostatDashboard_Escape($device->{name}) . '"' . ($isHidden ? '' : ' checked') . '>'
-            . '<span><strong>' . ThermostatDashboard_Escape($device->{alias}) . '</strong><small>'
-            . ThermostatDashboard_Escape($room) . ' &middot; ' . ThermostatDashboard_Escape($device->{model})
-            . '</small></span></label>';
+        for my $device (@{$devices}) {
+            my $isHidden = $hidden->{$device->{name}} ? 1 : 0;
+            my $room = $device->{room} ne '' ? $device->{room} : 'Ohne Raum';
+            $html .= '<label class="td-edit-row"><input type="checkbox" data-visible data-device="'
+                . ThermostatDashboard_Escape($device->{name}) . '"' . ($isHidden ? '' : ' checked') . '>'
+                . '<span><strong>' . ThermostatDashboard_Escape($device->{alias}) . '</strong><small>'
+                . ThermostatDashboard_Escape($room) . ' &middot; ' . ThermostatDashboard_Escape($device->{model})
+                . '</small></span></label>';
+        }
+        $html .= '</div><footer class="td-dialog-footer"><span class="td-dialog-status" aria-live="polite"></span>'
+            . '<div class="td-dialog-actions"><button type="button" class="td-cancel">Abbrechen</button>'
+            . '<button type="button" class="td-save">Speichern</button></div></footer></section></div>';
     }
-    $html .= '</div><footer class="td-dialog-footer"><span class="td-dialog-status" aria-live="polite"></span>'
-        . '<div class="td-dialog-actions"><button type="button" class="td-cancel">Abbrechen</button>'
-        . '<button type="button" class="td-save">Speichern</button></div></footer></section></div>';
 
     if (!@{$devices}) {
         $html .= '<div class="td-empty">Keine kompatiblen Thermostate gefunden. Unterst&uuml;tzt werden '
@@ -484,11 +489,13 @@ if(!response.ok)throw new Error(text.trim().slice(0,160)||"HTTP "+response.statu
 function status(card,text,error){var node=card.querySelector(".td-status");node.textContent=text;node.setAttribute("data-error",error?"1":"0");}
 var cards=Array.prototype.slice.call(root.querySelectorAll(".td-card")),editButton=root.querySelector(".td-edit");
 var cancelButton=root.querySelector(".td-cancel"),saveButton=root.querySelector(".td-save");
-var backdrop=root.querySelector("[data-dialog-backdrop]"),dialog=backdrop.querySelector('[role="dialog"]');
+var backdrop=root.querySelector("[data-dialog-backdrop]"),dialog=backdrop&&backdrop.querySelector('[role="dialog"]');
 var dialogStatus=root.querySelector(".td-dialog-status"),countNode=root.querySelector("[data-count]");
-var checkboxes=root.querySelectorAll("[data-visible]"),originalHidden=[];
-function updateVisibility(card,visible){card.setAttribute("data-hidden",visible?"0":"1");}
+var checkboxes=root.querySelectorAll("[data-visible]");
 function updateCount(){countNode.textContent=String(cards.filter(function(card){return card.getAttribute("data-hidden")!=="1";}).length);}
+if(editButton&&backdrop){
+var originalHidden=[];
+function updateVisibility(card,visible){card.setAttribute("data-hidden",visible?"0":"1");}
 function setEditMode(editing){root.classList.toggle("edit-mode",editing);backdrop.hidden=!editing;Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=!editing;});dialogStatus.textContent="";dialogStatus.setAttribute("data-error","0");if(editing){var first=dialog.querySelector("input");(first||cancelButton).focus();}else editButton.focus();}
 function cancelEdit(){cards.forEach(function(card,index){updateVisibility(card,!originalHidden[index]);});Array.prototype.forEach.call(checkboxes,function(checkbox,index){checkbox.checked=!originalHidden[index];});updateCount();setEditMode(false);}
 function fail(text){dialogStatus.textContent=text;dialogStatus.setAttribute("data-error","1");}
@@ -503,6 +510,7 @@ Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=tru
 request(command).then(function(text){if(/unknown argument|forbidden|invalid csrf|not allowed|error|fehler|fehlgeschlagen|ungueltig|unbekannt/i.test(text))throw new Error(text.trim().slice(0,160));setEditMode(false);})
 .catch(function(error){fail("Speichern fehlgeschlagen: "+error.message);Array.prototype.forEach.call(checkboxes,function(checkbox){checkbox.disabled=false;});})
 .then(function(){saveButton.disabled=false;cancelButton.disabled=false;});});
+}
 function refreshCard(card){var command="jsonlist2 "+card.getAttribute("data-device");
 return request(command).then(function(text){var result=JSON.parse(text),device=result.Results&&result.Results[0];if(!device)throw new Error("Geraet nicht gefunden");
 var readings=device.Readings||{};
