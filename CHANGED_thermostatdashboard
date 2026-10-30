@@ -2,6 +2,9 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- bugfix: 2026-10-30 dd30a41 fix(thermostatdashboard): simplify server error
+  messages
+  Show readable connection and gateway errors instead of proxy HTML pages.
 - bugfix: 2026-10-30 964f1b0 fix(thermostatdashboard): read battery from parent
   device
   Resolve Homematic battery readings from the parent device when absent on a
