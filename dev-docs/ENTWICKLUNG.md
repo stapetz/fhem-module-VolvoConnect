@@ -55,14 +55,14 @@ Datei vorher löschen oder mit `touch -t 202001010000 FHEM/<datei>` zurücksetze
 Jedes Modul hat eine eigene Version nach Semantic Versioning (`X.Y.Z`: Fehlerbehebung = Z,
 neue Funktion = Y, inkompatible Änderung = X). Die Version steht im Quelltext in einer Zeile
 `our $VERSION = '1.0.0-dev';` (in den Paketen `GavazziEM24`/`SolaxModbus`) bzw.
-`our $<Modul>_VERSION = ...;` (DashboardHub, TemperatureCollector, VolvoConnect). Im Gerät
-erscheint sie als Internal `VERSION` (sichtbar in `list <gerät>`, gesetzt beim `define` bzw.
-beim FHEM-Start).
+`our $<Modul>_VERSION = ...;` (DashboardHub, TemperatureCollector, VolvoConnect,
+ThermostatDashboard). Im Gerät erscheint sie als Internal `VERSION` (sichtbar in
+`list <gerät>`, gesetzt beim `define` bzw. beim FHEM-Start).
 
 - Auf `dev` trägt jede Version das Suffix `-dev`, z. B. `1.1.0-dev`. Daran erkennt man in FHEM,
   dass ein Entwicklungsstand läuft.
 - Auf `main` steht nur die freigegebene Version ohne Suffix.
-- Der initiale Hauptstand wird einmalig als gemeinsamer Snapshot aller fünf Module auf `1.0.0`
+- Der initiale Hauptstand wird einmalig als gemeinsamer Snapshot aller Module auf `1.0.0`
   angelegt; danach starten alle Module auf `dev` bei `1.0.1-dev`. Der bisherige Hauptstand bleibt
   zur Wiederherstellung im Backup-Branch `archive/main-before-versioned-initial-20261030`.
 - Module werden **einzeln** freigegeben. `main` bekommt dabei nur die Moduldatei und
@@ -76,8 +76,8 @@ python3 scripts/release.py <modul> <version> -m "Zeile 1" -m "Zeile 2" --push
 ```
 
 `<modul>` ist der Schlüssel aus `MODULES` in `scripts/generate_changed.py` (`volvo`,
-`temperaturecollector`, `gavazzi`, `solax`, `dashboardhub`). Die `-m`-Zeilen erscheinen in
-`CHANGED`/`CHANGED_<modul>`. Das Skript
+`temperaturecollector`, `gavazzi`, `solax`, `dashboardhub`,
+`thermostatdashboard`). Die `-m`-Zeilen erscheinen in `CHANGED`/`CHANGED_<modul>`. Das Skript
 
 1. wechselt auf `main`, übernimmt Moduldatei und Doku aus `dev`, setzt die Version ohne `-dev`,
    committet `Release <Modul> <Version>` und setzt den Tag,
@@ -216,6 +216,15 @@ Besonderheiten:
   Zeichenketten und müssen vor der HTML-Ausgabe mit `utf8::encode` umgewandelt werden, sonst
   erscheinen Umlaute kaputt.
 - **Status**: "Gespeichert" blendet nach 4 Sekunden aus.
+
+## ThermostatDashboard
+
+`FHEM/50_ThermostatDashboard.pm` erkennt CUL_HM-Thermostate mit `measured-temp`,
+`desired-temp` und passendem Set-Befehl sowie MAX `HeatingThermostat`- und
+`WallMountedThermostat`-Geräte. Es zeigt Ist-/Solltemperatur, Modus, Ventilstellung und
+Batteriestatus, sofern verfügbar. Vorhandene Set-Befehle werden zur Auswahl der
+Temperatur- und Modussteuerungen ausgewertet. Befehle gehen über die authentifizierte
+FHEMWEB-Sitzung mit CSRF-Token an FHEM; es werden keine Wochenprofile verändert.
 
 ## Bekannte Fallstricke
 

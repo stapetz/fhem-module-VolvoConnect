@@ -2,8 +2,8 @@
 
 DashboardHub ist ein Meta-Modul für alle Dashboards dieses Repositories. Es erkennt
 automatisch die vorhandenen Dashboard-Geräte (TemperatureCollector, GavazziEM24,
-SolaxModbus, VolvoConnect und künftige Module), zeigt sie links als Navigation an und
-stellt rechts das gewählte Dashboard dar.
+SolaxModbus, VolvoConnect, ThermostatDashboard und künftige Module), zeigt sie links als
+Navigation an und stellt rechts das gewählte Dashboard dar.
 
 ## Funktionen
 

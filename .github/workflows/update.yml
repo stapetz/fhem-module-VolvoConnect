@@ -37,6 +37,7 @@ jobs:
               "controls_gavazzi.txt": "FHEM/70_GavazziEM24.pm",
               "controls_solax.txt": "FHEM/70_SolaxModbus.pm",
               "controls_dashboardhub.txt": "FHEM/50_DashboardHub.pm",
+              "controls_thermostatdashboard.txt": "FHEM/50_ThermostatDashboard.pm",
           }
           changed_timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H:%M:%S")
 

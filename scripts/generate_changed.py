@@ -22,6 +22,10 @@ MODULES = {
         "DashboardHub",
         ["FHEM/50_DashboardHub.pm", "docs/dashboardhub"],
     ),
+    "thermostatdashboard": (
+        "ThermostatDashboard",
+        ["FHEM/50_ThermostatDashboard.pm", "docs/thermostatdashboard"],
+    ),
 }
 WIDTH = 79
 TRAILERS = ("co-authored-by:", "signed-off-by:")

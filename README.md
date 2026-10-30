@@ -11,19 +11,25 @@ Dieses Repository enthält FHEM-Module und die zugehörigen Controls-Dateien.
 | GavazziEM24 | [`FHEM/70_GavazziEM24.pm`](FHEM/70_GavazziEM24.pm) | [`docs/gavazzi/README.md`](docs/gavazzi/README.md) | [`controls_gavazzi.txt`](controls_gavazzi.txt) |
 | SolaxModbus | [`FHEM/70_SolaxModbus.pm`](FHEM/70_SolaxModbus.pm) | [`docs/solax/README.md`](docs/solax/README.md) | [`controls_solax.txt`](controls_solax.txt) |
 | DashboardHub (Meta-Modul für alle Dashboards) | [`FHEM/50_DashboardHub.pm`](FHEM/50_DashboardHub.pm) | [`docs/dashboardhub/README.md`](docs/dashboardhub/README.md) | [`controls_dashboardhub.txt`](controls_dashboardhub.txt) |
+| ThermostatDashboard | [`FHEM/50_ThermostatDashboard.pm`](FHEM/50_ThermostatDashboard.pm) | [`docs/thermostatdashboard/README.md`](docs/thermostatdashboard/README.md) | [`controls_thermostatdashboard.txt`](controls_thermostatdashboard.txt) |
 
 DashboardHub erkennt automatisch alle vorhandenen Dashboard-Geräte (TemperatureCollector,
-GavazziEM24, SolaxModbus, VolvoConnect und künftige Module) und zeigt sie mit einer
-Navigationsleiste links und dem jeweiligen Dashboard rechts an. Menünamen und
+GavazziEM24, SolaxModbus, VolvoConnect, ThermostatDashboard und künftige Module) und zeigt
+sie mit einer Navigationsleiste links und dem jeweiligen Dashboard rechts an. Menünamen und
 Reihenfolge sind im Bearbeitungsmodus änderbar.
 
 Die Controls-Dateien werden durch GitHub Actions erzeugt und enthalten jeweils nur
 das zugehörige Modul sowie dessen Änderungsprotokoll: [`CHANGED_volvo`](CHANGED_volvo),
 [`CHANGED_temperaturecollector`](CHANGED_temperaturecollector),
 [`CHANGED_gavazzi`](CHANGED_gavazzi), [`CHANGED_solax`](CHANGED_solax) und
-[`CHANGED_dashboardhub`](CHANGED_dashboardhub).
+[`CHANGED_dashboardhub`](CHANGED_dashboardhub),
+[`CHANGED_thermostatdashboard`](CHANGED_thermostatdashboard).
 Zusätzlich enthält [`controls_all.txt`](controls_all.txt) alle Module des Repositories
 sowie das gemeinsame [Änderungsprotokoll](CHANGED).
+
+ThermostatDashboard erkennt Homematic- und eQ-3 MAX-Heizkörperthermostate automatisch,
+zeigt Ist- und Solltemperatur sowie Statuswerte an und ermöglicht die Steuerung der
+Solltemperatur und unterstützter Betriebsarten.
 
 Die Änderungsprotokolle werden bei jedem Push von
 [`scripts/generate_changed.py`](scripts/generate_changed.py) aus den Git-Commits erzeugt:
@@ -93,6 +99,13 @@ update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_
 update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_dashboardhub.txt
 ```
 
+**ThermostatDashboard**
+
+```text
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_thermostatdashboard.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_thermostatdashboard.txt
+```
+
 Danach `shutdown restart` ausführen.
 
 Die ausführlichen Anleitungen stehen in den jeweiligen Dokumentationsordnern:
@@ -102,6 +115,7 @@ Die ausführlichen Anleitungen stehen in den jeweiligen Dokumentationsordnern:
 - [Gavazzi-Dokumentation](docs/gavazzi/DOKUMENTATION.md)
 - [SolaX-Dokumentation](docs/solax/DOKUMENTATION.md)
 - [DashboardHub-Dokumentation](docs/dashboardhub/DOKUMENTATION.md)
+- [ThermostatDashboard-Dokumentation](docs/thermostatdashboard/DOKUMENTATION.md)
 
 ## Feedback
 

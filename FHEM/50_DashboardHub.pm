@@ -443,8 +443,8 @@ sub main::DashboardHub_CGI {
 <p>
     DashboardHub ist ein Meta-Modul. Es erkennt automatisch alle FHEM-Geräte, die ein
     Dashboard anbieten (Get-Befehl <code>_dashboardEmbedURL</code>, z.B.
-    TemperatureCollector, GavazziEM24, SolaxModbus und VolvoConnect), zeigt sie links als
-    Navigation an und stellt rechts das gewählte Dashboard dar.
+    TemperatureCollector, GavazziEM24, SolaxModbus, VolvoConnect und ThermostatDashboard),
+    zeigt sie links als Navigation an und stellt rechts das gewählte Dashboard dar.
 </p>
 <a id="DashboardHub-define"></a>
 <b>Define</b>

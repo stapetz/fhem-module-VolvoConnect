@@ -1,0 +1,95 @@
+# ThermostatDashboard – Dokumentation
+
+ThermostatDashboard zeigt kompatible Heizkörperthermostate eines FHEM-Systems in einer
+gemeinsamen, responsiven Übersicht. Homematic-Geräte über `CUL_HM` und eQ-3 MAX-Geräte
+über `MAX` werden automatisch erkannt.
+
+## Voraussetzungen
+
+- FHEM mit FHEMWEB
+- Homematic-Thermostate mit `TYPE CUL_HM`, Temperatur-Readings `measured-temp` und
+  `desired-temp` sowie dem Set-Befehl `desired-temp`
+- eQ-3 MAX-Heizkörperthermostate mit `TYPE MAX`, `type HeatingThermostat` und den
+  Readings `temperature` und `desiredTemperature`
+
+Die Erkennung nutzt den tatsächlichen Set-Befehl des Gerätetyps. Andere Geräte, die keine
+Solltemperatur unterstützen, werden nicht aufgenommen.
+
+## Installation
+
+```fhem
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_thermostatdashboard.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_thermostatdashboard.txt
+shutdown restart
+```
+
+Alternativ die Datei `FHEM/50_ThermostatDashboard.pm` in das FHEM-Modulverzeichnis kopieren
+und FHEM neu starten.
+
+## Gerät anlegen und anzeigen
+
+```fhem
+define Thermostate ThermostatDashboard
+attr Thermostate room Dashboards
+get Thermostate _showDashboard
+```
+
+Das Gerät erscheint auch automatisch in der Navigation des DashboardHub.
+
+Weitere Befehle:
+
+| FHEM-Befehl | Funktion |
+| --- | --- |
+| `get <name> dashboard` | Dashboard anzeigen |
+| `get <name> _showDashboard` | Dashboard direkt in FHEMWEB anzeigen |
+| `get <name> _dashboardURL` | eigenständige Dashboard-URL |
+| `get <name> _dashboardEmbedURL` | Fragment-URL für DashboardHub oder FTUI |
+| `get <name> list` | erkannte Thermostate auflisten |
+| `get <name> diagnose` | erkannte CUL_HM-/MAX-Geräte samt Erkennungsstatus anzeigen |
+
+## Anzeige und Bedienung
+
+Pro Gerät werden Alias (ersatzweise Gerätename), Raum, Isttemperatur und Solltemperatur
+angezeigt. Wenn vorhanden, zeigt das Dashboard außerdem Modus, Ventilstellung und
+Batteriestatus. Die Daten werden standardmäßig alle 15 Sekunden aus FHEM aktualisiert.
+
+Die Temperatur kann in 0,5-Grad-Schritten im Bereich von 5 bis 30 °C eingestellt werden.
+Die MAX-Sonderwerte 4,5 °C (`Off`) und 30,5 °C (`On`) werden bewusst nicht als normale
+Temperaturwerte angeboten. Die FHEM-Geräte bleiben maßgeblich für die Validierung und
+Ausführung der Befehle.
+
+Je nach Fähigkeiten des Geräts erscheinen passende Betriebsarten:
+
+- **CUL_HM:** `Auto`, `Manuell`, `Boost` sowie `Tag` und `Nacht`, sofern die jeweilige
+  Option in der Set-Übersicht des Geräts vorhanden ist.
+- **MAX:** `Auto`, `Eco`, `Komfort` und `Boost`. Eine numerische Solltemperatur setzt den
+  MAX-Thermostat auf den manuellen Temperaturwert.
+
+Die Modi werden an das einzelne Thermostat gesendet. Bei miteinander verknüpften MAX-
+Thermostaten kann es erforderlich sein, den Befehl für jedes Gerät einzeln zu setzen.
+
+## Attribute
+
+| Attribut | Beschreibung |
+| --- | --- |
+| `includeDevices` | Regex; nur passende Gerätenamen berücksichtigen |
+| `excludeDevices` | Regex; passende Gerätenamen ausblenden |
+| `autoRefresh` | Aktualisierung in Sekunden: `0`, `15`, `30` oder `60`; Standard `15` |
+
+Geräte mit `disable 1` werden ausgelassen. Die Anzeige wird nach Raum und Alias sortiert.
+
+## Sicherheit und Datenschutz
+
+Bedienbefehle werden über die angemeldete FHEMWEB-Sitzung mit CSRF-Token an dasselbe
+FHEM gesendet. Das Dashboard führt keine eigenen Heizungszeitpläne aus und ändert keine
+Gerätekonfiguration oder Wochenprofile.
+
+## Fehlerbehebung
+
+- **Ein Thermostat fehlt:** `get <name> diagnose` ausführen und Readings sowie
+  `set <thermostat> ?` des Geräts prüfen.
+- **Temperatur lässt sich nicht setzen:** Prüfen, ob das Gerät `desired-temp` (CUL_HM)
+  oder `desiredTemperature` (MAX) anbietet. Die Antwort wird im Dashboard neben dem
+  jeweiligen Thermostat angezeigt.
+- **Messwert wirkt veraltet:** Zeitstempel im Dashboard mit den Readings des Geräts
+  vergleichen. MAX-Geräte übertragen Messwerte abhängig von Funk- und Gateway-Aktivität.
