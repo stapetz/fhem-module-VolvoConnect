@@ -44,9 +44,10 @@ get Dashboards _showDashboard
 ```
 
 Links steht die Navigation, rechts das gewählte Dashboard. Die Auswahl wird im Browser
-gemerkt. Das Dashboard wird in einem eigenen Rahmen geladen, sodass sich Darstellung
-und Skripte der Dashboards nicht gegenseitig beeinflussen. Nach dem Laden setzt DashboardHub für alle Dashboards einheitlich 12 px Abstand zum
-Rand und lässt sie die volle Breite nutzen, damit sie nebeneinander gleich aussehen.
+gemerkt. Das Dashboard wird ohne iframe direkt in die Seite geladen (Dashboard-Fragment per
+`_dashboardEmbedURL`). Beim Wechsel beendet DashboardHub die Aktualisierungs-Timer des
+zuvor angezeigten Dashboards. Alle Dashboards erhalten einheitlich 12 px Abstand zum Rand
+und nutzen die volle Breite, damit sie nebeneinander gleich aussehen.
 Auf schmalen Bildschirmen
 wandert die Navigation über das Dashboard.
 

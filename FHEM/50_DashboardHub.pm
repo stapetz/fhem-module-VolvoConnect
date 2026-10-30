@@ -162,13 +162,11 @@ sub DashboardHub_Discover {
         my $embed = eval { CallFn($name, 'GetFn', $dev, $name, '_dashboardEmbedURL') };
         next if (!defined($embed) || ref($embed) || $embed !~ m{^/[^\s]*$});
 
-        (my $url = $embed) =~ s/([?&])(?:tcEmbed|embed)=1(?:&|$)/$1/;
-        $url =~ s/[?&]$//;
         push @found, {
             name => $name,
             type => $type,
             alias => AttrVal($name, 'alias', $name),
-            url => $url,
+            url => $embed,
         };
     }
     return \@found;
@@ -225,8 +223,11 @@ sub DashboardHub_Css {
 .dh input.dh-name{flex:1;min-width:0;height:26px!important;margin:0!important;padding:0 6px!important;font-size:13px!important;background:#1d2825!important;color:#f4f4e9!important;border:1px solid #52bd8b!important;border-radius:0!important;width:auto!important}
 .dh-grip{cursor:grab;color:#9fb3a8}
 .dh-status{padding:0 12px 6px;font-size:12px;color:#9fb3a8}.dh-status:empty{display:none}
-.dh-main{flex:1;min-width:0;display:flex}
-.dh-frame{flex:1;width:100%;border:0;background:#151f1b;min-height:__HEIGHT__}
+.dh-main{flex:1;min-width:0;background:#151f1b}
+.dh-content{padding:12px;min-height:__HEIGHT__}
+.dh-content .tc-dashboard,.dh-content .wrap,.dh-content .gavazzi-dashboard,.dh-content .solax-dashboard,.dh-content .vcc-embed{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
+.dh-content>.vcc-embed>.wrap{margin:0!important}
+.dh-loading{padding:24px;color:#9fb3a8}
 .dh-empty{padding:24px;color:#9fb3a8}
 @media (max-width:700px){.dh{flex-direction:column}.dh-nav{flex:none;border-right:0;border-bottom:1px solid #46544c}.dh-list{display:flex;overflow-x:auto}.dh-item{border-left:0;border-bottom:3px solid transparent;white-space:nowrap}.dh-item.dh-active{border-bottom-color:#52bd8b}.dh-editing .dh-list{display:block}}
 </style>
@@ -237,21 +238,27 @@ sub DashboardHub_Js {
     return <<'JS';
 <script>(function(){
 var root=document.getElementById("__ID__");if(!root)return;
-var list=root.querySelector(".dh-list"),frame=root.querySelector(".dh-frame"),status=root.querySelector(".dh-status");
+var list=root.querySelector(".dh-list"),frame=root.querySelector(".dh-content"),status=root.querySelector(".dh-status");
 var editBtn=root.querySelector(".dh-edit");
 var editable=__EDITABLE__,cp=__CP__,hub=__HUB__,csrf=__CSRF__,storeKey="dashboardHub_"+hub;
 var editing=false,sig0="",busy=false,titleEl=root.querySelector(".dh-title"),titleInput=null,DEFTITLE="Dashboards";
 function items(){return Array.prototype.slice.call(list.querySelectorAll(".dh-item"));}
 var sayTimer=null;function say(t,keep){if(!status)return;window.clearTimeout(sayTimer);status.textContent=t||"";if(t&&!keep)sayTimer=window.setTimeout(function(){status.textContent="";},4000);}
-function select(el,force){var all=items();if(!el)el=all[0];if(!el){if(frame)frame.removeAttribute("src");return;}
+var timers=[],origSetInterval=window.setInterval,token=0;
+window.setInterval=function(){var id=origSetInterval.apply(window,arguments);if(loadedUrl)timers.push(id);return id;};
+var loadedUrl=null;
+function cleanup(){timers.forEach(function(id){window.clearInterval(id);});timers=[];}
+function load(url){var my=++token;cleanup();loadedUrl=null;frame.innerHTML='<div class="dh-loading">Lade ...</div>';
+fetch(url,{credentials:"same-origin",cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}).then(function(t){
+if(my!==token)return;loadedUrl=url;frame.innerHTML="";frame.appendChild(document.createRange().createContextualFragment(t));
+}).catch(function(err){if(my!==token)return;frame.innerHTML='<div class="dh-loading">Dashboard konnte nicht geladen werden: '+String(err.message).replace(/[<>&]/g,"")+"</div>";});}
+function select(el,force){var all=items();if(!el)el=all[0];if(!el){if(frame)frame.innerHTML="";return;}
 all.forEach(function(n){n.classList.toggle("dh-active",n===el);});
-var url=el.getAttribute("data-url");if(frame&&(force||frame.getAttribute("src")!==url))frame.setAttribute("src",url);
+var url=el.getAttribute("data-url");if(frame&&(force||frame.getAttribute("data-url")!==url)){frame.setAttribute("data-url",url);load(url);}
 try{localStorage.setItem(storeKey,el.getAttribute("data-dev"));}catch(e){}}
 function initial(){var dev=null;try{dev=localStorage.getItem(storeKey);}catch(e){}
 var m=/[?&]hubSel=([^&]*)/.exec(window.location.search);if(m)dev=decodeURIComponent(m[1]);
 var f=items().filter(function(n){return n.getAttribute("data-dev")===dev;})[0];select(f);}
-var FRAMECSS="html,body{margin:0!important;padding:0!important;background:#151f1b!important}body{padding:12px!important;box-sizing:border-box}.tc-dashboard,.wrap,.gavazzi-dashboard,.solax-dashboard,.gec{width:100%!important;max-width:none!important;margin:0!important}";
-if(frame)frame.addEventListener("load",function(){try{var d=frame.contentDocument;if(!d||!d.head)return;var st=d.getElementById("dh-frame-css");if(!st){st=d.createElement("style");st.id="dh-frame-css";d.head.appendChild(st);}st.textContent=FRAMECSS;}catch(e){}});
 list.addEventListener("click",function(e){if(editing)return;var el=e.target.closest(".dh-item");if(el)select(el);});
 function decorate(el){var label=el.querySelector(".dh-label"),type=el.querySelector(".dh-type");
 var grip=document.createElement("span");grip.className="dh-grip";grip.textContent="\u2630";grip.title="Ziehen zum Sortieren";
@@ -331,7 +338,7 @@ sub DashboardHub_BuildDashboard {
     }
     $html .= '</div></div><div class="dh-main">'
         . (@{$items}
-            ? '<iframe class="dh-frame" title="Dashboard" loading="lazy"></iframe>'
+            ? '<div class="dh-content"></div>'
             : '<div class="dh-empty">Keine Dashboards gefunden. Es werden Ger&auml;te erkannt, die '
               . '<code>get &lt;name&gt; _dashboardEmbedURL</code> unterst&uuml;tzen.</div>')
         . '</div></div>';
