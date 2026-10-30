@@ -2,6 +2,8 @@
 # Generated from Git commits by scripts/generate_changed.py.
 # Keep this file ASCII-only and use lines no longer than 79 characters.
 
+- change: 2026-10-30 f9e1345 dev-docs: Update-Befehle fuer dev und main
+  aufgenommen
 - change: 2026-10-30 dfdc338 Entwicklungsablauf mit dev-Branch und interne
   Dokumentation
   Workflow erzeugt controls/CHANGED auch fuer den Branch dev
