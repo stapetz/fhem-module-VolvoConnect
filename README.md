@@ -10,11 +10,18 @@ Dieses Repository enthält FHEM-Module und die zugehörigen Controls-Dateien.
 | TemperatureCollector | [`FHEM/50_TemperatureCollector.pm`](FHEM/50_TemperatureCollector.pm) | [`docs/temperaturecollector/README.md`](docs/temperaturecollector/README.md) | [`controls_temperaturecollector.txt`](controls_temperaturecollector.txt) |
 | GavazziEM24 | [`FHEM/70_GavazziEM24.pm`](FHEM/70_GavazziEM24.pm) | [`docs/gavazzi/README.md`](docs/gavazzi/README.md) | [`controls_gavazzi.txt`](controls_gavazzi.txt) |
 | SolaxModbus | [`FHEM/98_ModbusSolax.pm`](FHEM/98_ModbusSolax.pm) | [`docs/solax/README.md`](docs/solax/README.md) | [`controls_solax.txt`](controls_solax.txt) |
+| DashboardHub (Meta-Modul für alle Dashboards) | [`FHEM/50_DashboardHub.pm`](FHEM/50_DashboardHub.pm) | [`docs/dashboardhub/README.md`](docs/dashboardhub/README.md) | [`controls_dashboardhub.txt`](controls_dashboardhub.txt) |
+
+DashboardHub erkennt automatisch alle vorhandenen Dashboard-Geräte (TemperatureCollector,
+GavazziEM24, SolaxModbus, VolvoConnect und künftige Module) und zeigt sie mit einer
+Navigationsleiste links und dem jeweiligen Dashboard rechts an. Menünamen und
+Reihenfolge sind im Bearbeitungsmodus änderbar.
 
 Die Controls-Dateien werden durch GitHub Actions erzeugt und enthalten jeweils nur
 das zugehörige Modul sowie dessen Änderungsprotokoll: [`CHANGED_volvo`](CHANGED_volvo),
 [`CHANGED_temperaturecollector`](CHANGED_temperaturecollector),
-[`CHANGED_gavazzi`](CHANGED_gavazzi) und [`CHANGED_solax`](CHANGED_solax).
+[`CHANGED_gavazzi`](CHANGED_gavazzi), [`CHANGED_solax`](CHANGED_solax) und
+[`CHANGED_dashboardhub`](CHANGED_dashboardhub).
 Zusätzlich enthält [`controls_all.txt`](controls_all.txt) alle Module des Repositories
 sowie das gemeinsame [Änderungsprotokoll](CHANGED).
 
@@ -76,6 +83,13 @@ update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_
 update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_solax.txt
 ```
 
+**DashboardHub**
+
+```text
+update add https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_dashboardhub.txt
+update all https://raw.githubusercontent.com/stapetz/fhem-modules/main/controls_dashboardhub.txt
+```
+
 Danach `shutdown restart` ausführen.
 
 Die ausführlichen Anleitungen stehen in den jeweiligen Dokumentationsordnern:
@@ -84,6 +98,7 @@ Die ausführlichen Anleitungen stehen in den jeweiligen Dokumentationsordnern:
 - [TemperatureCollector-Dokumentation](docs/temperaturecollector/DOKUMENTATION.md)
 - [Gavazzi-Dokumentation](docs/gavazzi/DOKUMENTATION.md)
 - [SolaX-Dokumentation](docs/solax/DOKUMENTATION.md)
+- [DashboardHub-Dokumentation](docs/dashboardhub/DOKUMENTATION.md)
 
 ## Feedback
 

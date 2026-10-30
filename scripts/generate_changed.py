@@ -18,6 +18,10 @@ MODULES = {
     ),
     "gavazzi": ("GavazziEM24", ["FHEM/70_GavazziEM24.pm", "docs/gavazzi"]),
     "solax": ("SolaxModbus", ["FHEM/98_ModbusSolax.pm", "docs/solax"]),
+    "dashboardhub": (
+        "DashboardHub",
+        ["FHEM/50_DashboardHub.pm", "docs/dashboardhub"],
+    ),
 }
 WIDTH = 79
 TRAILERS = ("co-authored-by:", "signed-off-by:")
