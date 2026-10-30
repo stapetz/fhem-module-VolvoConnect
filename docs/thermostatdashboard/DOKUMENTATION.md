@@ -100,5 +100,5 @@ Gerätekonfiguration oder Wochenprofile.
 - **Temperatur lässt sich nicht setzen:** Prüfen, ob das Gerät `desired-temp` (CUL_HM)
   oder `desiredTemperature` (MAX) anbietet. Die Antwort wird im Dashboard neben dem
   jeweiligen Thermostat angezeigt.
-- **Messwert wirkt veraltet:** Zeitstempel im Dashboard mit den Readings des Geräts
-  vergleichen. MAX-Geräte übertragen Messwerte abhängig von Funk- und Gateway-Aktivität.
+- **Messwert wirkt veraltet:** Zeitstempel der Readings in FHEM prüfen. MAX-Geräte übertragen
+  Messwerte abhängig von Funk- und Gateway-Aktivität.

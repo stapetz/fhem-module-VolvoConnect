@@ -358,8 +358,6 @@ sub ThermostatDashboard_Css {
 .td-modes button{min-height:30px;padding:4px 9px;border-color:#69796f}
 .td-status{min-height:18px;margin-top:7px;color:#a9b7ac;font-size:11px}
 .td-status[data-error="1"]{color:#ef9a8b}
-.td-updated{padding:0 14px 10px;color:#87988d;font-size:10px}
-.td-updated[data-stale="1"]{color:#ef9a8b}
 .td-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .td-empty{margin:12px;padding:18px;background:#202e29;border:1px solid #46544c;color:#c7d0c8}
 @media(max-width:600px){.td-head{padding:12px 15px;align-items:flex-start;flex-direction:row;gap:8px}.td-head-actions{width:auto;justify-content:flex-end;margin-left:auto}.td-head-status{text-align:left}.td-summary{text-align:right}.td-grid{padding:8px;gap:8px}.td-set-row input{width:82px}.td-dialog-open{padding:10px}.td-dialog-list{padding:6px 14px}.td-dialog-head,.td-dialog-footer{padding:13px 14px}}
@@ -425,7 +423,6 @@ sub ThermostatDashboard_BuildDashboard {
             my $mode = $device->{mode} ? $device->{mode}{value} : '';
             my $valve = $device->{valve} ? $device->{valve}{value} : '';
             my $battery = $device->{battery} ? $device->{battery}{value} : '';
-            my $time = $device->{actual}{time};
             my $targetValue = defined($target) ? sprintf('%.1f', $target) : '';
             my $room = $device->{room} ne '' ? $device->{room} : 'Ohne Raum';
             my $isHidden = $hidden->{$device->{name}} ? 1 : 0;
@@ -466,9 +463,7 @@ sub ThermostatDashboard_BuildDashboard {
                 }
                 $html .= '</div>';
             }
-            $html .= '<div class="td-status" aria-live="polite"></div></div><div class="td-updated" data-updated>'
-                . ($time ne '' ? 'Messung: ' . ThermostatDashboard_Escape($time) : 'Warte auf Messung')
-                . '</div></section>';
+            $html .= '<div class="td-status" aria-live="polite"></div></div></section>';
         }
         $html .= '</main>';
     }
@@ -523,8 +518,7 @@ if(mode&&modeNode)modeNode.textContent=mode.Value;
 var badges=card.querySelector(".td-meta"),dynamic=badges.querySelectorAll("[data-dynamic]");
 Array.prototype.forEach.call(dynamic,function(node){node.parentNode.removeChild(node);});
 [[valve,"Ventil ","%"],[battery,"Batterie ",""]].forEach(function(item){if(!item[0])return;var badge=document.createElement("span");badge.className="td-badge";badge.setAttribute("data-dynamic","1");badge.textContent=item[1]+item[0].Value+item[2];badges.appendChild(badge);});
-var updated=card.querySelector("[data-updated]"),time=actual&&actual.Time?String(actual.Time):"";updated.textContent=time?"Messung: "+time:"Warte auf Messung";
-var timestamp=Date.parse(time.replace(" ","T")),stale=timestamp&&!isNaN(timestamp)&&(Date.now()-timestamp>1800000);updated.setAttribute("data-stale",stale?"1":"0");})
+})
 .catch(function(error){status(card,"Aktualisierung fehlgeschlagen: "+error.message,true);});}
 root.addEventListener("click",function(event){var button=event.target.closest("button");if(!button)return;var card=button.closest(".td-card");if(!card)return;
 if(root.classList.contains("edit-mode"))return;
